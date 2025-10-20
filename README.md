@@ -1,36 +1,148 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Spotifun 🎵
+
+A comprehensive Spotify analytics webapp that provides detailed insights, stats, and fun feedback about your Spotify listening habits. Get your personalized music profile, unlock achievements, and compare your habits with other users!
+
+## Features
+
+- **🔐 Spotify OAuth Integration** - Secure authentication with Spotify
+- **📊 Detailed Analytics** - Track songs played, play counts, genres within specified timeframes
+- **🎭 Top Lists** - View your top artists, songs, and genres with beautiful visualizations
+- **🎉 Fun Stat Cards** - Spotify Wrapped-style insights and fun facts
+- **🎨 Music Profile** - Personalized profile with styling based on genres and habits
+- **🏆 Achievements** - Unlock fun achievements and milestones
+- **📈 Rankings** - Compare your habits against other users
+- **📱 Mobile Friendly** - Responsive design that works perfectly on all devices
+
+## Tech Stack
+
+- **Frontend**: Next.js 15, React, TypeScript
+- **Styling**: Tailwind CSS, Framer Motion
+- **Charts**: Recharts
+- **Icons**: Lucide React
+- **Authentication**: Spotify Web API
+- **Backend**: Next.js API Routes
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 18+ 
+- npm or yarn
+- Spotify Developer Account
+
+### Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd spotifun
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up Spotify App**
+   - Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
+   - Create a new app
+   - Note down your Client ID and Client Secret
+   - Add `http://localhost:3000/api/auth/callback/spotify` to Redirect URIs
+
+4. **Configure environment variables**
+   
+   Your `.env.local` file has been configured with your Spotify credentials:
+   ```env
+   SPOTIFY_CLIENT_ID=8c0981c557244dc3ba20b9c2b03ddab0
+   SPOTIFY_CLIENT_SECRET=41383b2c187c40cb93a5d257c41d7739
+   SPOTIFY_REDIRECT_URI=http://localhost:3000/api/auth/callback/spotify
+   NEXTAUTH_URL=http://localhost:3000
+   NEXTAUTH_SECRET=spotifun_dev_secret_2024_change_in_production
+   ```
+
+5. **Run the development server**
+   ```bash
+   npm run dev
+   ```
+
+6. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js app directory
+│   ├── api/               # API routes
+│   │   ├── auth/          # Authentication endpoints
+│   │   ├── stats/         # Statistics endpoints
+│   │   └── user/          # User data endpoints
+│   ├── dashboard/         # Dashboard page
+│   ├── globals.css        # Global styles
+│   ├── layout.tsx         # Root layout
+│   └── page.tsx           # Landing page
+├── components/            # React components
+│   ├── features/          # Feature-specific components
+│   └── ui/               # Reusable UI components
+├── hooks/                # Custom React hooks
+├── lib/                  # Utility libraries
+│   └── spotify.ts        # Spotify API integration
+├── types/                # TypeScript type definitions
+│   └── index.ts          # Main types
+└── utils/                # Utility functions
+    └── index.ts          # Helper functions
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## API Endpoints
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `GET /api/auth/spotify` - Initiate Spotify OAuth flow
+- `GET /api/auth/callback/spotify` - Handle OAuth callback
+- `GET /api/user` - Get current user data
+- `GET /api/stats` - Get user statistics and analytics
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Features in Detail
 
-## Learn More
+### Analytics Dashboard
+- Total plays, unique artists, unique tracks
+- Top artists, songs, and genres with play counts
+- Time range filtering (4 weeks, 6 months, all time)
+- Beautiful visualizations and charts
 
-To learn more about Next.js, take a look at the following resources:
+### Music Profile
+- Personalized listening personality
+- Genre diversity analysis
+- Peak listening hours
+- Discovery score and consistency metrics
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Achievements System
+- Pre-canned achievements for various milestones
+- Progress tracking
+- Fun descriptions and icons
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Rankings
+- Compare your habits with other users
+- Leaderboards for different categories
+- Social features and competition
 
-## Deploy on Vercel
+## Contributing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Spotify Web API for providing access to user data
+- Next.js team for the amazing framework
+- Tailwind CSS for the utility-first CSS framework
+- All the open-source contributors who made this possible
+
+---
+
+Made with ❤️ for music lovers everywhere
