@@ -51,13 +51,13 @@ A comprehensive Spotify analytics webapp that provides detailed insights, stats,
 
 4. **Configure environment variables**
    
-   Your `.env.local` file has been configured with your Spotify credentials:
+   Create a `.env.local` file with your Spotify credentials:
    ```env
-   SPOTIFY_CLIENT_ID=8c0981c557244dc3ba20b9c2b03ddab0
-   SPOTIFY_CLIENT_SECRET=41383b2c187c40cb93a5d257c41d7739
+   SPOTIFY_CLIENT_ID=your_spotify_client_id_here
+   SPOTIFY_CLIENT_SECRET=your_spotify_client_secret_here
    SPOTIFY_REDIRECT_URI=http://localhost:3000/api/auth/callback/spotify
    NEXTAUTH_URL=http://localhost:3000
-   NEXTAUTH_SECRET=spotifun_dev_secret_2024_change_in_production
+   NEXTAUTH_SECRET=your_nextauth_secret_here
    ```
 
 5. **Run the development server**
