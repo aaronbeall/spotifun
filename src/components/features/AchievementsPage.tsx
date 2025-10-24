@@ -27,7 +27,7 @@ export default function AchievementsPage({ stats }: AchievementsProps) {
 
   useEffect(() => {
     const generateAchievements = (): Achievement[] => {
-      const { totalPlays, uniqueArtists, uniqueTracks, totalDuration, genreDiversity } = stats.overview;
+      const { totalPlays, uniqueArtists, uniqueTracks, totalDuration } = stats.overview;
       
       const allAchievements: Achievement[] = [
         {

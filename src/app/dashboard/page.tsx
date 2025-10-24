@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { BarChart3, Music, Trophy, Users, TrendingUp, Clock, Headphones, Star } from 'lucide-react';
+import { BarChart3, Music, Users, TrendingUp, Clock, Headphones, Star } from 'lucide-react';
 import FunStats from '@/components/features/FunStats';
 import MusicProfilePage from '@/components/features/MusicProfilePage';
 import AchievementsPage from '@/components/features/AchievementsPage';
 import RankingsPage from '@/components/features/RankingsPage';
+import Image from 'next/image';
 
 interface User {
   id: string;
@@ -237,7 +238,7 @@ export default function Dashboard() {
               <div key={artist.artist.name} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50">
                 <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
                   {artist.artist.images?.[0] ? (
-                    <img 
+                    <Image 
                       src={artist.artist.images[0].url} 
                       alt={artist.artist.name}
                       className="w-12 h-12 rounded-lg object-cover"
@@ -267,7 +268,7 @@ export default function Dashboard() {
               <div key={track.track.name} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50">
                 <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center">
                   {track.track.album.images?.[0] ? (
-                    <img 
+                    <Image 
                       src={track.track.album.images[0].url} 
                       alt={track.track.name}
                       className="w-10 h-10 rounded-lg object-cover"

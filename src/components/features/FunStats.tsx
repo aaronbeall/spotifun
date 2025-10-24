@@ -25,15 +25,6 @@ export default function FunStats({ stats }: FunStatsProps) {
   const [currentCard, setCurrentCard] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
 
-  useEffect(() => {
-    setIsVisible(true);
-    const interval = setInterval(() => {
-      setCurrentCard((prev) => (prev + 1) % funStatsCards.length);
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, []);
-
   const formatDuration = (ms: number) => {
     const minutes = Math.floor(ms / 60000);
     const hours = Math.floor(minutes / 60);
@@ -120,6 +111,15 @@ export default function FunStats({ stats }: FunStatsProps) {
       iconColor: "text-indigo-600"
     }
   ];
+
+  useEffect(() => {
+    setIsVisible(true);
+    const interval = setInterval(() => {
+      setCurrentCard((prev) => (prev + 1) % funStatsCards.length);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [funStatsCards.length]);
 
   const currentCardData = funStatsCards[currentCard];
 

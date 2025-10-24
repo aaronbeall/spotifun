@@ -117,7 +117,7 @@ export default function RankingsPage({ stats }: RankingsProps) {
           Top 10 Music Lovers
         </h3>
         
-        {rankings.map((user, index) => (
+        {rankings.map(user => (
           <div
             key={user.id}
             className={`flex items-center gap-4 p-4 rounded-lg transition-all duration-200 ${

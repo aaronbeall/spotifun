@@ -142,6 +142,7 @@ export const calculateArtistStats = (playHistory: SpotifyApi.PlayHistoryObject[]
   
   return Array.from(artistMap.values())
     .map(stats => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { trackIds: _, ...artistStats } = stats;
       return artistStats;
     })
@@ -186,6 +187,7 @@ export const calculateGenreStats = (playHistory: SpotifyApi.PlayHistoryObject[])
   
   return Array.from(genreMap.values())
     .map(stats => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { trackIds: _, artistIds: __, ...genreStats } = stats;
       return genreStats;
     })

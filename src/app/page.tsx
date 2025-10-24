@@ -79,7 +79,7 @@ export default function Home() {
 
         {/* Stats Preview */}
         <div className="mt-24 bg-white/10 backdrop-blur-sm rounded-3xl p-8 text-white">
-          <h2 className="text-3xl font-bold text-center mb-8">What You'll Discover</h2>
+          <h2 className="text-3xl font-bold text-center mb-8">What You&apos;ll Discover</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="text-4xl font-bold text-green-300 mb-2">Top Artists</div>
