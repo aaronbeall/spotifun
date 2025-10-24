@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Trophy, Medal, Award, Crown, Users, TrendingUp, Star } from 'lucide-react';
+import { UserRanking } from '@/types';
 
 interface RankingsProps {
   stats: {
@@ -17,14 +18,14 @@ interface RankingsProps {
   };
 }
 
-export default function Rankings({ stats }: RankingsProps) {
-  const [rankings, setRankings] = useState<any[]>([]);
-  const [userRank, setUserRank] = useState<any>(null);
+export default function RankingsPage({ stats }: RankingsProps) {
+  const [rankings, setRankings] = useState<UserRanking[]>([]);
+  const [userRank, setUserRank] = useState<UserRanking | null>(null);
 
   useEffect(() => {
     // Mock rankings data - in a real app, this would come from an API
-    const generateMockRankings = () => {
-      const mockUsers = [
+    const generateMockRankings = (): { rankings: UserRanking[]; userRank: UserRanking } => {
+      const mockUsers: UserRanking[] = [
         { id: 'user1', name: 'MusicMaster2024', score: 9500, rank: 1 },
         { id: 'user2', name: 'VinylCollector', score: 8900, rank: 2 },
         { id: 'user3', name: 'BeatHunter', score: 8200, rank: 3 },
@@ -54,7 +55,7 @@ export default function Rankings({ stats }: RankingsProps) {
         user.rank = index + 1;
       });
 
-      const userRankData = allUsers.find(user => user.id === 'current_user');
+      const userRankData = allUsers.find(user => user.id === 'current_user')!;
       const topRankings = allUsers.slice(0, 10);
 
       return { rankings: topRankings, userRank: userRankData };
@@ -184,4 +185,3 @@ export default function Rankings({ stats }: RankingsProps) {
     </div>
   );
 }
-

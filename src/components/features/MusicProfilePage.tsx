@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Music, Palette, Clock, TrendingUp, Heart, Zap, Star, Target } from 'lucide-react';
+import { MusicProfile } from '@/types';
 
 interface MusicProfileProps {
   stats: {
@@ -21,11 +22,11 @@ interface MusicProfileProps {
   };
 }
 
-export default function MusicProfile({ stats }: MusicProfileProps) {
-  const [profile, setProfile] = useState<any>(null);
+export default function MusicProfilePage({ stats }: MusicProfileProps) {
+  const [profile, setProfile] = useState<MusicProfile | null>(null);
 
   useEffect(() => {
-    const generateProfile = () => {
+    const generateProfile = (): MusicProfile => {
       const { genreDiversity, artistDiversity, averageSessionLength } = stats.overview;
       
       // Calculate listening personality
@@ -162,7 +163,7 @@ export default function MusicProfile({ stats }: MusicProfileProps) {
             <Target className="w-4 h-4 text-blue-600" />
             <span className="text-sm font-medium text-gray-700">Consistency</span>
           </div>
-          <div className="text-2xl font-bold text-gray-900">{profile.consistencyScore}%</span>
+          <div className="text-2xl font-bold text-gray-900">{profile.consistencyScore}%</div>
           <div className="text-xs text-gray-500">Artist loyalty</div>
         </div>
 
@@ -183,7 +184,7 @@ export default function MusicProfile({ stats }: MusicProfileProps) {
           <span className="font-semibold text-gray-900">Your Primary Genres</span>
         </div>
         <div className="flex flex-wrap gap-2">
-          {profile.primaryGenres.map((genre: string, index: number) => (
+          {profile.primaryGenres.map((genre: string) => (
             <span 
               key={genre}
               className="px-3 py-1 bg-white rounded-full text-sm font-medium text-gray-700 shadow-sm"
@@ -196,4 +197,3 @@ export default function MusicProfile({ stats }: MusicProfileProps) {
     </div>
   );
 }
-

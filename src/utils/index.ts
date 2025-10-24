@@ -13,7 +13,7 @@ export const generateColors = (count: number): string[] => {
     '#F8C471', '#82E0AA', '#F1948A', '#85C1E9', '#D7BDE2'
   ];
   
-  const result = [];
+  const result: string[] = [];
   for (let i = 0; i < count; i++) {
     result.push(colors[i % colors.length]);
   }
@@ -69,7 +69,7 @@ export const getAchievementDescriptions = () => ({
 });
 
 // Calculate peak listening hours
-export const calculatePeakHours = (playHistory: any[]): number[] => {
+export const calculatePeakHours = (playHistory: SpotifyApi.PlayHistoryObject[]): number[] => {
   const hourCounts = new Array(24).fill(0);
   
   playHistory.forEach(item => {
@@ -88,8 +88,13 @@ export const calculatePeakHours = (playHistory: any[]): number[] => {
 };
 
 // Generate fun stat messages
-export const generateFunStats = (stats: any) => {
-  const messages = [];
+export const generateFunStats = (stats: {
+  totalPlays: number;
+  uniqueArtists: number;
+  averageSessionLength: number;
+  genreDiversity: number;
+}): string[] => {
+  const messages: string[] = [];
   
   if (stats.totalPlays > 10000) {
     messages.push(`You've played music ${formatNumber(stats.totalPlays)} times! That's dedication! 🎵`);
@@ -109,4 +114,3 @@ export const generateFunStats = (stats: any) => {
   
   return messages;
 };
-

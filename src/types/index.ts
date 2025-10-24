@@ -1,69 +1,6 @@
-// Spotify API Types
-export interface SpotifyTrack {
-  id: string;
-  name: string;
-  artists: SpotifyArtist[];
-  album: SpotifyAlbum;
-  duration_ms: number;
-  popularity: number;
-  external_urls: {
-    spotify: string;
-  };
-  preview_url?: string;
-}
-
-export interface SpotifyArtist {
-  id: string;
-  name: string;
-  genres: string[];
-  popularity: number;
-  external_urls: {
-    spotify: string;
-  };
-  images: SpotifyImage[];
-}
-
-export interface SpotifyAlbum {
-  id: string;
-  name: string;
-  images: SpotifyImage[];
-  release_date: string;
-  external_urls: {
-    spotify: string;
-  };
-}
-
-export interface SpotifyImage {
-  url: string;
-  height: number;
-  width: number;
-}
-
-export interface SpotifyUser {
-  id: string;
-  display_name: string;
-  email: string;
-  images: SpotifyImage[];
-  country: string;
-  product: string;
-}
-
-export interface SpotifyPlayHistoryItem {
-  track: SpotifyTrack;
-  played_at: string;
-  context?: {
-    type: string;
-    href: string;
-    external_urls: {
-      spotify: string;
-    };
-    uri: string;
-  };
-}
-
-// App-specific Types
+// App-specific Types (using Spotify API types from spotify-web-api-node)
 export interface TrackStats {
-  track: SpotifyTrack;
+  track: SpotifyApi.TrackObjectFull;
   playCount: number;
   firstPlayed: string;
   lastPlayed: string;
@@ -71,7 +8,7 @@ export interface TrackStats {
 }
 
 export interface ArtistStats {
-  artist: SpotifyArtist;
+  artist: SpotifyApi.ArtistObjectSimplified;
   playCount: number;
   uniqueTracks: number;
   totalDuration: number;
@@ -93,31 +30,38 @@ export interface TimeFrame {
 }
 
 export interface MusicProfile {
-  primaryGenres: string[];
-  listeningPersonality: string;
-  topMood: string;
+  personality: {
+    name: string;
+    description: string;
+    color: string;
+    score: number;
+  };
+  mood: {
+    name: string;
+    color: string;
+    score: number;
+  };
   discoveryScore: number;
   consistencyScore: number;
   peakHours: number[];
   averageSessionLength: number;
+  primaryGenres: string[];
 }
 
 export interface Achievement {
   id: string;
   title: string;
   description: string;
-  icon: string;
+  icon: React.ReactNode;
   unlocked: boolean;
-  unlockedAt?: Date;
   progress: number;
   maxProgress: number;
+  color: string;
 }
 
 export interface UserRanking {
-  userId: string;
-  username: string;
+  id: string;
+  name: string;
   score: number;
   rank: number;
-  category: string;
 }
-

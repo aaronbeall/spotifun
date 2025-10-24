@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Trophy, Star, Music, Clock, Target, Zap, Heart, Award, Lock, CheckCircle } from 'lucide-react';
+import { Achievement } from '@/types';
 
 interface AchievementsProps {
   stats: {
@@ -21,14 +22,14 @@ interface AchievementsProps {
   };
 }
 
-export default function Achievements({ stats }: AchievementsProps) {
-  const [achievements, setAchievements] = useState<any[]>([]);
+export default function AchievementsPage({ stats }: AchievementsProps) {
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
 
   useEffect(() => {
-    const generateAchievements = () => {
+    const generateAchievements = (): Achievement[] => {
       const { totalPlays, uniqueArtists, uniqueTracks, totalDuration, genreDiversity } = stats.overview;
       
-      const allAchievements = [
+      const allAchievements: Achievement[] = [
         {
           id: 'first_track',
           title: 'First Steps',
@@ -234,4 +235,3 @@ export default function Achievements({ stats }: AchievementsProps) {
     </div>
   );
 }
-

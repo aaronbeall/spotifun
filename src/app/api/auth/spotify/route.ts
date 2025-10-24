@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { spotifyApi } from '@/lib/spotify';
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest) {8
   try {
     const scopes = [
       'user-read-private',
