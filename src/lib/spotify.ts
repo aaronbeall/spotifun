@@ -194,6 +194,23 @@ export const calculateGenreStats = (playHistory: SpotifyApi.PlayHistoryObject[])
     .sort((a, b) => b.playCount - a.playCount);
 };
 
+// Calculate top genres from artists
+export const calculateTopGenres = (artists: SpotifyApi.ArtistObjectFull[]): Array<{genre: string; count: number}> => {
+  const genreCount = new Map<string, number>();
+  
+  // Count genre occurrences across all artists
+  artists.forEach(artist => {
+    artist.genres?.forEach(genre => {
+      genreCount.set(genre, (genreCount.get(genre) || 0) + 1);
+    });
+  });
+
+  // Convert to array and sort by count (descending)
+  return Array.from(genreCount.entries())
+    .map(([genre, count]) => ({ genre, count }))
+    .sort((a, b) => b.count - a.count);
+};
+
 // Format duration from milliseconds to readable string
 export const formatDuration = (ms: number): string => {
   const minutes = Math.floor(ms / 60000);

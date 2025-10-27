@@ -97,4 +97,10 @@ export interface Stats {
   topTracks: SpotifyApi.TrackObjectFull[];
   topArtists: SpotifyApi.ArtistObjectFull[];
   timeRange: TimeRange;
+  topGenres: TopGenre[];
+}
+
+interface TopGenre {
+  genre: string;
+  count: number;
 }

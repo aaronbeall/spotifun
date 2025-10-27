@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { spotifyApi, getRecentlyPlayed, getTopTracks, getTopArtists, calculateTrackStats, calculateArtistStats, calculateGenreStats } from '@/lib/spotify';
+import {
+  spotifyApi, getRecentlyPlayed, getTopTracks, getTopArtists, calculateTrackStats, calculateArtistStats,
+  calculateGenreStats, calculateTopGenres
+} from '@/lib/spotify';
 import { Stats, TimeRange } from '@/types';
 
 export async function GET(request: NextRequest): Promise<NextResponse<Stats | { error: string }>> {
@@ -32,6 +35,8 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
     const uniqueTracks = new Set(recentlyPlayed.map(item => item.track.id)).size;
     const totalDuration = recentlyPlayed.reduce((sum, item) => sum + item.track.duration_ms, 0);
 
+    const topGenres = calculateTopGenres(topArtists).slice(0, 9);
+
     const stats: Stats = {
       overview: {
         totalPlays,
@@ -47,6 +52,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
       genres: genreStats.slice(0, 15),
       topTracks,
       topArtists,
+      topGenres,
       timeRange
     };
 

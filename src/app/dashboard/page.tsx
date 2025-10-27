@@ -327,18 +327,7 @@ export default function Dashboard() {
             Top Genres
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from(
-              // Count genre occurrences from top artists
-              stats.topArtists.flatMap(artist => artist.genres || [])
-                .reduce((acc, genre) => {
-                  acc.set(genre, (acc.get(genre) || 0) + 1);
-                  return acc;
-                }, new Map<string, number>())
-                .entries()
-            )
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 9)
-            .map(([genre, count], index) => (
+            {stats.topGenres.map(({ genre, count }, index) => (
               <div
                 key={genre}
                 className="flex items-center justify-between p-4 rounded-lg bg-gray-700/50 hover:bg-gray-700 transition-colors border border-gray-700"
