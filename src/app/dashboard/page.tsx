@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { BarChart3, Music, Users, TrendingUp, Clock, Headphones, Star } from 'lucide-react';
+import { BarChart3, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User } from 'lucide-react';
+import Image from 'next/image';
 import FunStats from '@/components/features/FunStats';
 import MusicProfile from '@/components/features/MusicProfile';
 import Achievements from '@/components/features/Achievements';
@@ -79,34 +80,45 @@ export default function Dashboard() {
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
     return num.toString();
   };
 
   if (isInitialLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your music data...</p>
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="animate-pulse">
+            <div className="flex items-center justify-between mb-8">
+              <div className="h-8 bg-gray-700 rounded w-1/4"></div>
+              <div className="flex space-x-4">
+                <div className="w-8 h-8 bg-gray-700 rounded-full"></div>
+                <div className="w-8 h-8 bg-gray-700 rounded-md"></div>
+                <div className="w-8 h-8 bg-gray-700 rounded-md"></div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-gray-800 rounded-lg p-6 h-48"></div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (!user || !stats) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <button
-            onClick={() => router.push('/')}
-            className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600"
-          >
-            Back to Home
-          </button>
-        </div>
-      </div>
-    );
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    router.push('/');
+  };
+
+  const handleSettings = () => {
+    // TODO: Navigate to settings page when available
+    console.log('Settings clicked');
+  };
+  
+  if (!user) {
+    return null;
   }
   return (
     <div className="bg-gray-50">
@@ -115,15 +127,27 @@ export default function Dashboard() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-                <Music className="w-6 h-6 text-white" />
-              </div>
+              {user.images?.[0]?.url ? (
+                <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-green-500">
+                  <Image
+                    src={user.images[0].url}
+                    alt={user.display_name || 'Profile'}
+                    fill
+                    className="object-cover"
+                    sizes="40px"
+                  />
+                </div>
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-green-100 border-2 border-green-500 flex items-center justify-center">
+                  <User className="w-5 h-5 text-green-600" />
+                </div>
+              )}
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Spotifun</h1>
                 <p className="text-gray-600">Welcome back, {user.display_name}!</p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
                 {isLoadingTimeRange && (
                   <div className="flex items-center gap-1 mr-2">
@@ -145,6 +169,25 @@ export default function Dashboard() {
                     {range === 'short_term' ? '4 weeks' : range === 'medium_term' ? '6 months' : 'All time'}
                   </button>
                 ))}
+              </div>
+              
+              <div className="h-6 w-px bg-gray-200"></div>
+              
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleSettings}
+                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label="Settings"
+                >
+                  <Settings className="w-5 h-5 text-gray-600" />
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label="Logout"
+                >
+                  <LogOut className="w-5 h-5 text-gray-600" />
+                </button>
               </div>
             </div>
           </div>
