@@ -321,12 +321,12 @@ export default function Dashboard() {
         </div>
 
         {/* Top Genres */}
-        <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
+        <div className="bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-700 mb-8">
           <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-purple-400" />
             Top Genres
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from(
               // Count genre occurrences from top artists
               stats.topArtists.flatMap(artist => artist.genres || [])
@@ -339,13 +339,15 @@ export default function Dashboard() {
             .sort((a, b) => b[1] - a[1])
             .slice(0, 9)
             .map(([genre, count], index) => (
-              <div 
-                key={genre} 
-                className="flex items-center justify-between p-4 rounded-lg border border-gray-700 bg-gray-700/50 hover:bg-gray-700/80 transition-colors duration-200"
+              <div
+                key={genre}
+                className="flex items-center justify-between p-4 rounded-lg bg-gray-700/50 hover:bg-gray-700 transition-colors border border-gray-700"
               >
                 <div>
                   <p className="font-medium text-white capitalize">{genre}</p>
-                  <p className="text-sm text-gray-400">{count} {count === 1 ? 'artist' : 'artists'}</p>
+                  <p className="text-sm text-gray-400">
+                    {count} {count === 1 ? 'artist' : 'artists'}
+                  </p>
                 </div>
                 <div className="text-lg font-bold text-gray-300">#{index + 1}</div>
               </div>
