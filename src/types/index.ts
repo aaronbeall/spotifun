@@ -1,4 +1,5 @@
-// App-specific Types (using Spotify API types from spotify-web-api-node)
+// App-specific Types (using Spotify API types from @types/spotify-api)
+
 export interface TrackStats {
   track: SpotifyApi.TrackObjectFull;
   playCount: number;
@@ -8,7 +9,9 @@ export interface TrackStats {
 }
 
 export interface ArtistStats {
-  artist: SpotifyApi.ArtistObjectSimplified;
+  artist: SpotifyApi.ArtistObjectSimplified & {
+    images?: SpotifyApi.ImageObject[];
+  };
   playCount: number;
   uniqueTracks: number;
   totalDuration: number;
@@ -48,9 +51,8 @@ export interface Achievement {
   description: string;
   icon: React.ReactNode;
   unlocked: boolean;
-  progress: number;
-  maxProgress: number;
-  color: string;
+  progress?: number;
+  totalRequired?: number;
 }
 
 export interface UserRanking {
@@ -58,4 +60,41 @@ export interface UserRanking {
   name: string;
   score: number;
   rank: number;
+  image?: string;
+}
+
+// API Response Types
+export interface UserProfile {
+  id: string;
+  display_name: string;
+  images: SpotifyApi.ImageObject[];
+  email?: string;
+  product?: string;
+  followers?: {
+    total: number;
+  };
+  name?: string;          // For compatibility with components that might expect a name
+  image?: string;         // For compatibility with components that might expect an image URL
+}
+
+export interface StatsOverview {
+  totalPlays: number;
+  uniqueArtists: number;
+  uniqueTracks: number;
+  totalDuration: number;
+  averageSessionLength: number;
+  genreDiversity: number;
+  artistDiversity: number;
+}
+
+export type TimeRange = 'short_term' | 'medium_term' | 'long_term';
+
+export interface Stats {
+  overview: StatsOverview;
+  tracks: TrackStats[];
+  artists: ArtistStats[];
+  genres: GenreStats[];
+  topTracks: SpotifyApi.TrackObjectFull[];
+  topArtists: SpotifyApi.ArtistObjectFull[];
+  timeRange: TimeRange;
 }

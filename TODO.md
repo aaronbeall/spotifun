@@ -11,3 +11,8 @@
 - [ ] Rankings (Global, Region, Friends)
 - [ ] Compare with friends
 - [ ] Competitions
+- [ ] Nearby shows
+- [ ] Compatibility Partners
+- [ ] Ranking changes
+- [ ] Currently playing
+- [ ] Create playlist from mood

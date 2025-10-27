@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { spotifyApi, getRecentlyPlayed, getTopTracks, getTopArtists, calculateTrackStats, calculateArtistStats, calculateGenreStats } from '@/lib/spotify';
+import { Stats, TimeRange } from '@/types';
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse<Stats | { error: string }>> {
   try {
     const accessToken = request.cookies.get('spotify_access_token')?.value;
     const { searchParams } = new URL(request.url);
-    const timeRange = searchParams.get('timeRange') as 'short_term' | 'medium_term' | 'long_term' || 'medium_term';
-    
+    const timeRange = (searchParams.get('timeRange') as TimeRange) || 'medium_term';
+
     if (!accessToken) {
       return NextResponse.json({ error: 'No access token' }, { status: 401 });
     }
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
     const uniqueTracks = new Set(recentlyPlayed.map(item => item.track.id)).size;
     const totalDuration = recentlyPlayed.reduce((sum, item) => sum + item.track.duration_ms, 0);
 
-    const stats = {
+    const stats: Stats = {
       overview: {
         totalPlays,
         uniqueArtists,
@@ -52,7 +53,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(stats);
   } catch (error) {
     console.error('Error fetching stats:', error);
-    return NextResponse.json({ error: 'Failed to fetch stats' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch stats' },
+      { status: 500 }
+    );
   }
 }
-

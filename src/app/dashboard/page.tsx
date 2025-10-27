@@ -7,51 +7,17 @@ import FunStats from '@/components/features/FunStats';
 import MusicProfile from '@/components/features/MusicProfile';
 import Achievements from '@/components/features/Achievements';
 import Rankings from '@/components/features/Rankings';
-import Image from 'next/image';
 
-interface User {
-  id: string;
-  display_name: string;
-  images: Array<{ url: string }>;
-}
+import { UserProfile, Stats, TimeRange } from '@/types';
 
-interface Stats {
-  overview: {
-    totalPlays: number;
-    uniqueArtists: number;
-    uniqueTracks: number;
-    totalDuration: number;
-    averageSessionLength: number;
-    genreDiversity: number;
-    artistDiversity: number;
-  };
-  tracks: Array<{
-    track: {
-      name: string;
-      artists: Array<{ name: string }>;
-      album: { images: Array<{ url: string }> };
-    };
-    playCount: number;
-  }>;
-  artists: Array<{
-    artist: {
-      name: string;
-      images: Array<{ url: string }>;
-    };
-    playCount: number;
-  }>;
-  genres: Array<{
-    genre: string;
-    playCount: number;
-  }>;
-}
+
 
 export default function Dashboard() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isLoadingTimeRange, setIsLoadingTimeRange] = useState(false);
-  const [timeRange, setTimeRange] = useState<'short_term' | 'medium_term' | 'long_term'>('medium_term');
+  const [timeRange, setTimeRange] = useState<TimeRange>('medium_term');
   const router = useRouter();
 
   useEffect(() => {
@@ -82,7 +48,7 @@ export default function Dashboard() {
     fetchData();
   }, [router]);
 
-  const handleTimeRangeChange = async (newTimeRange: 'short_term' | 'medium_term' | 'long_term') => {
+  const handleTimeRangeChange = async (newTimeRange: TimeRange) => {
     if (timeRange === newTimeRange) return;
 
     setTimeRange(newTimeRange);
