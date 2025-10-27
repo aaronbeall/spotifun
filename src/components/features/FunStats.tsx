@@ -29,7 +29,7 @@ export default function FunStats({ stats }: FunStatsProps) {
     const minutes = Math.floor(ms / 60000);
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
-    
+
     if (days > 0) return `${days} days`;
     if (hours > 0) return `${hours} hours`;
     return `${minutes} minutes`;
@@ -43,7 +43,7 @@ export default function FunStats({ stats }: FunStatsProps) {
 
   const calculateListeningPersonality = () => {
     const { genreDiversity, artistDiversity } = stats.overview;
-    
+
     if (genreDiversity > 0.7 && artistDiversity > 0.6) {
       return 'Music Explorer';
     } else if (artistDiversity < 0.4) {
@@ -124,28 +124,30 @@ export default function FunStats({ stats }: FunStatsProps) {
   const currentCardData = funStatsCards[currentCard];
 
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-lg">
+    <div className="bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-700">
       <div className="flex items-center gap-3 mb-6">
-        <Award className="w-6 h-6 text-yellow-500" />
-        <h2 className="text-2xl font-bold text-gray-900">Your Music Story</h2>
+        <Award className="w-6 h-6 text-yellow-400" />
+        <h2 className="text-2xl font-bold text-white">Your Music Story</h2>
       </div>
 
       <div className="relative">
-        <div 
+        <div
           className={`transition-all duration-1000 ease-in-out ${
             isVisible ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-4'
           }`}
         >
-          <div className={`${currentCardData.bgColor} rounded-xl p-6 mb-4`}>
+          <div className="bg-gray-700/50 rounded-xl p-6 mb-4 border border-gray-600">
             <div className="flex items-center gap-4">
-              <div className={`${currentCardData.iconColor} p-3 rounded-full bg-white shadow-sm`}>
-                {currentCardData.icon}
+              <div className="bg-gray-800 p-3 rounded-full border border-gray-600 shadow-sm">
+                <div className={currentCardData.iconColor.replace('text-', 'text-').replace('600', '400')}>
+                  {currentCardData.icon}
+                </div>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                <h3 className="text-lg font-semibold text-white mb-1">
                   {currentCardData.title}
                 </h3>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-300">
                   {currentCardData.description}
                 </p>
               </div>
@@ -158,14 +160,13 @@ export default function FunStats({ stats }: FunStatsProps) {
           </div>
         </div>
 
-        {/* Card indicators */}
         <div className="flex justify-center gap-2 mt-4">
           {funStatsCards.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentCard(index)}
               className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                index === currentCard ? 'bg-gray-600 w-8' : 'bg-gray-300'
+                index === currentCard ? 'bg-white w-8' : 'bg-gray-600 dark:bg-gray-300'
               }`}
             />
           ))}
@@ -174,22 +175,22 @@ export default function FunStats({ stats }: FunStatsProps) {
 
       {/* Fun facts */}
       <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4">
+        <div className="bg-gray-700/50 border border-gray-600 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Target className="w-5 h-5 text-green-600" />
-            <span className="font-semibold text-gray-900">Top Genre</span>
+            <Target className="w-5 h-5 text-green-400" />
+            <span className="font-semibold text-white">Top Genre</span>
           </div>
-          <p className="text-gray-700 capitalize">
+          <p className="text-gray-200 capitalize">
             {stats.genres[0]?.genre || 'Unknown'} - {formatNumber(stats.genres[0]?.playCount || 0)} plays
           </p>
         </div>
 
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4">
+        <div className="bg-gray-700/50 border border-gray-600 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-5 h-5 text-purple-600" />
-            <span className="font-semibold text-gray-900">Discovery Rate</span>
+            <TrendingUp className="w-5 h-5 text-purple-400" />
+            <span className="font-semibold text-white">Discovery Rate</span>
           </div>
-          <p className="text-gray-700">
+          <p className="text-gray-200">
             {Math.round(stats.overview.artistDiversity * 100)}% new artists per play
           </p>
         </div>

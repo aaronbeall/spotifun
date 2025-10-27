@@ -93,17 +93,17 @@ export default function MusicProfile({ stats }: MusicProfileProps) {
   if (!profile) return null;
 
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-lg">
+    <div className="bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-700">
       <div className="flex items-center gap-3 mb-6">
-        <Palette className="w-6 h-6 text-purple-500" />
-        <h2 className="text-2xl font-bold text-gray-900">Your Music Profile</h2>
+        <Palette className="w-6 h-6 text-purple-400" />
+        <h2 className="text-2xl font-bold text-white">Your Music Profile</h2>
       </div>
 
       {/* Personality Card */}
-      <div className={`bg-gradient-to-r ${profile.personality.color} rounded-xl p-6 text-white mb-6`}>
+      <div className={`bg-gradient-to-r ${profile.personality.color} rounded-xl p-6 text-white mb-6 border border-gray-600`}>
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-            <Heart className="w-6 h-6" />
+          <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
+            <Heart className="w-6 h-6 text-white" />
           </div>
           <div>
             <h3 className="text-xl font-bold">{profile.personality.name}</h3>
@@ -125,7 +125,7 @@ export default function MusicProfile({ stats }: MusicProfileProps) {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Mood */}
-        <div className={`bg-gradient-to-r ${profile.mood.color} rounded-xl p-6 text-white`}>
+        <div className={`bg-gradient-to-r ${profile.mood.color} rounded-xl p-6 text-white border border-gray-600`}>
           <div className="flex items-center gap-3 mb-3">
             <Zap className="w-5 h-5" />
             <span className="font-semibold">Current Mood</span>
@@ -135,7 +135,7 @@ export default function MusicProfile({ stats }: MusicProfileProps) {
         </div>
 
         {/* Peak Hours */}
-        <div className="bg-gradient-to-r from-indigo-500 to-blue-600 rounded-xl p-6 text-white">
+        <div className="bg-gradient-to-r from-indigo-600 to-blue-700 rounded-xl p-6 text-white border border-gray-600">
           <div className="flex items-center gap-3 mb-3">
             <Clock className="w-5 h-5" />
             <span className="font-semibold">Peak Hours</span>
@@ -149,45 +149,45 @@ export default function MusicProfile({ stats }: MusicProfileProps) {
 
       {/* Scores */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600/50 hover:bg-gray-700/70 transition-colors duration-200">
           <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-4 h-4 text-green-600" />
-            <span className="text-sm font-medium text-gray-700">Discovery</span>
+            <TrendingUp className="w-4 h-4 text-green-400" />
+            <span className="text-sm font-medium text-gray-300">Discovery</span>
           </div>
-          <div className="text-2xl font-bold text-gray-900">{profile.discoveryScore}%</div>
-          <div className="text-xs text-gray-500">New artists explored</div>
+          <div className="text-2xl font-bold text-white">{profile.discoveryScore}%</div>
+          <div className="text-xs text-gray-400">New artists explored</div>
         </div>
 
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600/50 hover:bg-gray-700/70 transition-colors duration-200">
           <div className="flex items-center gap-2 mb-2">
-            <Target className="w-4 h-4 text-blue-600" />
-            <span className="text-sm font-medium text-gray-700">Consistency</span>
+            <Target className="w-4 h-4 text-blue-400" />
+            <span className="text-sm font-medium text-gray-300">Consistency</span>
           </div>
-          <div className="text-2xl font-bold text-gray-900">{profile.consistencyScore}%</div>
-          <div className="text-xs text-gray-500">Artist loyalty</div>
+          <div className="text-2xl font-bold text-white">{profile.consistencyScore}%</div>
+          <div className="text-xs text-gray-400">Artist loyalty</div>
         </div>
 
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600/50 hover:bg-gray-700/70 transition-colors duration-200">
           <div className="flex items-center gap-2 mb-2">
-            <Music className="w-4 h-4 text-purple-600" />
-            <span className="text-sm font-medium text-gray-700">Session Length</span>
+            <Music className="w-4 h-4 text-purple-400" />
+            <span className="text-sm font-medium text-gray-300">Session Length</span>
           </div>
-          <div className="text-2xl font-bold text-gray-900">{profile.averageSessionLength}m</div>
-          <div className="text-xs text-gray-500">Average listening</div>
+          <div className="text-2xl font-bold text-white">{profile.averageSessionLength}m</div>
+          <div className="text-xs text-gray-400">Average listening</div>
         </div>
       </div>
 
       {/* Primary Genres */}
-      <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6">
+      <div className="bg-gradient-to-r from-gray-700/50 to-gray-800/50 rounded-xl p-6 border border-gray-600/30">
         <div className="flex items-center gap-2 mb-4">
-          <Star className="w-5 h-5 text-yellow-500" />
-          <span className="font-semibold text-gray-900">Your Primary Genres</span>
+          <Star className="w-5 h-5 text-yellow-400" />
+          <span className="font-semibold text-white">Your Primary Genres</span>
         </div>
         <div className="flex flex-wrap gap-2">
-          {profile.primaryGenres.map((genre: string) => (
+          {profile.primaryGenres.map((genre, index) => (
             <span
-              key={genre}
-              className="px-3 py-1 bg-white rounded-full text-sm font-medium text-gray-700 shadow-sm"
+              key={index}
+              className="px-3 py-1.5 bg-gray-600/50 text-gray-200 text-sm font-medium rounded-full border border-gray-500/50 hover:bg-gray-500/50 transition-colors duration-200"
             >
               {genre}
             </span>

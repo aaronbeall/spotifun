@@ -74,10 +74,10 @@ export default function Rankings({ stats }: Rankings) {
   };
 
   const getRankColor = (rank: number) => {
-    if (rank === 1) return 'from-yellow-400 to-yellow-600';
-    if (rank === 2) return 'from-gray-300 to-gray-500';
-    if (rank === 3) return 'from-orange-400 to-orange-600';
-    return 'from-gray-200 to-gray-400';
+    if (rank === 1) return 'from-yellow-500 to-yellow-700 border-yellow-600';
+    if (rank === 2) return 'from-gray-500 to-gray-700 border-gray-600';
+    if (rank === 3) return 'from-orange-500 to-orange-700 border-orange-600';
+    return 'from-gray-700 to-gray-900 border-gray-600';
   };
 
   const formatNumber = (num: number) => {
@@ -87,17 +87,17 @@ export default function Rankings({ stats }: Rankings) {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-lg">
+    <div className="bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-700">
       <div className="flex items-center gap-3 mb-6">
-        <Users className="w-6 h-6 text-blue-500" />
-        <h2 className="text-2xl font-bold text-gray-900">Global Rankings</h2>
+        <Users className="w-6 h-6 text-blue-400" />
+        <h2 className="text-2xl font-bold text-white">Global Rankings</h2>
       </div>
 
       {/* User's Rank */}
       {userRank && (
-        <div className={`bg-gradient-to-r ${getRankColor(userRank.rank)} rounded-xl p-6 text-white mb-8`}>
+        <div className={`bg-gradient-to-r ${getRankColor(userRank.rank)} rounded-xl p-6 text-white mb-8 border`}>
           <div className="flex items-center gap-4">
-            <div className="text-4xl font-bold">#{userRank.rank}</div>
+            <div className="text-4xl font-bold drop-shadow-md">#{userRank.rank}</div>
             <div className="flex-1">
               <h3 className="text-xl font-bold">{userRank.name}</h3>
               <p className="text-white/90">Your current ranking</p>
@@ -112,8 +112,8 @@ export default function Rankings({ stats }: Rankings) {
 
       {/* Top Rankings */}
       <div className="space-y-3">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-green-500" />
+        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-green-400" />
           Top 10 Music Lovers
         </h3>
 
@@ -121,25 +121,25 @@ export default function Rankings({ stats }: Rankings) {
           <div
             key={user.id}
             className={`flex items-center gap-4 p-4 rounded-lg transition-all duration-200 ${
-              user.id === 'current_user' 
-                ? 'bg-green-50 border-2 border-green-200' 
-                : 'bg-gray-50 hover:bg-gray-100'
+              user.id === 'current_user'
+                ? 'bg-green-900/30 border-2 border-green-700/50 hover:border-green-600/70'
+                : 'bg-gray-700/50 hover:bg-gray-700/70 border border-gray-600/50'
             }`}
           >
             {/* Rank */}
             <div className="flex items-center gap-2">
               {getRankIcon(user.rank)}
-              <span className="text-lg font-bold text-gray-700">#{user.rank}</span>
+              <span className="text-lg font-bold text-gray-200">#{user.rank}</span>
             </div>
 
             {/* User Info */}
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <span className={`font-medium ${user.id === 'current_user' ? 'text-green-700' : 'text-gray-900'}`}>
+                <span className={`font-medium ${user.id === 'current_user' ? 'text-green-300' : 'text-white'}`}>
                   {user.name}
                 </span>
                 {user.id === 'current_user' && (
-                  <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                  <span className="bg-green-600 text-white text-xs px-2 py-1 rounded-full font-medium">
                     YOU
                   </span>
                 )}
@@ -148,8 +148,8 @@ export default function Rankings({ stats }: Rankings) {
 
             {/* Score */}
             <div className="text-right">
-              <div className="text-lg font-bold text-gray-900">{formatNumber(user.score)}</div>
-              <div className="text-xs text-gray-500">points</div>
+              <div className="text-lg font-bold text-white">{formatNumber(user.score)}</div>
+              <div className="text-xs text-gray-300">points</div>
             </div>
           </div>
         ))}
@@ -157,27 +157,27 @@ export default function Rankings({ stats }: Rankings) {
 
       {/* Ranking Categories */}
       <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-4 text-center">
-          <Star className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-          <div className="text-lg font-bold text-blue-600">Total Plays</div>
-          <div className="text-sm text-gray-600">40% of score</div>
+        <div className="bg-gradient-to-r from-blue-900/30 to-cyan-900/30 rounded-lg p-4 text-center border border-blue-800/30">
+          <Star className="w-8 h-8 text-blue-400 mx-auto mb-2" />
+          <div className="text-lg font-bold text-blue-400">Total Plays</div>
+          <div className="text-sm text-gray-300">40% of score</div>
         </div>
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 text-center">
-          <Users className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-          <div className="text-lg font-bold text-purple-600">Artist Diversity</div>
-          <div className="text-sm text-gray-600">30% of score</div>
+        <div className="bg-gradient-to-r from-purple-900/30 to-pink-900/30 rounded-lg p-4 text-center border border-purple-800/30">
+          <Users className="w-8 h-8 text-purple-400 mx-auto mb-2" />
+          <div className="text-lg font-bold text-purple-400">Artist Diversity</div>
+          <div className="text-sm text-gray-300">30% of score</div>
         </div>
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 text-center">
-          <Trophy className="w-8 h-8 text-green-600 mx-auto mb-2" />
-          <div className="text-lg font-bold text-green-600">Genre Exploration</div>
-          <div className="text-sm text-gray-600">30% of score</div>
+        <div className="bg-gradient-to-r from-green-900/30 to-emerald-900/30 rounded-lg p-4 text-center border border-green-800/30">
+          <Trophy className="w-8 h-8 text-green-400 mx-auto mb-2" />
+          <div className="text-lg font-bold text-green-400">Genre Exploration</div>
+          <div className="text-sm text-gray-300">30% of score</div>
         </div>
       </div>
 
       {/* Ranking Info */}
-      <div className="mt-6 bg-gray-50 rounded-lg p-4">
-        <h4 className="font-semibold text-gray-900 mb-2">How Rankings Work</h4>
-        <p className="text-sm text-gray-600">
+      <div className="mt-6 bg-gray-700/30 rounded-lg p-4 border border-gray-600/30">
+        <h4 className="font-semibold text-white mb-2">How Rankings Work</h4>
+        <p className="text-sm text-gray-300">
           Rankings are calculated based on your total plays, artist diversity, and genre exploration.
           The more diverse your listening habits and the more music you discover, the higher your score!
         </p>
