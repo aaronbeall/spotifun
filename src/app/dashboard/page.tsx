@@ -49,7 +49,8 @@ interface Stats {
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isLoadingTimeRange, setIsLoadingTimeRange] = useState(false);
   const [timeRange, setTimeRange] = useState<'short_term' | 'medium_term' | 'long_term'>('medium_term');
   const router = useRouter();
 
@@ -74,7 +75,7 @@ export default function Dashboard() {
         console.error('Error fetching data:', error);
         router.push('/');
       } finally {
-        setLoading(false);
+        setIsInitialLoading(false);
       }
     };
 
@@ -82,9 +83,11 @@ export default function Dashboard() {
   }, [router]);
 
   const handleTimeRangeChange = async (newTimeRange: 'short_term' | 'medium_term' | 'long_term') => {
+    if (timeRange === newTimeRange) return;
+
     setTimeRange(newTimeRange);
-    setLoading(true);
-    
+    setIsLoadingTimeRange(true);
+
     try {
       const response = await fetch(`/api/stats?timeRange=${newTimeRange}`);
       if (response.ok) {
@@ -94,7 +97,7 @@ export default function Dashboard() {
     } catch (error) {
       console.error('Error fetching stats:', error);
     } finally {
-      setLoading(false);
+      setIsLoadingTimeRange(false);
     }
   };
 
@@ -102,7 +105,7 @@ export default function Dashboard() {
     const minutes = Math.floor(ms / 60000);
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
-    
+
     if (days > 0) return `${days}d ${hours % 24}h`;
     if (hours > 0) return `${hours}h ${minutes % 60}m`;
     return `${minutes}m`;
@@ -114,7 +117,7 @@ export default function Dashboard() {
     return num.toString();
   };
 
-  if (loading) {
+  if (isInitialLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -129,8 +132,7 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">Failed to load data</p>
-          <button 
+          <button
             onClick={() => router.push('/')}
             className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600"
           >
@@ -140,11 +142,10 @@ export default function Dashboard() {
       </div>
     );
   }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+    <div className="bg-gray-50">
+      {/* Header - Always visible */}
+      <div className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -176,8 +177,14 @@ export default function Dashboard() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        {isLoadingTimeRange && (
+          <div className="fixed top-20 right-8 bg-white shadow-md rounded-lg px-4 py-2 flex items-center gap-2 z-50">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-500"></div>
+            <span className="text-sm text-gray-700">Updating data...</span>
+          </div>
+        )}
         {/* Overview Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 ${isLoadingTimeRange ? 'opacity-50' : ''}`}>
           <div className="bg-white rounded-xl p-6 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -238,8 +245,8 @@ export default function Dashboard() {
               <div key={artist.artist.name} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50">
                 <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
                   {artist.artist.images?.[0] ? (
-                    <Image 
-                      src={artist.artist.images[0].url} 
+                    <Image
+                      src={artist.artist.images[0].url}
                       alt={artist.artist.name}
                       className="w-12 h-12 rounded-lg object-cover"
                     />
@@ -268,8 +275,8 @@ export default function Dashboard() {
               <div key={track.track.name} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50">
                 <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center">
                   {track.track.album.images?.[0] ? (
-                    <Image 
-                      src={track.track.album.images[0].url} 
+                    <Image
+                      src={track.track.album.images[0].url}
                       alt={track.track.name}
                       className="w-10 h-10 rounded-lg object-cover"
                     />
