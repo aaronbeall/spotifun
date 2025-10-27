@@ -158,31 +158,34 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex gap-2">
-              {(['short_term', 'medium_term', 'long_term'] as const).map((range) => (
-                <button
-                  key={range}
-                  onClick={() => handleTimeRangeChange(range)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    timeRange === range
-                      ? 'bg-green-500 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  {range === 'short_term' ? '4 weeks' : range === 'medium_term' ? '6 months' : 'All time'}
-                </button>
-              ))}
+              <div className="flex items-center gap-2">
+                {isLoadingTimeRange && (
+                  <div className="flex items-center gap-1 mr-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-500"></div>
+                    <span className="text-sm text-gray-500">Updating...</span>
+                  </div>
+                )}
+                {(['short_term', 'medium_term', 'long_term'] as const).map((range) => (
+                  <button
+                    key={range}
+                    onClick={() => handleTimeRangeChange(range)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      timeRange === range
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                    disabled={isLoadingTimeRange}
+                  >
+                    {range === 'short_term' ? '4 weeks' : range === 'medium_term' ? '6 months' : 'All time'}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {isLoadingTimeRange && (
-          <div className="fixed top-20 right-8 bg-white shadow-md rounded-lg px-4 py-2 flex items-center gap-2 z-50">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-500"></div>
-            <span className="text-sm text-gray-700">Updating data...</span>
-          </div>
-        )}
         {/* Overview Stats */}
         <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 ${isLoadingTimeRange ? 'opacity-50' : ''}`}>
           <div className="bg-white rounded-xl p-6 shadow-sm">
@@ -245,7 +248,7 @@ export default function Dashboard() {
               <div key={artist.artist.name} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50">
                 <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
                   {artist.artist.images?.[0] ? (
-                    <Image
+                    <img
                       src={artist.artist.images[0].url}
                       alt={artist.artist.name}
                       className="w-12 h-12 rounded-lg object-cover"
@@ -275,7 +278,7 @@ export default function Dashboard() {
               <div key={track.track.name} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50">
                 <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center">
                   {track.track.album.images?.[0] ? (
-                    <Image
+                    <img
                       src={track.track.album.images[0].url}
                       alt={track.track.name}
                       className="w-10 h-10 rounded-lg object-cover"
