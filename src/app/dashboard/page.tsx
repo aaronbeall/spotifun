@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { BarChart3, Music, Users, TrendingUp, Clock, Headphones, Star } from 'lucide-react';
 import FunStats from '@/components/features/FunStats';
-import MusicProfilePage from '@/components/features/MusicProfilePage';
-import AchievementsPage from '@/components/features/AchievementsPage';
-import RankingsPage from '@/components/features/RankingsPage';
+import MusicProfile from '@/components/features/MusicProfile';
+import Achievements from '@/components/features/Achievements';
+import Rankings from '@/components/features/Rankings';
 import Image from 'next/image';
 
 interface User {
@@ -321,17 +321,17 @@ export default function Dashboard() {
 
         {/* Music Profile */}
         <div className="mb-8">
-          <MusicProfilePage stats={stats} />
+          <MusicProfile stats={stats} />
         </div>
 
         {/* Achievements */}
         <div className="mb-8">
-          <AchievementsPage stats={stats} />
+          <Achievements stats={stats} />
         </div>
 
         {/* Rankings */}
         <div className="mb-8">
-          <RankingsPage stats={stats} />
+          <Rankings stats={stats} />
         </div>
       </div>
     </div>

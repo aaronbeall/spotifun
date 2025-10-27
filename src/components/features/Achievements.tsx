@@ -22,13 +22,13 @@ interface AchievementsProps {
   };
 }
 
-export default function AchievementsPage({ stats }: AchievementsProps) {
+export default function Achievements({ stats }: AchievementsProps) {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
 
   useEffect(() => {
     const generateAchievements = (): Achievement[] => {
       const { totalPlays, uniqueArtists, uniqueTracks, totalDuration } = stats.overview;
-      
+
       const allAchievements: Achievement[] = [
         {
           id: 'first_track',
@@ -140,7 +140,7 @@ export default function AchievementsPage({ stats }: AchievementsProps) {
           <span>{Math.round((unlockedCount / totalCount) * 100)}%</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-3">
-          <div 
+          <div
             className="bg-gradient-to-r from-yellow-500 to-orange-500 h-3 rounded-full transition-all duration-1000"
             style={{ width: `${(unlockedCount / totalCount) * 100}%` }}
           />
@@ -187,7 +187,7 @@ export default function AchievementsPage({ stats }: AchievementsProps) {
                   Progress
                 </span>
                 <span className={achievement.unlocked ? 'text-white/80' : 'text-gray-500'}>
-                  {achievement.id === 'time_traveler' 
+                  {achievement.id === 'time_traveler'
                     ? `${Math.round(achievement.progress / (60 * 60 * 1000))}h / ${Math.round(achievement.maxProgress / (60 * 60 * 1000))}h`
                     : `${achievement.progress} / ${achievement.maxProgress}`
                   }
@@ -196,12 +196,12 @@ export default function AchievementsPage({ stats }: AchievementsProps) {
               <div className={`w-full rounded-full h-2 ${
                 achievement.unlocked ? 'bg-white/20' : 'bg-gray-300'
               }`}>
-                <div 
+                <div
                   className={`h-2 rounded-full transition-all duration-1000 ${
                     achievement.unlocked ? 'bg-white' : 'bg-gray-500'
                   }`}
-                  style={{ 
-                    width: `${Math.min((achievement.progress / achievement.maxProgress) * 100, 100)}%` 
+                  style={{
+                    width: `${Math.min((achievement.progress / achievement.maxProgress) * 100, 100)}%`
                   }}
                 />
               </div>

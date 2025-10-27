@@ -23,13 +23,7 @@ export interface GenreStats {
   totalDuration: number;
 }
 
-export interface TimeFrame {
-  start: Date;
-  end: Date;
-  label: string;
-}
-
-export interface MusicProfile {
+export interface MusicProfileStats {
   personality: {
     name: string;
     description: string;

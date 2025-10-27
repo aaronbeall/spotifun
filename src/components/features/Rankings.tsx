@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Trophy, Medal, Award, Crown, Users, TrendingUp, Star } from 'lucide-react';
 import { UserRanking } from '@/types';
 
-interface RankingsProps {
+interface Rankings {
   stats: {
     overview: {
       totalPlays: number;
@@ -18,7 +18,7 @@ interface RankingsProps {
   };
 }
 
-export default function RankingsPage({ stats }: RankingsProps) {
+export default function Rankings({ stats }: Rankings) {
   const [rankings, setRankings] = useState<UserRanking[]>([]);
   const [userRank, setUserRank] = useState<UserRanking | null>(null);
 
@@ -49,7 +49,7 @@ export default function RankingsPage({ stats }: RankingsProps) {
       // Insert user into rankings
       const allUsers = [...mockUsers, { id: 'current_user', name: 'You', score: userScore, rank: 0 }];
       allUsers.sort((a, b) => b.score - a.score);
-      
+
       // Update ranks
       allUsers.forEach((user, index) => {
         user.rank = index + 1;
@@ -116,7 +116,7 @@ export default function RankingsPage({ stats }: RankingsProps) {
           <TrendingUp className="w-5 h-5 text-green-500" />
           Top 10 Music Lovers
         </h3>
-        
+
         {rankings.map(user => (
           <div
             key={user.id}
@@ -178,7 +178,7 @@ export default function RankingsPage({ stats }: RankingsProps) {
       <div className="mt-6 bg-gray-50 rounded-lg p-4">
         <h4 className="font-semibold text-gray-900 mb-2">How Rankings Work</h4>
         <p className="text-sm text-gray-600">
-          Rankings are calculated based on your total plays, artist diversity, and genre exploration. 
+          Rankings are calculated based on your total plays, artist diversity, and genre exploration.
           The more diverse your listening habits and the more music you discover, the higher your score!
         </p>
       </div>

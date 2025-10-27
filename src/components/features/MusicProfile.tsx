@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Music, Palette, Clock, TrendingUp, Heart, Zap, Star, Target } from 'lucide-react';
-import { MusicProfile } from '@/types';
+import { MusicProfileStats } from '@/types';
 
 interface MusicProfileProps {
   stats: {
@@ -22,18 +22,18 @@ interface MusicProfileProps {
   };
 }
 
-export default function MusicProfilePage({ stats }: MusicProfileProps) {
-  const [profile, setProfile] = useState<MusicProfile | null>(null);
+export default function MusicProfile({ stats }: MusicProfileProps) {
+  const [profile, setProfile] = useState<MusicProfileStats | null>(null);
 
   useEffect(() => {
-    const generateProfile = (): MusicProfile => {
+    const generateProfile = (): MusicProfileStats => {
       const { genreDiversity, artistDiversity, averageSessionLength } = stats.overview;
-      
+
       // Calculate listening personality
       let personality = 'Balanced Listener';
       let personalityDescription = 'You have a well-rounded music taste.';
       let personalityColor = 'from-blue-500 to-purple-600';
-      
+
       if (genreDiversity > 0.7 && artistDiversity > 0.6) {
         personality = 'Music Explorer';
         personalityDescription = 'You love discovering new sounds and genres.';
@@ -52,7 +52,7 @@ export default function MusicProfilePage({ stats }: MusicProfileProps) {
       const topGenres = stats.genres.slice(0, 3).map(g => g.genre.toLowerCase());
       let mood = 'Energetic';
       let moodColor = 'from-yellow-500 to-orange-600';
-      
+
       if (topGenres.some(g => g.includes('chill') || g.includes('ambient') || g.includes('lo-fi'))) {
         mood = 'Chill';
         moodColor = 'from-blue-500 to-cyan-600';
@@ -113,7 +113,7 @@ export default function MusicProfilePage({ stats }: MusicProfileProps) {
         <div className="flex items-center gap-2">
           <span className="text-sm">Personality Score:</span>
           <div className="flex-1 bg-white/20 rounded-full h-2">
-            <div 
+            <div
               className="bg-white rounded-full h-2 transition-all duration-1000"
               style={{ width: `${profile.personality.score}%` }}
             />
@@ -185,7 +185,7 @@ export default function MusicProfilePage({ stats }: MusicProfileProps) {
         </div>
         <div className="flex flex-wrap gap-2">
           {profile.primaryGenres.map((genre: string) => (
-            <span 
+            <span
               key={genre}
               className="px-3 py-1 bg-white rounded-full text-sm font-medium text-gray-700 shadow-sm"
             >
