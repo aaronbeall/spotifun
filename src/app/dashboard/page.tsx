@@ -210,26 +210,33 @@ export default function Dashboard() {
             Top Artists
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {stats.artists.slice(0, 6).map((artist, index) => (
-              <div key={artist.artist.name} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50">
-                <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                  {artist.artist.images?.[0] ? (
-                    <img
-                      src={artist.artist.images[0].url}
-                      alt={artist.artist.name}
-                      className="w-12 h-12 rounded-lg object-cover"
-                    />
-                  ) : (
-                    <Music className="w-6 h-6 text-gray-400" />
-                  )}
+            {stats.topArtists.map((artist, index) => {
+              // Find recent play count for this artist if available
+              const recentPlays = stats.artists.find(a => a.artist.id === artist.id)?.playCount || 0;
+              
+              return (
+                <div key={artist.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50">
+                  <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                    {artist.images?.[0]?.url ? (
+                      <img
+                        src={artist.images[0].url}
+                        alt={artist.name}
+                        className="w-12 h-12 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <Music className="w-6 h-6 text-gray-400" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 truncate">{artist.name}</p>
+                    {recentPlays > 0 && (
+                      <p className="text-sm text-gray-600">{recentPlays} recent plays</p>
+                    )}
+                  </div>
+                  <div className="text-lg font-bold text-gray-400">#{index + 1}</div>
                 </div>
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900">{artist.artist.name}</p>
-                  <p className="text-sm text-gray-600">{formatNumber(artist.playCount)} plays</p>
-                </div>
-                <div className="text-lg font-bold text-gray-400">#{index + 1}</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -240,27 +247,34 @@ export default function Dashboard() {
             Top Tracks
           </h2>
           <div className="space-y-3">
-            {stats.tracks.slice(0, 10).map((track, index) => (
-              <div key={track.track.name} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50">
-                <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center">
-                  {track.track.album.images?.[0] ? (
-                    <img
-                      src={track.track.album.images[0].url}
-                      alt={track.track.name}
-                      className="w-10 h-10 rounded-lg object-cover"
-                    />
-                  ) : (
-                    <Music className="w-5 h-5 text-gray-400" />
+            {stats.topTracks.map((track, index) => {
+              // Find recent play count for this track if available
+              const recentPlays = stats.tracks.find(t => t.track.id === track.id)?.playCount || 0;
+              
+              return (
+                <div key={track.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50">
+                  <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                    {track.album.images?.[0]?.url ? (
+                      <img
+                        src={track.album.images[0].url}
+                        alt={track.name}
+                        className="w-10 h-10 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <Music className="w-5 h-5 text-gray-400" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 truncate">{track.name}</p>
+                    <p className="text-sm text-gray-600 truncate">{track.artists.map(a => a.name).join(', ')}</p>
+                  </div>
+                  {recentPlays > 0 && (
+                    <div className="text-sm text-gray-600 whitespace-nowrap">{recentPlays} recent</div>
                   )}
+                  <div className="text-lg font-bold text-gray-400">#{index + 1}</div>
                 </div>
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900">{track.track.name}</p>
-                  <p className="text-sm text-gray-600">{track.track.artists.map(a => a.name).join(', ')}</p>
-                </div>
-                <div className="text-sm text-gray-600">{formatNumber(track.playCount)} plays</div>
-                <div className="text-lg font-bold text-gray-400">#{index + 1}</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -271,11 +285,22 @@ export default function Dashboard() {
             Top Genres
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {stats.genres.slice(0, 9).map((genre, index) => (
-              <div key={genre.genre} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50">
+            {Array.from(
+              // Count genre occurrences from top artists
+              stats.topArtists.flatMap(artist => artist.genres || [])
+                .reduce((acc, genre) => {
+                  acc.set(genre, (acc.get(genre) || 0) + 1);
+                  return acc;
+                }, new Map<string, number>())
+                .entries()
+            )
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 9)
+            .map(([genre, count], index) => (
+              <div key={genre} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50">
                 <div>
-                  <p className="font-medium text-gray-900 capitalize">{genre.genre}</p>
-                  <p className="text-sm text-gray-600">{formatNumber(genre.playCount)} plays</p>
+                  <p className="font-medium text-gray-900 capitalize">{genre}</p>
+                  <p className="text-sm text-gray-600">{count} {count === 1 ? 'artist' : 'artists'}</p>
                 </div>
                 <div className="text-lg font-bold text-gray-400">#{index + 1}</div>
               </div>
