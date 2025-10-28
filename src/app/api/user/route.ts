@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { spotifyApi } from '@/lib/spotify';
 import { UserProfile } from '@/types';
 
-export async function GET(): Promise<NextResponse<UserProfile | { error: string }>> {
+export async function GET(request: NextRequest): Promise<NextResponse<UserProfile | { error: string }>> {
   try {
-    const accessToken = await spotifyApi.getAccessToken();
+    const accessToken = request.cookies.get('spotify_access_token')?.value;
     if (!accessToken) {
       return NextResponse.json({ error: 'No access token' }, { status: 401 });
     }
