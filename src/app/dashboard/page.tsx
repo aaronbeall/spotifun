@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { BarChart3, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User } from 'lucide-react';
 import Image from 'next/image';
@@ -20,6 +20,50 @@ export default function Dashboard() {
   const [isLoadingTimeRange, setIsLoadingTimeRange] = useState(false);
   const [timeRange, setTimeRange] = useState<TimeRange>('medium_term');
   const router = useRouter();
+
+  // Generate consistent colors for genres based on genre name hash
+  const genreColors = useMemo(() => {
+    if (!stats?.topGenres) return {};
+    
+    // Each color now includes a border color that matches the gradient
+    const colors = [
+      { gradient: 'from-purple-500/15 to-blue-500/15', border: 'border-purple-500/30' },
+      { gradient: 'from-pink-500/15 to-rose-500/15', border: 'border-pink-500/30' },
+      { gradient: 'from-cyan-500/15 to-emerald-500/15', border: 'border-cyan-500/30' },
+      { gradient: 'from-amber-500/15 to-orange-500/15', border: 'border-amber-500/30' },
+      { gradient: 'from-violet-500/15 to-fuchsia-500/15', border: 'border-violet-500/30' },
+      { gradient: 'from-emerald-500/15 to-teal-500/15', border: 'border-emerald-500/30' },
+      { gradient: 'from-rose-500/15 to-pink-500/15', border: 'border-rose-500/30' },
+      { gradient: 'from-blue-500/15 to-indigo-500/15', border: 'border-blue-500/30' },
+      { gradient: 'from-amber-500/15 to-yellow-500/15', border: 'border-amber-500/30' },
+      { gradient: 'from-green-500/15 to-emerald-500/15', border: 'border-green-500/30' },
+      { gradient: 'from-indigo-500/15 to-violet-500/15', border: 'border-indigo-500/30' },
+      { gradient: 'from-rose-500/15 to-amber-500/15', border: 'border-rose-500/30' },
+    ];
+    
+    // Simple hash function to convert string to number
+    const hashString = (str: string) => {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+      }
+      return Math.abs(hash);
+    };
+    
+    const genreColorMap: Record<string, string> = {};
+    stats.topGenres.forEach(({ genre }) => {
+      const hash = hashString(genre.toLowerCase());
+      const colorIndex = hash % colors.length;
+      genreColorMap[genre] = {
+        gradient: colors[colorIndex].gradient,
+        border: colors[colorIndex].border
+      };
+    });
+    
+    return genreColorMap;
+  }, [stats?.topGenres]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -384,7 +428,7 @@ export default function Dashboard() {
             {stats.topGenres.map(({ genre, count }, index) => (
               <div
                 key={genre}
-                className="flex items-center justify-between p-4 rounded-lg bg-gray-700/50 hover:bg-gray-700 transition-colors border border-gray-700"
+                className={`flex items-center justify-between p-4 rounded-lg hover:scale-[1.02] transition-all duration-300 border ${genreColors[genre]?.border} ${genreColors[genre]?.gradient} bg-gradient-to-r`}
               >
                 <div>
                   <p className="font-medium text-white capitalize">{genre}</p>
@@ -392,7 +436,7 @@ export default function Dashboard() {
                     {count} {count === 1 ? 'artist' : 'artists'}
                   </p>
                 </div>
-                <div className="text-lg font-bold text-gray-300">#{index + 1}</div>
+                <div className="text-lg font-bold text-white/80">#{index + 1}</div>
               </div>
             ))}
           </div>
