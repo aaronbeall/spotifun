@@ -276,30 +276,40 @@ export default function Dashboard() {
             <Star className="w-5 h-5 text-yellow-400" />
             Top Artists
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {stats.topArtists.map((artist, index) => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {stats.topArtists.slice(0, 8).map((artist, index) => {
               const recentPlays = stats.artists.find(a => a.artist.id === artist.id)?.playCount || 0;
+              const imageUrl = artist.images?.[0]?.url;
 
               return (
-                <div key={artist.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-700/50 transition-colors">
-                  <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    {artist.images?.[0]?.url ? (
-                      <img
-                        src={artist.images[0].url}
-                        alt={artist.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <Music className="w-6 h-6 text-gray-400" />
-                    )}
+                <div
+                  key={artist.id}
+                  className="group relative h-48 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                >
+                  {imageUrl ? (
+                    <img
+                      src={imageUrl}
+                      alt={artist.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-purple-900 to-blue-900 flex items-center justify-center">
+                      <Music className="w-12 h-12 text-white opacity-70" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-bold text-white text-lg">{artist.name}</h3>
+                        {recentPlays > 0 && (
+                          <p className="text-sm text-gray-300">{recentPlays} recent plays</p>
+                        )}
+                      </div>
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-black/60 flex items-center justify-center text-white font-bold text-sm">
+                        {index + 1}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-white truncate">{artist.name}</p>
-                    {recentPlays > 0 && (
-                      <p className="text-sm text-gray-400">{recentPlays} recent plays</p>
-                    )}
-                  </div>
-                  <div className="text-lg font-bold text-gray-300">#{index + 1}</div>
                 </div>
               );
             })}
@@ -312,37 +322,58 @@ export default function Dashboard() {
             <TrendingUp className="w-5 h-5 text-green-400" />
             Top Tracks
           </h2>
-          <div className="space-y-3">
-            {stats.topTracks.map((track, index) => {
-              const recentPlays = stats.tracks.find(t => t.track.id === track.id)?.playCount || 0;
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {stats.topTracks.slice(0, 8).map((track, index) => {
+              const trackStats = stats.tracks.find(t => t.track.id === track.id);
+              const recentPlays = trackStats?.playCount || 0;
+              const lastPlayed = trackStats?.lastPlayed ? new Date(trackStats.lastPlayed) : null;
+              const daysAgo = lastPlayed ? Math.floor((Date.now() - lastPlayed.getTime()) / (1000 * 60 * 60 * 24)) : null;
+              const albumImage = track.album?.images?.[0]?.url;
 
               return (
-                <div key={track.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-700/50 transition-colors">
-                  <div className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    {track.album.images?.[0]?.url ? (
-                      <img
-                        src={track.album.images[0].url}
-                        alt={track.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <Music className="w-5 h-5 text-gray-400" />
-                    )}
+                <div
+                  key={track.id}
+                  className="group relative h-32 rounded-xl overflow-hidden bg-gray-700/50 hover:bg-gray-700 transition-all duration-300"
+                >
+                  <div className="absolute inset-0 flex items-center p-4 gap-4">
+                    <div className="w-16 h-16 rounded-lg bg-gray-600 flex items-center justify-center">
+                      {albumImage ? (
+                        <img
+                          src={albumImage}
+                          alt={track.album.name}
+                          className="w-full h-full object-cover rounded-lg shadow-md"
+                        />
+                      ) : (
+                        <Music className="w-6 h-6 text-gray-400" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-white truncate">{track.name}</h3>
+                      <p className="text-sm text-gray-300 truncate">
+                        {track.artists.map(a => a.name).join(', ')}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        {recentPlays > 0 && (
+                          <span className="text-xs bg-green-900/50 text-green-300 px-2 py-0.5 rounded-full">
+                            {recentPlays} play{recentPlays !== 1 ? 's' : ''}
+                          </span>
+                        )}
+                        {daysAgo !== null && (
+                          <span className="text-xs bg-gray-700/80 text-gray-300 px-2 py-0.5 rounded-full">
+                            {daysAgo === 0 ? 'Today' : `${daysAgo}d ago`}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center text-white text-xs font-bold">
+                      {index + 1}
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-white truncate">{track.name}</p>
-                    <p className="text-sm text-gray-400 truncate">{track.artists.map(a => a.name).join(', ')}</p>
-                  </div>
-                  {recentPlays > 0 && (
-                    <div className="text-sm text-gray-400 whitespace-nowrap">{recentPlays} recent</div>
-                  )}
-                  <div className="text-lg font-bold text-gray-300">#{index + 1}</div>
                 </div>
               );
             })}
           </div>
         </div>
-
         {/* Top Genres */}
         <div className="bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-700 mb-8">
           <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">

@@ -47,9 +47,9 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
         genreDiversity: genreStats.length / Math.max(uniqueArtists, 1),
         artistDiversity: uniqueArtists / Math.max(totalPlays, 1)
       },
-      tracks: trackStats.slice(0, 20),
-      artists: artistStats.slice(0, 20),
-      genres: genreStats.slice(0, 15),
+      tracks: trackStats,
+      artists: artistStats,
+      genres: genreStats,
       topTracks,
       topArtists,
       topGenres,
