@@ -2,24 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { Music, Palette, Clock, TrendingUp, Heart, Zap, Star, Target } from 'lucide-react';
-import { MusicProfileStats } from '@/types';
+import { MusicProfileStats, Stats } from '@/types';
 
 interface MusicProfileProps {
-  stats: {
-    overview: {
-      totalPlays: number;
-      uniqueArtists: number;
-      uniqueTracks: number;
-      totalDuration: number;
-      averageSessionLength: number;
-      genreDiversity: number;
-      artistDiversity: number;
-    };
-    genres: Array<{
-      genre: string;
-      playCount: number;
-    }>;
-  };
+  stats: Stats;
 }
 
 export default function MusicProfile({ stats }: MusicProfileProps) {
@@ -49,7 +35,7 @@ export default function MusicProfile({ stats }: MusicProfileProps) {
       }
 
       // Calculate mood based on genres
-      const topGenres = stats.genres.slice(0, 3).map(g => g.genre.toLowerCase());
+      const topGenres = stats.topGenres.slice(0, 3).map(g => g.genre.toLowerCase());
       let mood = 'Energetic';
       let moodColor = 'from-yellow-500 to-orange-600';
 
@@ -83,7 +69,7 @@ export default function MusicProfile({ stats }: MusicProfileProps) {
         consistencyScore: Math.round((1 - artistDiversity) * 100),
         peakHours,
         averageSessionLength: Math.round(averageSessionLength),
-        primaryGenres: stats.genres.slice(0, 5).map(g => g.genre)
+        primaryGenres: topGenres
       };
     };
 

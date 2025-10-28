@@ -2,20 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { Trophy, Medal, Award, Crown, Users, TrendingUp, Star } from 'lucide-react';
-import { UserRanking } from '@/types';
+import { UserRanking, Stats } from '@/types';
 
 interface Rankings {
-  stats: {
-    overview: {
-      totalPlays: number;
-      uniqueArtists: number;
-      uniqueTracks: number;
-      totalDuration: number;
-      averageSessionLength: number;
-      genreDiversity: number;
-      artistDiversity: number;
-    };
-  };
+  stats: Stats;
 }
 
 export default function Rankings({ stats }: Rankings) {

@@ -2,23 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { Music, Clock, TrendingUp, Heart, Zap, Star, Target, Award } from 'lucide-react';
+import { Stats } from "@/types";
 
 interface FunStatsProps {
-  stats: {
-    overview: {
-      totalPlays: number;
-      uniqueArtists: number;
-      uniqueTracks: number;
-      totalDuration: number;
-      averageSessionLength: number;
-      genreDiversity: number;
-      artistDiversity: number;
-    };
-    genres: Array<{
-      genre: string;
-      playCount: number;
-    }>;
-  };
+  stats: Stats;
 }
 
 export default function FunStats({ stats }: FunStatsProps) {

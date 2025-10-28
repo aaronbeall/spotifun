@@ -2,24 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { Trophy, Star, Music, Clock, Target, Zap, Heart, Award, Lock, CheckCircle } from 'lucide-react';
-import { Achievement } from '@/types';
+import { Achievement, Stats } from '@/types';
 
 interface AchievementsProps {
-  stats: {
-    overview: {
-      totalPlays: number;
-      uniqueArtists: number;
-      uniqueTracks: number;
-      totalDuration: number;
-      averageSessionLength: number;
-      genreDiversity: number;
-      artistDiversity: number;
-    };
-    genres: Array<{
-      genre: string;
-      playCount: number;
-    }>;
-  };
+  stats: Stats;
 }
 
 export default function Achievements({ stats }: AchievementsProps) {
