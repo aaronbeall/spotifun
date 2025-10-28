@@ -1,6 +1,7 @@
 import { Headphones, Users, Music, Clock, Sparkles, Palette, Disc, Disc3, Disc2 } from 'lucide-react';
 import { Stats } from '@/types';
 import { formatNumber, formatDuration, getGenreColorClass } from "@/utils";
+import { useState, useMemo } from "react";
 
 interface GradientCardProps {
   icon: React.ComponentType<{ className?: string }>;
@@ -36,6 +37,11 @@ const GradientCard = ({
   mostPlayed = [],
   children
 }: GradientCardProps) => {
+  const [showAllPills, setShowAllPills] = useState(false);
+  const displayedPills = useMemo(() =>
+    showAllPills ? mostPlayed : mostPlayed.slice(0, 3),
+  [showAllPills, mostPlayed]);
+  const hasMorePills = mostPlayed.length > 3;
   return (
     <div className={`relative overflow-hidden rounded-2xl p-6 h-full ${gradient} shadow-lg`}>
       {/* Decorative elements */}
@@ -125,7 +131,7 @@ const GradientCard = ({
           <div className="mt-4">
             <p className="text-xs text-white/70 mb-2">Most Played</p>
             <div className="flex flex-wrap gap-2">
-              {mostPlayed.map((item, i) => (
+              {displayedPills.map((item, i) => (
                 <div
                   key={i}
                   className="px-2.5 py-1 text-xs font-medium rounded-full backdrop-blur-sm flex items-center gap-1 max-w-full"
@@ -140,6 +146,20 @@ const GradientCard = ({
                   <span className="flex-shrink-0">• {item.count}</span>
                 </div>
               ))}
+              {hasMorePills && (
+                <button
+                  onClick={() => setShowAllPills(!showAllPills)}
+                  className="px-2 py-1 text-xs font-medium rounded-full backdrop-blur-sm flex items-center gap-1"
+                  style={{
+                    backgroundColor: `${iconColor}15`,
+                    color: iconColor,
+                    border: `1px solid ${iconColor}30`
+                  }}
+                  title={showAllPills ? 'Show less' : `Show ${mostPlayed.length - 3} more`}
+                >
+                  {showAllPills ? '...less' : '...'}
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -251,7 +271,6 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange }: RecentlyPl
             scoreLabel="Diversity"
             mostPlayed={stats.artists
               .sort((a, b) => b.playCount - a.playCount)
-              .slice(0, 3)
               .map(artist => ({
                 name: artist.artist.name,
                 count: artist.playCount
@@ -277,7 +296,6 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange }: RecentlyPl
             scoreLabel="Uniqueness"
             mostPlayed={stats.tracks
               .sort((a, b) => b.playCount - a.playCount)
-              .slice(0, 3)
               .map(track => ({
                 name: track.track.name,
                 count: track.playCount
@@ -306,7 +324,6 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange }: RecentlyPl
             score={stats.overview.genreDiversity}
             scoreLabel="Diversity"
             mostPlayed={stats.genres
-              .slice(0, 3)
               .map(genre => ({
                 name: genre.genre,
                 count: genre.playCount
