@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { BarChart3, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User } from 'lucide-react';
-import { formatDuration, formatNumber, getGenreColors, getGenreColorMap } from '@/utils';
+import { formatDuration, formatNumber, getGenreColorMap } from '@/utils';
 import Image from 'next/image';
 import FunStats from '@/components/features/FunStats';
 import MusicProfile from '@/components/features/MusicProfile';
@@ -360,7 +360,7 @@ export default function Dashboard() {
             {stats.topGenres.slice(0, showAllGenres ? stats.topGenres.length : GENRES_TO_SHOW).map(({ genre, count }, index) => (
               <div
                 key={genre}
-                className={`flex items-center justify-between p-4 rounded-lg hover:scale-[1.02] transition-all duration-300 border ${genreColors[genre]?.border} ${genreColors[genre]?.gradient} bg-gradient-to-r`}
+                className={`flex items-center justify-between p-4 rounded-lg hover:scale-[1.02] transition-all duration-300 border ${genreColors[genre]?.border} ${genreColors[genre]?.gradient} bg-gradient-to-r bg-opacity-50 hover:bg-opacity-70`}
               >
                 <div>
                   <p className="font-medium text-white capitalize">{genre}</p>

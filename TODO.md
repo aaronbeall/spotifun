@@ -16,3 +16,4 @@
 - [ ] Ranking changes
 - [ ] Currently playing
 - [ ] Create playlist from mood
+- [ ] AI analysis

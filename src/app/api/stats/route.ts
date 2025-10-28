@@ -23,6 +23,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
       getTopTracks(timeRange, 50),
       getTopArtists(timeRange, 50)
     ]);
+    const topGenres = calculateTopGenres(topArtists);
 
     // Calculate statistics
     const trackStats = calculateTrackStats(recentlyPlayed);
@@ -35,8 +36,6 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
     const uniqueTracks = new Set(recentlyPlayed.map(item => item.track.id)).size;
     const totalDuration = recentlyPlayed.reduce((sum, item) => sum + item.track.duration_ms, 0);
 
-    const topGenres = calculateTopGenres(topArtists);
-
     const stats: Stats = {
       overview: {
         totalPlays,
@@ -48,7 +47,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
         // Higher values indicate listening to artists from many different genres
         // Lower values indicate focusing on a few specific genres
         genreDiversity: genreStats.length / Math.max(uniqueArtists, 1),
-        
+
         // Artist diversity: Ratio of unique artists to total plays (0-1 scale)
         // Higher values indicate listening to many different artists
         // Lower values indicate listening to the same artists repeatedly
