@@ -222,14 +222,14 @@ export default function Dashboard() {
 
       <div className="container mx-auto px-4 py-8">
         {/* Recently Played Stats */}
-        <RecentlyPlayed
-          stats={stats}
-          isLoadingTimeRange={isLoadingTimeRange}
-          formatNumber={formatNumber}
-          formatDuration={formatDuration}
-        />
+        <div className="mb-8">
+          <RecentlyPlayed
+            stats={stats}
+            isLoadingTimeRange={isLoadingTimeRange}
+          />
+        </div>
 
-      {/* Top Artists */}
+        {/* Top Artists */}
         <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
           <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
             <Star className="w-5 h-5 text-yellow-400" />
