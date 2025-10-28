@@ -9,9 +9,7 @@ export interface TrackStats {
 }
 
 export interface ArtistStats {
-  artist: SpotifyApi.ArtistObjectSimplified & {
-    images?: SpotifyApi.ImageObject[];
-  };
+  artist: SpotifyApi.ArtistObjectFull;
   playCount: number;
   uniqueTracks: number;
   totalDuration: number;

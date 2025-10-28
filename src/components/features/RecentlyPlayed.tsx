@@ -2,43 +2,148 @@ import { Headphones, Users, Music, Clock, Sparkles, Palette, Disc, Disc3, Disc2 
 import { Stats } from '@/types';
 import { formatNumber, formatDuration, getGenreColorClass } from "@/utils";
 
+interface GradientCardProps {
+  icon: React.ComponentType<{ className?: string }>;
+  className?: string;
+  title: string;
+  value: string | React.ReactNode;
+  description: string;
+  gradient: string;
+  iconColor: string;
+  items?: Array<{
+    name: string;
+    count: number;
+    image?: string;
+    bgClass?: string;
+    textClass?: string;
+  }>;
+  score?: number;
+  scoreLabel?: string;
+  mostPlayed?: Array<{ name: string; count: number }>;
+  children?: React.ReactNode;
+}
+
 const GradientCard = ({
   icon: Icon,
   title,
   value,
   description,
   gradient,
-  iconBg,
-  iconColor = 'white',
+  iconColor,
+  items = [],
+  score,
+  scoreLabel = 'Score',
+  mostPlayed = [],
   children
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  value: string | React.ReactNode;
-  description: string;
-  gradient: string;
-  iconBg: string;
-  iconColor?: string;
-  children?: React.ReactNode;
-}) => {
+}: GradientCardProps) => {
   return (
     <div className={`relative overflow-hidden rounded-2xl p-6 h-full ${gradient} shadow-lg`}>
-      <div className="absolute top-4 right-4 w-16 h-16 rounded-full opacity-10 bg-white"></div>
-      <div className="relative z-10">
-        <div className="flex items-start justify-between">
-          <div className="space-y-3">
-            <div className={`w-12 h-12 ${iconBg} rounded-xl flex items-center justify-center`}>
-              <Icon className={`w-6 h-6 ${iconColor}`} />
+      {/* Decorative elements */}
+      <div className="absolute top-0 right-0 w-24 h-24 rounded-full opacity-10 bg-white -mr-6 -mt-6"></div>
+
+      <div className="relative z-10 h-full flex flex-col">
+        {/* Header with icon and title */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center`} style={{ backgroundColor: `${iconColor}20` }}>
+              <Icon className={`w-5 h-5 ${ iconColor }`}  />
             </div>
             <div>
-              <p className="text-sm font-medium text-white/80">{title}</p>
-              <p className="text-2xl font-bold text-white mt-1">
-                {value}
-              </p>
+              <h3 className="text-sm font-medium text-white/80">{title}</h3>
+              <p className="text-2xl font-bold text-white mt-0.5">{value}</p>
             </div>
           </div>
+
+          {/* Stacked items */}
+          {items.length > 0 && (
+            <div className="flex -space-x-2">
+              {items.slice(0, 3).map((item, i) => {
+                const bgClass = item.bgClass ? `${item.bgClass}` : 'bg-gray-800';
+                const borderClass = 'border-gray-800';
+                const textClass = item.textClass || '';
+
+                return (
+                  <div
+                    key={i}
+                    className={`w-8 h-8 rounded-full border-2 overflow-hidden ${borderClass} group relative`}
+                    style={{
+                      zIndex: 3 - i,
+                    }}
+                    title={`${item.name} • ${item.count} plays`}
+                  >
+                    {/* Tooltip */}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                      {item.name} • {item.count} plays
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
+                    </div>
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div
+                        className={`w-full h-full flex items-center justify-center text-xs font-medium ${bgClass} ${textClass}`}
+                      >
+                        {item.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {items.length > 3 && (
+                <div className="w-8 h-8 rounded-full bg-gray-800/80 border-2 border-gray-800 flex items-center justify-center text-xs font-medium text-white/80">
+                  +{items.length - 3}
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        <p className="text-sm text-white/80 mt-4">{description}</p>
+
+        {/* Score/Progress */}
+        {score !== undefined && (
+          <div className="mt-3">
+            <div className="flex justify-between text-xs mb-1">
+              <span className="text-white/70">{scoreLabel}</span>
+              <span className="font-medium" style={{ color: iconColor }}>{Math.round(score * 100)}%</span>
+            </div>
+            <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${score * 100}%`,
+                  background: `linear-gradient(90deg, ${iconColor}, ${iconColor}cc)`
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Most Played Pills */}
+        {mostPlayed.length > 0 && (
+          <div className="mt-4">
+            <p className="text-xs text-white/70 mb-2">Most Played</p>
+            <div className="flex flex-wrap gap-2">
+              {mostPlayed.map((item, i) => (
+                <div
+                  key={i}
+                  className="px-2.5 py-1 text-xs font-medium rounded-full backdrop-blur-sm flex items-center gap-1 max-w-full"
+                  style={{
+                    backgroundColor: `${iconColor}15`,
+                    color: iconColor,
+                    border: `1px solid ${iconColor}30`
+                  }}
+                  title={`${item.name} • ${item.count} plays`}
+                >
+                  <span className="truncate max-w-[100px]">{item.name}</span>
+                  <span className="flex-shrink-0">• {item.count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {children && <div className="mt-4">{children}</div>}
       </div>
     </div>
@@ -130,111 +235,83 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange }: RecentlyPl
           {/* Artist Card */}
           <GradientCard
             icon={Users}
-            title="Artist Diversity"
-            value={`${stats.overview.uniqueArtists} Artists`}
+            title="Artists"
+            value={stats.overview.uniqueArtists}
             description={`${avgPlaysPerDay} plays per day`}
             gradient="bg-gradient-to-br from-purple-900/80 to-indigo-900/80"
-            iconBg="bg-purple-500/20"
-          >
-            <div className="space-y-3">
-              <ProgressStat
-                label="Variety Score"
-                value={stats.overview.artistDiversity}
-                color="bg-gradient-to-r from-pink-500 to-purple-500"
-              />
-              <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-xs text-white/80">Most Played</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {stats.artists
-                    .sort((a, b) => b.playCount - a.playCount)
-                    .slice(0, 2)
-                    .map((artist, index) => (
-                      <span
-                        key={index}
-                        className="px-2.5 py-1 text-xs font-medium text-white rounded-full bg-white/10 backdrop-blur-sm"
-                      >
-                        {artist.artist.name} • {artist.playCount}
-                      </span>
-                    ))}
-                </div>
-              </div>
-            </div>
-          </GradientCard>
+            iconColor="#a78bfa"
+            items={stats.artists
+              .sort((a, b) => b.playCount - a.playCount)
+              .map(artist => ({
+                name: artist.artist.name,
+                count: artist.playCount,
+                image: artist.artist.images?.[0]?.url
+              }))}
+            score={stats.overview.artistDiversity}
+            scoreLabel="Diversity"
+            mostPlayed={stats.artists
+              .sort((a, b) => b.playCount - a.playCount)
+              .slice(0, 3)
+              .map(artist => ({
+                name: artist.artist.name,
+                count: artist.playCount
+              }))}
+          />
 
-          {/* Track Variety Card */}
+          {/* Track Card */}
           <GradientCard
             icon={Music}
-            title="Track Variety"
-            value={`${stats.overview.uniqueTracks} Tracks`}
+            title="Tracks"
+            value={stats.overview.uniqueTracks}
             description={`${Math.round((stats.overview.uniqueTracks / stats.overview.totalPlays) * 100)}% unique`}
             gradient="bg-gradient-to-br from-amber-900/80 to-pink-900/80"
-            iconBg="bg-amber-500/20"
-          >
-            <div className="space-y-3">
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                <span className="text-xs text-white/80">High variety of tracks</span>
-              </div>
-              <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-xs text-white/80">Most Played</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {stats.tracks
-                    .sort((a, b) => b.playCount - a.playCount)
-                    .slice(0, 2)
-                    .map((track, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-white rounded-full bg-white/10 backdrop-blur-sm max-w-[140px]"
-                        title={`${track.track.name} • ${track.playCount} plays`}
-                      >
-                        <span className="truncate">{track.track.name.split(' (')[0]}</span>
-                        <span>•</span>
-                        <span className="flex-shrink-0">{track.playCount}</span>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            </div>
-          </GradientCard>
+            iconColor="#f59e0b"
+            items={stats.tracks
+              .sort((a, b) => b.playCount - a.playCount)
+              .map(track => ({
+                name: track.track.name,
+                count: track.playCount,
+                image: track.track.album?.images?.[0]?.url
+              }))}
+            score={stats.overview.uniqueTracks / stats.overview.totalPlays}
+            scoreLabel="Uniqueness"
+            mostPlayed={stats.tracks
+              .sort((a, b) => b.playCount - a.playCount)
+              .slice(0, 3)
+              .map(track => ({
+                name: track.track.name,
+                count: track.playCount
+              }))}
+          />
 
-          {/* Genre Exploration Card */}
+          {/* Genre Card */}
           <GradientCard
             icon={Palette}
-            title="Genre Exploration"
-            value={`${stats.genres.length} Genres`}
-            description={`${Math.round(stats.overview.genreDiversity * 100)}% Diversity`}
+            title="Genres"
+            value={stats.genres.length}
+            description={`${Math.round(stats.overview.genreDiversity * 100)}% diverse`}
             gradient="bg-gradient-to-br from-blue-900/80 to-cyan-900/80"
-            iconBg="bg-blue-500/20"
-          >
-            <div className="mt-3 space-y-4">
-              <div className="mb-3">
-                <ProgressStat
-                  label="Diversity Score"
-                  value={stats.overview.genreDiversity}
-                  color="bg-gradient-to-r from-cyan-400 to-blue-500"
-                />
-              </div>
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs text-white/80">Top Genres</span>
-                  <span className="text-xs text-white/60">{stats.topGenres.length} total</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {stats.topGenres.slice(0, 4).map((genre, index) => (
-                    <GenrePill
-                      key={index}
-                      genre={genre.genre}
-                      count={genre.count}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </GradientCard>
+            iconColor="#60a5fa"
+            items={stats.genres
+              .map((genre, i) => {
+                const gradientClass = getGenreColorClass(genre.genre, "gradient");
+                const textClass = 'text-white font-semibold';
+                return {
+                  name: genre.genre,
+                  count: genre.playCount,
+                  bgClass: `bg-gradient-to-r ${gradientClass}`,
+                  textClass: textClass
+                };
+              })}
+            score={stats.overview.genreDiversity}
+            scoreLabel="Diversity"
+            mostPlayed={stats.genres
+              .slice(0, 3)
+              .map(genre => ({
+                name: genre.genre,
+                count: genre.playCount
+              }))}
+          />
         </div>
 
         <div className="mt-6 pt-6 border-t border-white/5">

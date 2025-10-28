@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   spotifyApi, getRecentlyPlayed, getTopTracks, getTopArtists, calculateTrackStats, calculateArtistStats,
-  calculateGenreStats, calculateTopGenres
+  calculateGenreStats, calculateTopGenres, fetchArtistsInBatches
 } from '@/lib/spotify';
 import { Stats, TimeRange } from '@/types';
 
@@ -17,18 +17,30 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
 
     spotifyApi.setAccessToken(accessToken);
 
-    // Fetch data in parallel
+    // Fetch initial data in parallel
     const [recentlyPlayed, topTracks, topArtists] = await Promise.all([
       getRecentlyPlayed(50),
       getTopTracks(timeRange, 50),
       getTopArtists(timeRange, 50)
     ]);
+
+    // Get all unique artist IDs from recently played tracks
+    const artistIds = Array.from(new Set(
+      recentlyPlayed.flatMap(item => item.track.artists.map(artist => artist.id))
+    ));
+
+    // Fetch all artist details in batches
+    const artistDetails = await fetchArtistsInBatches(artistIds);
+
+    // Calculate top genres from top artists
     const topGenres = calculateTopGenres(topArtists);
 
-    // Calculate statistics
-    const trackStats = calculateTrackStats(recentlyPlayed);
-    const artistStats = calculateArtistStats(recentlyPlayed);
-    const genreStats = calculateGenreStats(recentlyPlayed);
+    // Calculate statistics in parallel with pre-fetched artist data
+    const [trackStats, artistStats, genreStats] = await Promise.all([
+      calculateTrackStats(recentlyPlayed),
+      calculateArtistStats(recentlyPlayed, artistDetails),
+      calculateGenreStats(recentlyPlayed, artistDetails)
+    ]);
 
     // Calculate additional metrics
     const totalPlays = recentlyPlayed.length;
