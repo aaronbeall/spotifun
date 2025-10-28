@@ -35,7 +35,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
     const uniqueTracks = new Set(recentlyPlayed.map(item => item.track.id)).size;
     const totalDuration = recentlyPlayed.reduce((sum, item) => sum + item.track.duration_ms, 0);
 
-    const topGenres = calculateTopGenres(topArtists).slice(0, 9);
+    const topGenres = calculateTopGenres(topArtists);
 
     const stats: Stats = {
       overview: {

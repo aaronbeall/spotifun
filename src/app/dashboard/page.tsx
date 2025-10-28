@@ -19,12 +19,20 @@ export default function Dashboard() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isLoadingTimeRange, setIsLoadingTimeRange] = useState(false);
   const [timeRange, setTimeRange] = useState<TimeRange>('medium_term');
+  const [showAllArtists, setShowAllArtists] = useState(false);
+  const [showAllTracks, setShowAllTracks] = useState(false);
+  const [showAllGenres, setShowAllGenres] = useState(false);
   const router = useRouter();
+
+  // Constants for number of items to show
+  const ARTISTS_TO_SHOW = 8;
+  const TRACKS_TO_SHOW = 16;
+  const GENRES_TO_SHOW = 12;
 
   // Generate consistent colors for genres based on genre name hash
   const genreColors = useMemo(() => {
     if (!stats?.topGenres) return {};
-    
+
     // Each color now includes a border color that matches the gradient
     const colors = [
       { gradient: 'from-purple-500/15 to-blue-500/15', border: 'border-purple-500/30' },
@@ -40,7 +48,7 @@ export default function Dashboard() {
       { gradient: 'from-indigo-500/15 to-violet-500/15', border: 'border-indigo-500/30' },
       { gradient: 'from-rose-500/15 to-amber-500/15', border: 'border-rose-500/30' },
     ];
-    
+
     // Simple hash function to convert string to number
     const hashString = (str: string) => {
       let hash = 0;
@@ -51,7 +59,7 @@ export default function Dashboard() {
       }
       return Math.abs(hash);
     };
-    
+
     const genreColorMap: Record<string, string> = {};
     stats.topGenres.forEach(({ genre }) => {
       const hash = hashString(genre.toLowerCase());
@@ -61,7 +69,7 @@ export default function Dashboard() {
         border: colors[colorIndex].border
       };
     });
-    
+
     return genreColorMap;
   }, [stats?.topGenres]);
 
@@ -320,8 +328,8 @@ export default function Dashboard() {
             <Star className="w-5 h-5 text-yellow-400" />
             Top Artists
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {stats.topArtists.slice(0, 8).map((artist, index) => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-4">
+            {stats.topArtists.slice(0, showAllArtists ? stats.topArtists.length : ARTISTS_TO_SHOW).map((artist, index) => {
               const recentPlays = stats.artists.find(a => a.artist.id === artist.id)?.playCount || 0;
               const imageUrl = artist.images?.[0]?.url;
 
@@ -358,6 +366,14 @@ export default function Dashboard() {
               );
             })}
           </div>
+          <div className="mt-6 flex justify-center">
+            <button
+              onClick={() => setShowAllArtists(!showAllArtists)}
+              className="text-sm text-gray-300 hover:text-white px-4 py-2 rounded-full border border-gray-600 hover:border-gray-400 transition-colors bg-gray-800/50 hover:bg-gray-700/50"
+            >
+              {showAllArtists ? 'Show Less' : `Show All ${stats.topArtists.length} Artists`}
+            </button>
+          </div>
         </div>
 
         {/* Top Tracks */}
@@ -366,8 +382,8 @@ export default function Dashboard() {
             <TrendingUp className="w-5 h-5 text-green-400" />
             Top Tracks
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {stats.topTracks.slice(0, 8).map((track, index) => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
+            {stats.topTracks.slice(0, showAllTracks ? stats.topTracks.length : TRACKS_TO_SHOW).map((track, index) => {
               const trackStats = stats.tracks.find(t => t.track.id === track.id);
               const recentPlays = trackStats?.playCount || 0;
               const lastPlayed = trackStats?.lastPlayed ? new Date(trackStats.lastPlayed) : null;
@@ -417,7 +433,16 @@ export default function Dashboard() {
               );
             })}
           </div>
+          <div className="mt-6 flex justify-center">
+            <button
+              onClick={() => setShowAllTracks(!showAllTracks)}
+              className="text-sm text-gray-300 hover:text-white px-4 py-2 rounded-full border border-gray-600 hover:border-gray-400 transition-colors bg-gray-800/50 hover:bg-gray-700/50"
+            >
+              {showAllTracks ? 'Show Less' : `Show All ${stats.topTracks.length} Tracks`}
+            </button>
+          </div>
         </div>
+
         {/* Top Genres */}
         <div className="bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-700 mb-8">
           <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
@@ -425,7 +450,7 @@ export default function Dashboard() {
             Top Genres
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {stats.topGenres.map(({ genre, count }, index) => (
+            {stats.topGenres.slice(0, showAllGenres ? stats.topGenres.length : GENRES_TO_SHOW).map(({ genre, count }, index) => (
               <div
                 key={genre}
                 className={`flex items-center justify-between p-4 rounded-lg hover:scale-[1.02] transition-all duration-300 border ${genreColors[genre]?.border} ${genreColors[genre]?.gradient} bg-gradient-to-r`}
@@ -439,6 +464,14 @@ export default function Dashboard() {
                 <div className="text-lg font-bold text-white/80">#{index + 1}</div>
               </div>
             ))}
+          </div>
+          <div className="mt-6 flex justify-center">
+            <button
+              onClick={() => setShowAllGenres(!showAllGenres)}
+              className="text-sm text-gray-300 hover:text-white px-4 py-2 rounded-full border border-gray-600 hover:border-gray-400 transition-colors bg-gray-800/50 hover:bg-gray-700/50"
+            >
+              {showAllGenres ? 'Show Less' : `Show All ${stats.topGenres.length} Genres`}
+            </button>
           </div>
         </div>
 
