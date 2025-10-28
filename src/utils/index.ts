@@ -1,6 +1,8 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+export * from './format';
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -18,11 +20,6 @@ export const generateColors = (count: number): string[] => {
     result.push(colors[i % colors.length]);
   }
   return result;
-};
-
-// Format numbers with commas
-export const formatNumber = (num: number): string => {
-  return num.toLocaleString();
 };
 
 // Get time period labels

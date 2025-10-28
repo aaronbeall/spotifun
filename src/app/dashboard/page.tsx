@@ -3,11 +3,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { BarChart3, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User } from 'lucide-react';
+import { formatDuration, formatNumber, getGenreColors, getGenreColorMap } from '@/utils';
 import Image from 'next/image';
 import FunStats from '@/components/features/FunStats';
 import MusicProfile from '@/components/features/MusicProfile';
 import Achievements from '@/components/features/Achievements';
 import Rankings from '@/components/features/Rankings';
+import RecentlyPlayed from '@/components/features/RecentlyPlayed';
 
 import { UserProfile, Stats, TimeRange } from '@/types';
 
@@ -31,46 +33,7 @@ export default function Dashboard() {
 
   // Generate consistent colors for genres based on genre name hash
   const genreColors = useMemo(() => {
-    if (!stats?.topGenres) return {};
-
-    // Each color now includes a border color that matches the gradient
-    const colors = [
-      { gradient: 'from-purple-500/15 to-blue-500/15', border: 'border-purple-500/30' },
-      { gradient: 'from-pink-500/15 to-rose-500/15', border: 'border-pink-500/30' },
-      { gradient: 'from-cyan-500/15 to-emerald-500/15', border: 'border-cyan-500/30' },
-      { gradient: 'from-amber-500/15 to-orange-500/15', border: 'border-amber-500/30' },
-      { gradient: 'from-violet-500/15 to-fuchsia-500/15', border: 'border-violet-500/30' },
-      { gradient: 'from-emerald-500/15 to-teal-500/15', border: 'border-emerald-500/30' },
-      { gradient: 'from-rose-500/15 to-pink-500/15', border: 'border-rose-500/30' },
-      { gradient: 'from-blue-500/15 to-indigo-500/15', border: 'border-blue-500/30' },
-      { gradient: 'from-amber-500/15 to-yellow-500/15', border: 'border-amber-500/30' },
-      { gradient: 'from-green-500/15 to-emerald-500/15', border: 'border-green-500/30' },
-      { gradient: 'from-indigo-500/15 to-violet-500/15', border: 'border-indigo-500/30' },
-      { gradient: 'from-rose-500/15 to-amber-500/15', border: 'border-rose-500/30' },
-    ];
-
-    // Simple hash function to convert string to number
-    const hashString = (str: string) => {
-      let hash = 0;
-      for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32bit integer
-      }
-      return Math.abs(hash);
-    };
-
-    const genreColorMap: Record<string, string> = {};
-    stats.topGenres.forEach(({ genre }) => {
-      const hash = hashString(genre.toLowerCase());
-      const colorIndex = hash % colors.length;
-      genreColorMap[genre] = {
-        gradient: colors[colorIndex].gradient,
-        border: colors[colorIndex].border
-      };
-    });
-
-    return genreColorMap;
+    return getGenreColorMap(stats?.topGenres?.map(g => g.genre) || []);
   }, [stats?.topGenres]);
 
   useEffect(() => {
@@ -120,20 +83,7 @@ export default function Dashboard() {
     }
   };
 
-  const formatDuration = (ms: number) => {
-    const minutes = Math.floor(ms / 60000);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-
-    if (days > 0) return `${days}d ${hours % 24}h`;
-    if (hours > 0) return `${hours}h ${minutes % 60}m`;
-    return `${minutes}m`;
-  };
-
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    return num.toString();
-  };
+  // Format number and duration functions are now imported from @/utils
 
   if (isInitialLoading) {
     return (
@@ -271,58 +221,15 @@ export default function Dashboard() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Overview Stats */}
-        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 ${isLoadingTimeRange ? 'opacity-50' : ''}`}>
-          <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-900/30 rounded-lg flex items-center justify-center">
-                <Headphones className="w-5 h-5 text-blue-400" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-400">Total Plays</p>
-                <p className="text-2xl font-bold text-white">{formatNumber(stats.overview.totalPlays)}</p>
-              </div>
-            </div>
-          </div>
+        {/* Recently Played Stats */}
+        <RecentlyPlayed
+          stats={stats}
+          isLoadingTimeRange={isLoadingTimeRange}
+          formatNumber={formatNumber}
+          formatDuration={formatDuration}
+        />
 
-          <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-900/30 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-purple-400" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-400">Unique Artists</p>
-                <p className="text-2xl font-bold text-white">{formatNumber(stats.overview.uniqueArtists)}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-900/30 rounded-lg flex items-center justify-center">
-                <Music className="w-5 h-5 text-green-400" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-400">Unique Tracks</p>
-                <p className="text-2xl font-bold text-white">{formatNumber(stats.overview.uniqueTracks)}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-orange-900/30 rounded-lg flex items-center justify-center">
-                <Clock className="w-5 h-5 text-orange-400" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-400">Minutes Listened</p>
-                <p className="text-2xl font-bold text-white">{formatDuration(stats.overview.totalDuration)}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Top Artists */}
+      {/* Top Artists */}
         <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
           <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
             <Star className="w-5 h-5 text-yellow-400" />

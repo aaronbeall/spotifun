@@ -44,7 +44,14 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
         uniqueTracks,
         totalDuration,
         averageSessionLength: totalDuration / totalPlays / 60000, // in minutes
+        // Genre diversity: Ratio of unique genres to unique artists (0-1 scale)
+        // Higher values indicate listening to artists from many different genres
+        // Lower values indicate focusing on a few specific genres
         genreDiversity: genreStats.length / Math.max(uniqueArtists, 1),
+        
+        // Artist diversity: Ratio of unique artists to total plays (0-1 scale)
+        // Higher values indicate listening to many different artists
+        // Lower values indicate listening to the same artists repeatedly
         artistDiversity: uniqueArtists / Math.max(totalPlays, 1)
       },
       tracks: trackStats,
