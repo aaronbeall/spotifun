@@ -306,7 +306,7 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange }: RecentlyPl
           <GradientCard
             icon={Palette}
             title="Genres"
-            value={stats.genres.length}
+            value={stats.overview.uniqueGenres}
             description={`${Math.round(stats.overview.genreDiversity * 100)}% diverse`}
             gradient="bg-gradient-to-br from-blue-900/80 to-cyan-900/80"
             iconColor="#60a5fa"

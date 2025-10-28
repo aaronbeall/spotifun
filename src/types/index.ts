@@ -79,6 +79,7 @@ export interface StatsOverview {
   totalPlays: number;
   uniqueArtists: number;
   uniqueTracks: number;
+  uniqueGenres: number;
   totalDuration: number;
   averageSessionLength: number;
   genreDiversity: number;
