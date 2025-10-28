@@ -118,7 +118,30 @@ export default function Dashboard() {
   };
 
   if (!user || !stats) {
-    return null;
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-6">
+        <div className="text-center max-w-md">
+          <h2 className="text-2xl font-bold text-white mb-4">Unable to load your data</h2>
+          <p className="text-gray-300 mb-6">
+            We couldn't load your Spotify data. Please try refreshing the page or return to the home page to sign in again.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+            >
+              Refresh Page
+            </button>
+            <a
+              href="/"
+              className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors text-center"
+            >
+              Return Home
+            </a>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
