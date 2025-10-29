@@ -1,14 +1,24 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Award, Trophy, Zap, ChevronDown, ChevronUp } from 'lucide-react';
+import { Award, Trophy, Zap, ChevronDown, ChevronUp, Palette, Users } from 'lucide-react';
 import { findBestMatchingVibe, getAllMusicVibes } from '@/utils/musicVibesAnalyzer';
 import { calculateWeightedVACRSScore, calculateVACRSScoreMatch } from '@/utils/musicClassification';
 import { GenreStats, MusicVibe } from '@/types';
 import { VibeMatchList } from './VibeMatchList';
 import { cn } from '@/utils';
 
+interface BadgeItem {
+  name: string;
+  image?: string;
+  percentage: number;
+  count: number;
+  type: 'artist' | 'genre';
+}
+
 interface MusicVibesBannerProps {
   genreStats: GenreStats[];
+  topArtist?: Omit<BadgeItem, 'type'>;
+  topGenre?: Omit<BadgeItem, 'type'>;
   className?: string;
 }
 
@@ -57,7 +67,7 @@ const VibeBadge = ({
       className={cn(
         'relative flex flex-col items-center justify-center group',
         'transform transition-all duration-300',
-        isCurrent ? 'scale-105' : 'hover:scale-105',
+        'hover:scale-105',
         className
       )}
     >
@@ -219,7 +229,65 @@ const VibeBadge = ({
   );
 };
 
-export function MusicVibesBanner({ genreStats, className = '' }: MusicVibesBannerProps) {
+const Badge = ({ item, className = '' }: { item: BadgeItem; className?: string }) => {
+  const { name, image, type, count } = item;
+  const color = type === 'artist' ? '#a78bfa' : '#60a5fa';
+  const Icon = type === 'artist' ? Users : Palette;
+
+  const title = type === 'artist' ? 'Top Artist' : 'Top Genre';
+
+  return (
+    <div className={`flex flex-col items-center hover:scale-105 ${className}`}>
+      {/* Header with icon and title */}
+      <div className="flex items-center gap-2 text-sm text-white/70 mb-3">
+        <Icon className="w-4 h-4" style={{ color: color }} />
+        <span className="font-medium">{title}</span>
+      </div>
+
+      <div className="relative">
+        {/* Image container */}
+        <div className="w-24 h-24 rounded-full overflow-hidden border-2 flex items-center justify-center transition-transform duration-300 hover:scale-105"
+          style={{
+            borderColor: color,
+            boxShadow: `0 0 12px ${color}40`
+          }}
+        >
+          {image ? (
+            <img
+              src={image}
+              alt={name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div
+              className="w-full h-full flex items-center justify-center text-2xl font-bold text-white/80"
+              style={{ backgroundColor: `${color}20` }}
+            >
+              {name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Name and plays */}
+      <div className="mt-3 text-center">
+        <h3 className="text-sm font-semibold text-white line-clamp-1 group-hover:text-white/90 transition-colors">
+          {name}
+        </h3>
+        <div className="text-xs text-white/60 mt-1 group-hover:text-white/70 transition-colors">
+          {count} {count === 1 ? 'play' : 'plays'}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export function MusicVibesBanner({
+  genreStats,
+  topArtist,
+  topGenre,
+  className = ''
+}: MusicVibesBannerProps) {
   const [showAllVibes, setShowAllVibes] = useState(false);
   const { vibe, matchPercentage } = useMemo(
     () => findBestMatchingVibe(genreStats),
@@ -268,15 +336,39 @@ export function MusicVibesBanner({ genreStats, className = '' }: MusicVibesBanne
           </div>
         </div>
 
-        {/* Main Badge */}
+        {/* Main Badge with Side Badges */}
         <div className="flex flex-col items-center mb-8">
-          <VibeBadge
-            vibe={vibe}
-            matchPercentage={matchPercentage}
-            isCurrent
-            size="lg"
-            className="group"
-          />
+          <div className="flex items-center justify-center gap-16">
+            {/* Top Artist Badge */}
+            {topArtist && (
+              <Badge
+                item={{
+                  ...topArtist,
+                  type: 'artist' as const
+                }}
+              />
+            )}
+
+            {/* Main Vibe Badge */}
+            <div className="relative z-10">
+              <VibeBadge
+                vibe={vibe}
+                matchPercentage={matchPercentage}
+                isCurrent
+                size="lg"
+              />
+            </div>
+
+            {/* Top Genre Badge */}
+            {topGenre && (
+              <Badge
+                item={{
+                  ...topGenre,
+                  type: 'genre' as const
+                }}
+              />
+            )}
+          </div>
         </div>
 
         {/* All Vibes Grid */}

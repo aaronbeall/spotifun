@@ -388,7 +388,36 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange }: RecentlyPl
         {/* Music Vibe Banner */}
         {stats.genres?.length > 0 && (
           <div className="mb-6">
-            <MusicVibesBanner genreStats={stats.genres} />
+            <MusicVibesBanner 
+              genreStats={stats.genres}
+              topArtist={stats.artists.length > 0 ? {
+                name: stats.artists[0].artist.name,
+                image: stats.artists[0].artist.images?.[0]?.url,
+                percentage: Math.round((stats.artists[0].playCount / stats.overview.totalPlays) * 100),
+                count: stats.artists[0].playCount
+              } : undefined}
+              topGenre={stats.genres.length > 0 ? {
+                name: stats.genres[0].genre,
+                percentage: Math.round((stats.genres[0].playCount / stats.overview.totalPlays) * 100),
+                count: stats.genres[0].playCount,
+                image: (() => {
+                  // First find an artist that has this genre
+                  const genreArtist = stats.artists.find(a => 
+                    a.artist.genres?.includes(stats.genres[0].genre)
+                  );
+                  
+                  if (!genreArtist) return undefined;
+                  
+                  // Then find a track by this artist
+                  const track = stats.tracks.find(t => 
+                    t.track.album?.images?.[0]?.url &&
+                    t.track.artists.some(a => a.id === genreArtist.artist.id)
+                  );
+                  
+                  return track?.track.album.images[0]?.url;
+                })()
+              } : undefined}
+            />
           </div>
         )}
 
