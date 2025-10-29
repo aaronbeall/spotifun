@@ -1,10 +1,11 @@
-import { Headphones, Users, Music, Clock, Sparkles, Palette, Disc, Disc3, Disc2 } from 'lucide-react';
+import { Headphones, Users, Music, Clock, Sparkles, Palette, Disc, Disc3, Disc2, TrendingUp, Star } from 'lucide-react';
 import { Stats } from '@/types';
 import { formatNumber, formatDuration, getGenreColorClass } from "@/utils";
-import { useState, useMemo } from "react";
+import { analyzePopularity } from "@/utils/popularity";
+import { useState, useMemo, HTMLProps } from "react";
 
 interface GradientCardProps {
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<HTMLProps<unknown>>;
   className?: string;
   title: string;
   value: string | React.ReactNode;
@@ -18,6 +19,11 @@ interface GradientCardProps {
     bgClass?: string;
     textClass?: string;
   }>;
+  badge?: {
+    label: string;
+    description: string;
+    score: number;
+  };
   score?: number;
   scoreLabel?: string;
   mostPlayed?: Array<{ name: string; count: number }>;
@@ -32,6 +38,7 @@ const GradientCard = ({
   gradient,
   iconColor,
   items = [],
+  badge,
   score,
   scoreLabel = 'Score',
   mostPlayed = [],
@@ -47,16 +54,46 @@ const GradientCard = ({
       {/* Decorative elements */}
       <div className="absolute top-0 right-0 w-24 h-24 rounded-full opacity-10 bg-white -mr-6 -mt-6"></div>
 
+      {/* Badge in upper right */}
+      {badge && (
+        <div className="absolute top-6 right-6 z-20">
+          <div className="group relative">
+            <div className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 cursor-help shadow-md">
+              <Star className="w-3.5 h-3.5" fill="currentColor" />
+              <span className="drop-shadow-sm">{badge.label}</span>
+            </div>
+            <div className="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 absolute top-full right-0 left-auto mt-2 w-64 bg-gray-900/95 backdrop-blur-sm text-white text-sm rounded-lg shadow-xl border border-white/10 p-3 pointer-events-none">
+              <div className="flex items-center gap-2 font-semibold text-white mb-1.5">
+                <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
+                {badge.label}
+              </div>
+              <p className="text-gray-300 text-xs mb-2 leading-snug">{badge.description}</p>
+              <div className="flex items-center gap-2 text-xs text-gray-300 pt-2 border-t border-white/5">
+                <div className="w-full bg-gray-700 rounded-full h-1.5">
+                  <div
+                    className="bg-gradient-to-r from-green-400 to-blue-500 h-1.5 rounded-full"
+                    style={{ width: `${badge.score}%` }}
+                  ></div>
+                </div>
+                <span className="whitespace-nowrap">{badge.score}/100</span>
+              </div>
+              <div className="absolute -top-1.5 right-4 left-auto w-3 h-3 bg-gray-900/95 border-t border-r border-white/10 transform -rotate-45"></div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="relative z-10 h-full flex flex-col">
         {/* Header with icon and title */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center`} style={{ backgroundColor: `${iconColor}20` }}>
-              <Icon className={`w-5 h-5 ${ iconColor }`}  />
+              <Icon className="w-5 h-5" style={{ color: iconColor }} />
             </div>
             <div>
               <h3 className="text-sm font-medium text-white/80">{title}</h3>
-              <p className="text-2xl font-bold text-white mt-0.5">{value}</p>
+              <p className="text-2xl font-bold text-white mt-1">{value}</p>
+              <p className="text-xs text-white/60">{description}</p>
             </div>
           </div>
 
@@ -126,10 +163,12 @@ const GradientCard = ({
           </div>
         )}
 
-        {/* Most Played Pills */}
+        {/* Most Played/Popular Pills */}
         {mostPlayed.length > 0 && (
           <div className="mt-4">
-            <p className="text-xs text-white/70 mb-2">Most Played</p>
+            <p className="text-xs text-white/70 mb-2">
+              {title === 'Popularity' ? 'Most Popular' : 'Most Played'}
+            </p>
             <div className="flex flex-wrap gap-2">
               {displayedPills.map((item, i) => (
                 <div
@@ -140,10 +179,10 @@ const GradientCard = ({
                     color: iconColor,
                     border: `1px solid ${iconColor}30`
                   }}
-                  title={`${item.name} • ${item.count} plays`}
+                  title={`${item.name} • ${title === 'Popularity' ? `${item.count}%` : `${item.count} plays`}`}
                 >
                   <span className="truncate max-w-[100px]">{item.name}</span>
-                  <span className="flex-shrink-0">• {item.count}</span>
+                  <span className="flex-shrink-0">• {title === 'Popularity' ? `${item.count}%` : item.count}</span>
                 </div>
               ))}
               {hasMorePills && (
@@ -213,6 +252,8 @@ interface RecentlyPlayedProps {
 export default function RecentlyPlayed({ stats, isLoadingTimeRange }: RecentlyPlayedProps) {
   // Calculate average plays per day (assuming 30 days for the time range)
   const avgPlaysPerDay = Math.round(stats.overview.totalPlays / 30);
+
+  const popularity = analyzePopularity(stats.tracks.map(track => track.track));
 
   return (
     <div className="space-y-6">
@@ -327,6 +368,31 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange }: RecentlyPl
               .map(genre => ({
                 name: genre.genre,
                 count: genre.playCount
+              }))}
+          />
+
+          {/* Popularity Card */}
+          <GradientCard
+            icon={TrendingUp}
+            title="Popularity"
+            value={`${popularity.range[0]}-${popularity.range[1]}`}
+            description={`Average ${stats.overview.averagePopularity}%`}
+            gradient="bg-gradient-to-br from-emerald-900/80 to-teal-900/80"
+            iconColor="#34d399"
+            score={stats.overview.averagePopularity / 100}
+            scoreLabel="Average Popularity"
+            badge={{
+              label: popularity.label,
+              description: popularity.description,
+              score: popularity.diversityScore
+            }}
+            mostPlayed={stats.tracks
+              .map(track => track.track)
+              .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+              .map(track => ({
+                name: track.name,
+                count: track.popularity || 0,
+                label: `${track.popularity}%`
               }))}
           />
         </div>

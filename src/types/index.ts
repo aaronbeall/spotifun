@@ -84,6 +84,7 @@ export interface StatsOverview {
   averageSessionLength: number;
   genreDiversity: number;
   artistDiversity: number;
+  averagePopularity: number; // 0-100 scale
 }
 
 export type TimeRange = 'short_term' | 'medium_term' | 'long_term';

@@ -46,6 +46,10 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
     const totalPlays = recentlyPlayed.length;
     const totalDuration = recentlyPlayed.reduce((sum, item) => sum + item.track.duration_ms, 0);
     const totalGenres = Object.values(artistDetails).reduce((sum, artist) => sum + (artist.genres?.length || 0), 0);
+    
+    // Calculate average track popularity (0-100 scale)
+    const totalPopularity = recentlyPlayed.reduce((sum, item) => sum + (item.track.popularity || 0), 0);
+    const averagePopularity = totalPlays > 0 ? Math.round(totalPopularity / totalPlays) : 0;
 
     const stats: Stats = {
       overview: {
@@ -56,7 +60,8 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
         totalDuration,
         averageSessionLength: totalDuration / totalPlays / 60000, // in minutes
         genreDiversity: genreStats.length / Math.max(totalGenres, 1),
-        artistDiversity: artistStats.length / Math.max(totalPlays, 1)
+        artistDiversity: artistStats.length / Math.max(totalPlays, 1),
+        averagePopularity
       },
       tracks: trackStats,
       artists: artistStats,
