@@ -137,7 +137,8 @@ export function MusicVibesBanner({ genreStats, className = '' }: MusicVibesBanne
                 {vibe.name}
               </motion.h2>
               <motion.p
-                className="text-sm text-gray-400 mt-0.5"
+                className="text-sm mt-0.5"
+                style={{ color: `${vibe.color.light}cc` }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
