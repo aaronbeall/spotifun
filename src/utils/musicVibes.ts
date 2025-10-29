@@ -118,6 +118,91 @@ const MUSIC_VIBES: MusicVibe[] = [
       socialPresence: 0.3,
     },
   },
+  {
+    id: 'urban-pulse',
+    name: 'Urban Pulse',
+    description: 'Modern, rhythmic beats of the city nightlife',
+    icon: Music,
+    color: {
+      light: '#f0abfc',
+      dark: '#86198f',
+    },
+    targetScore: {
+      valence: 0.7,
+      arousal: 0.8,
+      complexity: 0.6,
+      rawness: 0.4,
+      socialPresence: 0.9,
+    },
+  },
+  {
+    id: 'nocturnal-whispers',
+    name: 'Nocturnal Whispers',
+    description: 'Mysterious and atmospheric night-time listening',
+    icon: Moon,
+    color: {
+      light: '#a5b4fc',
+      dark: '#3730a3',
+    },
+    targetScore: {
+      valence: 0.4,
+      arousal: 0.3,
+      complexity: 0.7,
+      rawness: 0.2,
+      socialPresence: 0.2,
+    },
+  },
+  {
+    id: 'retro-wave',
+    name: 'Retro Wave',
+    description: 'Nostalgic 80s-inspired synthwave and retro sounds',
+    icon: Star,
+    color: {
+      light: '#fda4af',
+      dark: '#9f1239',
+    },
+    targetScore: {
+      valence: 0.8,
+      arousal: 0.7,
+      complexity: 0.5,
+      rawness: 0.6,
+      socialPresence: 0.5,
+    },
+  },
+  {
+    id: 'acoustic-soul',
+    name: 'Acoustic Soul',
+    description: 'Intimate, organic acoustic performances',
+    icon: Heart,
+    color: {
+      light: '#fecdd3',
+      dark: '#9f1239',
+    },
+    targetScore: {
+      valence: 0.6,
+      arousal: 0.4,
+      complexity: 0.3,
+      rawness: 0.8,
+      socialPresence: 0.2,
+    },
+  },
+  {
+    id: 'psychedelic-journey',
+    name: 'Psychedelic Journey',
+    description: 'Mind-bending, experimental soundscapes',
+    icon: Sparkles,
+    color: {
+      light: '#d8b4fe',
+      dark: '#6b21a8',
+    },
+    targetScore: {
+      valence: 0.5,
+      arousal: 0.7,
+      complexity: 0.9,
+      rawness: 0.7,
+      socialPresence: 0.4,
+    },
+  },
 ];
 
 export interface VibeMatch {

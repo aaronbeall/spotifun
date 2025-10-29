@@ -1,5 +1,5 @@
 import { findBestMatchingVibe } from '@/utils/musicVibes';
-import { GenreStats } from '@/types';
+import { GenreStats, VACRSScore } from '@/types';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 
@@ -31,6 +31,62 @@ const VACRSBar = ({
   </div>
 );
 
+interface VACRSChartProps {
+  score: VACRSScore;
+  matchPercentage: number;
+  color: {
+    light: string;
+    dark: string;
+  };
+}
+
+const COLORS = [
+  '#3B82F6', // Blue
+  '#10B981', // Green
+  '#F59E0B', // Yellow
+  '#EC4899', // Pink
+  '#8B5CF6', // Purple
+];
+
+function VACRSChart({ score, matchPercentage, color }: VACRSChartProps) {
+  const scoreEntries = Object.entries(score);
+
+  return (
+    <div className="flex flex-col items-end">
+      <motion.div
+        className="text-sm font-medium mb-2"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.25 }}
+        style={{
+          backgroundImage: `linear-gradient(45deg, ${color.light}, ${color.dark})`,
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text'
+        }}
+      >
+        {Math.round(matchPercentage)}% match
+      </motion.div>
+
+      <motion.div
+        className="flex items-end space-x-1 h-8"
+        initial={{ opacity: 0, y: 5 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        {scoreEntries.map(([key, value], index) => (
+          <VACRSBar
+            key={key}
+            label={key}
+            value={value}
+            color={COLORS[index % COLORS.length]}
+          />
+        ))}
+      </motion.div>
+    </div>
+  );
+}
+
 export function MusicVibesBanner({ genreStats, className = '' }: MusicVibesBannerProps) {
   const { vibe, matchPercentage, score } = useMemo(
     () => findBestMatchingVibe(genreStats),
@@ -40,14 +96,6 @@ export function MusicVibesBanner({ genreStats, className = '' }: MusicVibesBanne
   if (!genreStats?.length) return null;
 
   const Icon = vibe.icon;
-  const scoreEntries = Object.entries(score);
-  const colors = [
-    '#3B82F6', // Blue
-    '#10B981', // Green
-    '#F59E0B', // Yellow
-    '#EC4899', // Pink
-    '#8B5CF6', // Purple
-  ];
 
   return (
     <motion.div
@@ -91,39 +139,11 @@ export function MusicVibesBanner({ genreStats, className = '' }: MusicVibesBanne
             </div>
           </div>
 
-          {/* Micro Chart */}
-          <div className="flex flex-col items-end">
-            <motion.div
-              className="text-sm font-medium mb-2"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.25 }}
-              style={{
-                backgroundImage: `linear-gradient(45deg, ${vibe.color.light}, ${vibe.color.dark})`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
-              }}
-            >
-              {matchPercentage}% match
-            </motion.div>
-
-            <motion.div
-              className="flex items-end space-x-1 h-8"
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              {scoreEntries.map(([key, value], index) => (
-                <VACRSBar
-                  key={key}
-                  label={key}
-                  value={value}
-                  color={colors[index % colors.length]}
-                />
-              ))}
-            </motion.div>
-          </div>
+          <VACRSChart 
+            score={score} 
+            matchPercentage={matchPercentage} 
+            color={vibe.color} 
+          />
         </div>
       </div>
     </motion.div>
