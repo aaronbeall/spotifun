@@ -6,7 +6,7 @@ import { useState, useMemo, HTMLProps } from "react";
 import { MusicVibesBanner } from "./MusicVibesBanner";
 import { motion } from "framer-motion";
 
-interface GradientCardProps {
+interface StatCardProps {
   icon: React.ComponentType<HTMLProps<unknown>>;
   className?: string;
   title: string;
@@ -32,7 +32,7 @@ interface GradientCardProps {
   children?: React.ReactNode;
 }
 
-const GradientCard = ({
+const StatCard = ({
                         icon: Icon,
                         title,
                         value,
@@ -45,7 +45,7 @@ const GradientCard = ({
                         scoreLabel = 'Score',
                         mostPlayed = [],
                         children
-                      }: GradientCardProps) => {
+                      }: StatCardProps) => {
   const [showAllPills, setShowAllPills] = useState(false);
   const displayedPills = useMemo(
     () => (showAllPills ? mostPlayed : mostPlayed.slice(0, 3)),
@@ -395,7 +395,7 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange }: RecentlyPl
         <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ${isLoadingTimeRange ? 'opacity-50' : ''}`}>
 
           {/* Artist Card */}
-          <GradientCard
+          <StatCard
             icon={Users}
             title="Artists"
             value={stats.overview.uniqueArtists}
@@ -420,7 +420,7 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange }: RecentlyPl
           />
 
           {/* Track Card */}
-          <GradientCard
+          <StatCard
             icon={Music}
             title="Tracks"
             value={stats.overview.uniqueTracks}
@@ -445,7 +445,7 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange }: RecentlyPl
           />
 
           {/* Genre Card */}
-          <GradientCard
+          <StatCard
             icon={Palette}
             title="Genres"
             value={stats.overview.uniqueGenres}
@@ -473,7 +473,7 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange }: RecentlyPl
           />
 
           {/* Popularity Card */}
-          <GradientCard
+          <StatCard
             icon={TrendingUp}
             title="Popularity"
             value={`${popularity.range[0]}-${popularity.range[1]}`}
