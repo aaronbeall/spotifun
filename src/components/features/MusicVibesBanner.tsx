@@ -1,7 +1,9 @@
-import { findBestMatchingVibe } from '@/utils/musicVibes';
+import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { findBestMatchingVibe } from '@/utils/musicVibesAnalyzer';
 import { GenreStats, VACRSScore } from '@/types';
-import { motion } from 'framer-motion';
-import { useMemo } from 'react';
+import { VibeMatchList } from './VibeMatchList';
 
 interface MusicVibesBannerProps {
   genreStats: GenreStats[];
@@ -88,10 +90,16 @@ function VACRSChart({ score, matchPercentage, color }: VACRSChartProps) {
 }
 
 export function MusicVibesBanner({ genreStats, className = '' }: MusicVibesBannerProps) {
+  const [showAllVibes, setShowAllVibes] = useState(false);
   const { vibe, matchPercentage, score } = useMemo(
     () => findBestMatchingVibe(genreStats),
     [genreStats]
   );
+
+  // Filter out genres with zero play counts
+  const filteredGenreStats = useMemo(() => {
+    return genreStats.filter(stat => stat.playCount > 0);
+  }, [genreStats]);
 
   if (!genreStats?.length) return null;
 
@@ -139,12 +147,46 @@ export function MusicVibesBanner({ genreStats, className = '' }: MusicVibesBanne
             </div>
           </div>
 
-          <VACRSChart 
-            score={score} 
-            matchPercentage={matchPercentage} 
-            color={vibe.color} 
+          <VACRSChart
+            score={score}
+            matchPercentage={matchPercentage}
+            color={vibe.color}
           />
         </div>
+
+        {/* Toggle for all vibes */}
+        <motion.div
+          className="mt-6 pt-4 border-t border-white/5"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          <button
+            onClick={() => setShowAllVibes(!showAllVibes)}
+            className="flex items-center text-xs text-gray-400 hover:text-white transition-colors"
+          >
+            {showAllVibes ? (
+              <>
+                <span>Hide all vibes</span>
+                <ChevronUp className="w-4 h-4 ml-1" />
+              </>
+            ) : (
+              <>
+                <span>Show all vibes</span>
+                <ChevronDown className="w-4 h-4 ml-1" />
+              </>
+            )}
+          </button>
+
+          <AnimatePresence>
+            {showAllVibes && (
+              <VibeMatchList
+                genreStats={filteredGenreStats}
+                currentVibeId={vibe.id}
+              />
+            )}
+          </AnimatePresence>
+        </motion.div>
       </div>
     </motion.div>
   );

@@ -1,49 +1,37 @@
 import { Music, Flame, Moon, Sun, Heart, Star, Wind, Droplets, Sparkles } from 'lucide-react';
-import { GenreStats } from '@/types';
-import { VACRSScore, calculateWeightedVACRSScore, calculateVACRSScoreDistance } from './musicClassification';
+import { MusicVibe} from '@/types';
 
-export interface MusicVibe {
-  id: string;
-  name: string;
-  description: string;
-  icon: React.ComponentType<{ className?: string }>;
-  color: {
-    light: string;
-    dark: string;
-  };
-  targetScore: VACRSScore;
-}
 
 // Define various music vibes with their target VACRS scores
-const MUSIC_VIBES: MusicVibe[] = [
+export const MUSIC_VIBES: MusicVibe[] = [
   {
-    id: 'chill-vibes',
-    name: 'Serene Echoes',
-    description: 'Relaxed, mellow tunes perfect for unwinding',
-    icon: Moon, // Moon icon is correct in lucide-react
+    id: 'tranquility',
+    name: 'Tranquil Serenity',
+    description: 'A peaceful state of calm and inner stillness',
+    icon: Moon,
     color: {
       light: '#93c5fd',
       dark: '#1e40af',
     },
     targetScore: {
       valence: 0.7,
-      arousal: 0.3,
-      complexity: 0.4,
-      rawness: 0.3,
-      socialPresence: 0.3,
+      arousal: 0.2,
+      complexity: 0.3,
+      rawness: 0.2,
+      socialPresence: 0.2,
     },
   },
   {
-    id: 'summer',
-    name: 'Golden Hour',
-    description: 'Feel-good, sunny tracks for those warm summer days',
+    id: 'euphoria',
+    name: 'Pure Euphoria',
+    description: 'Overflowing with joy and elation',
     icon: Sun,
     color: {
       light: '#fde68a',
       dark: '#92400e',
     },
     targetScore: {
-      valence: 0.9,
+      valence: 0.95,
       arousal: 0.8,
       complexity: 0.4,
       rawness: 0.3,
@@ -51,27 +39,27 @@ const MUSIC_VIBES: MusicVibe[] = [
     },
   },
   {
-    id: 'indie-dream',
-    name: 'Ethereal Reverie',
-    description: 'Dreamy, atmospheric indie sounds',
-    icon: Star,
+    id: 'melancholy',
+    name: 'Melancholic Reflection',
+    description: 'A bittersweet embrace of deep emotions',
+    icon: Droplets,
     color: {
-      light: '#c4b5fd',
-      dark: '#5b21b6',
+      light: '#a5b4fc',
+      dark: '#3730a3',
     },
     targetScore: {
-      valence: 0.6,
-      arousal: 0.5,
+      valence: 0.3,
+      arousal: 0.4,
       complexity: 0.6,
-      rawness: 0.4,
-      socialPresence: 0.5,
+      rawness: 0.5,
+      socialPresence: 0.3,
     },
   },
   {
-    id: 'raw-energy',
-    name: 'Primal Surge',
-    description: 'Powerful, unfiltered musical intensity',
-    icon: Wind,
+    id: 'intensity',
+    name: 'Raw Intensity',
+    description: 'Unfiltered emotional power and passion',
+    icon: Flame,
     color: {
       light: '#fca5a5',
       dark: '#7f1d1d',
@@ -80,180 +68,195 @@ const MUSIC_VIBES: MusicVibe[] = [
       valence: 0.5,
       arousal: 0.9,
       complexity: 0.7,
-      rawness: 0.9,
-      socialPresence: 0.7,
+      rawness: 0.95,
+      socialPresence: 0.6,
     },
   },
   {
-    id: 'soothing-waters',
-    name: 'Tranquil Tides',
-    description: 'Calming, fluid melodies to wash over you',
-    icon: Droplets,
-    color: {
-      light: '#bae6fd',
-      dark: '#075985',
-    },
-    targetScore: {
-      valence: 0.7,
-      arousal: 0.2,
-      complexity: 0.4,
-      rawness: 0.2,
-      socialPresence: 0.2,
-    },
-  },
-  {
-    id: 'cosmic-exploration',
-    name: 'Celestial Drift',
-    description: 'Ethereal and experimental soundscapes',
+    id: 'wonder',
+    name: 'Childlike Wonder',
+    description: 'A sense of awe and innocent curiosity',
     icon: Sparkles,
     color: {
       light: '#c7d2fe',
       dark: '#4c1d95',
     },
     targetScore: {
-      valence: 0.5,
+      valence: 0.8,
       arousal: 0.6,
-      complexity: 0.8,
-      rawness: 0.5,
+      complexity: 0.7,
+      rawness: 0.4,
       socialPresence: 0.3,
     },
   },
   {
-    id: 'urban-pulse',
-    name: 'Urban Pulse',
-    description: 'Modern, rhythmic beats of the city nightlife',
-    icon: Music,
-    color: {
-      light: '#f0abfc',
-      dark: '#86198f',
-    },
-    targetScore: {
-      valence: 0.7,
-      arousal: 0.8,
-      complexity: 0.6,
-      rawness: 0.4,
-      socialPresence: 0.9,
-    },
-  },
-  {
-    id: 'nocturnal-whispers',
-    name: 'Nocturnal Whispers',
-    description: 'Mysterious and atmospheric night-time listening',
-    icon: Moon,
-    color: {
-      light: '#a5b4fc',
-      dark: '#3730a3',
-    },
-    targetScore: {
-      valence: 0.4,
-      arousal: 0.3,
-      complexity: 0.7,
-      rawness: 0.2,
-      socialPresence: 0.2,
-    },
-  },
-  {
-    id: 'retro-wave',
-    name: 'Retro Wave',
-    description: 'Nostalgic 80s-inspired synthwave and retro sounds',
-    icon: Star,
-    color: {
-      light: '#fda4af',
-      dark: '#9f1239',
-    },
-    targetScore: {
-      valence: 0.8,
-      arousal: 0.7,
-      complexity: 0.5,
-      rawness: 0.6,
-      socialPresence: 0.5,
-    },
-  },
-  {
-    id: 'acoustic-soul',
-    name: 'Acoustic Soul',
-    description: 'Intimate, organic acoustic performances',
+    id: 'vulnerability',
+    name: 'Naked Vulnerability',
+    description: 'Stripped-down emotional honesty and exposure',
     icon: Heart,
     color: {
       light: '#fecdd3',
       dark: '#9f1239',
     },
     targetScore: {
-      valence: 0.6,
-      arousal: 0.4,
+      valence: 0.4,
+      arousal: 0.3,
       complexity: 0.3,
-      rawness: 0.8,
-      socialPresence: 0.2,
+      rawness: 0.9,
+      socialPresence: 0.1,
     },
   },
   {
-    id: 'psychedelic-journey',
-    name: 'Psychedelic Journey',
-    description: 'Mind-bending, experimental soundscapes',
-    icon: Sparkles,
+    id: 'nostalgia',
+    name: 'Wistful Nostalgia',
+    description: 'Bittersweet longing for the past',
+    icon: Star,
     color: {
       light: '#d8b4fe',
       dark: '#6b21a8',
     },
     targetScore: {
       valence: 0.5,
-      arousal: 0.7,
-      complexity: 0.9,
+      arousal: 0.4,
+      complexity: 0.5,
+      rawness: 0.3,
+      socialPresence: 0.2,
+    },
+  },
+  {
+    id: 'triumph',
+    name: 'Triumphant Resolve',
+    description: 'Empowered determination and victory',
+    icon: Flame,
+    color: {
+      light: '#fdba74',
+      dark: '#9a3412',
+    },
+    targetScore: {
+      valence: 0.8,
+      arousal: 0.9,
+      complexity: 0.6,
       rawness: 0.7,
+      socialPresence: 0.8,
+    },
+  },
+  {
+    id: 'solitude',
+    name: 'Peaceful Solitude',
+    description: 'Comfortable aloneness and self-reflection',
+    icon: Moon,
+    color: {
+      light: '#bae6fd',
+      dark: '#075985',
+    },
+    targetScore: {
+      valence: 0.6,
+      arousal: 0.2,
+      complexity: 0.5,
+      rawness: 0.3,
+      socialPresence: 0.1,
+    },
+  },
+  {
+    id: 'ecstasy',
+    name: 'Ecstatic Release',
+    description: 'Overwhelming joy and liberation',
+    icon: Sparkles,
+    color: {
+      light: '#f0abfc',
+      dark: '#86198f',
+    },
+    targetScore: {
+      valence: 0.95,
+      arousal: 0.9,
+      complexity: 0.7,
+      rawness: 0.5,
+      socialPresence: 0.8,
+    },
+  },
+  {
+    id: 'mystical-reverie',
+    name: 'Mystical Reverie',
+    description: 'Dreamy, otherworldly, and ethereal atmosphere',
+    icon: Sparkles,
+    color: {
+      light: '#c084fc',
+      dark: '#6b21a8',
+    },
+    targetScore: {
+      valence: 0.6,
+      arousal: 0.3,
+      complexity: 0.8,
+      rawness: 0.2,
+      socialPresence: 0.2,
+    },
+  },
+  {
+    id: 'fierce-determination',
+    name: 'Fierce Determination',
+    description: 'Focused intensity and relentless drive',
+    icon: Flame,
+    color: {
+      light: '#f97316',
+      dark: '#9a3412',
+    },
+    targetScore: {
+      valence: 0.7,
+      arousal: 0.85,
+      complexity: 0.5,
+      rawness: 0.8,
       socialPresence: 0.4,
     },
   },
+  {
+    id: 'playful-whimsy',
+    name: 'Playful Whimsy',
+    description: 'Lighthearted, fun, and carefree spirit',
+    icon: Sparkles,
+    color: {
+      light: '#f0abfc',
+      dark: '#a855f7',
+    },
+    targetScore: {
+      valence: 0.9,
+      arousal: 0.7,
+      complexity: 0.3,
+      rawness: 0.4,
+      socialPresence: 0.6,
+    },
+  },
+  {
+    id: 'solemn-majesty',
+    name: 'Solemn Majesty',
+    description: 'Grand, awe-inspiring, and reverent',
+    icon: Star,
+    color: {
+      light: '#a5b4fc',
+      dark: '#4338ca',
+    },
+    targetScore: {
+      valence: 0.5,
+      arousal: 0.4,
+      complexity: 0.8,
+      rawness: 0.3,
+      socialPresence: 0.3,
+    },
+  },
+  {
+    id: 'rebellious-defiance',
+    name: 'Rebellious Defiance',
+    description: 'Defiant energy and anti-establishment spirit',
+    icon: Flame,
+    color: {
+      light: '#f87171',
+      dark: '#b91c1c',
+    },
+    targetScore: {
+      valence: 0.4,
+      arousal: 0.95,
+      complexity: 0.4,
+      rawness: 0.9,
+      socialPresence: 0.7,
+    },
+  },
 ];
-
-export interface VibeMatch {
-  vibe: MusicVibe;
-  score: VACRSScore;
-  matchPercentage: number;
-}
-
-/**
- * Finds the closest matching music vibe based on genre statistics
- * @param genreStats - Array of genre statistics with play counts
- * @returns The best matching music vibe with additional info
- */
-export function findBestMatchingVibe(genreStats: GenreStats[]): VibeMatch {
-  // Calculate the weighted VACRS score for the provided genres
-  const userScore = calculateWeightedVACRSScore(genreStats);
-
-  // Find the closest matching vibe
-  let bestMatch: MusicVibe | null = null;
-  let smallestDistance = Infinity;
-
-  for (const vibe of MUSIC_VIBES) {
-    const distance = calculateVACRSScoreDistance(userScore, vibe.targetScore);
-    if (distance < smallestDistance) {
-      smallestDistance = distance;
-      bestMatch = vibe;
-    }
-  }
-
-  if (!bestMatch) {
-    // Fallback to the first vibe if no match found (shouldn't happen)
-    bestMatch = MUSIC_VIBES[0];
-    smallestDistance = 1;
-  }
-
-  // Calculate match percentage (0-100%)
-  // The maximum possible distance in 5D space with values 0-1 is sqrt(5) ~= 2.236
-  const maxPossibleDistance = Math.sqrt(5);
-  const matchPercentage = Math.max(0, 100 * (1 - (smallestDistance / maxPossibleDistance)));
-
-  return {
-    vibe: bestMatch,
-    score: userScore,
-    matchPercentage: Math.round(matchPercentage * 10) / 10, // Round to 1 decimal place
-  };
-}
-
-/**
- * Gets all available music vibes
- * @returns Array of all defined music vibes
- */
-export function getAllMusicVibes(): MusicVibe[] {
-  return [...MUSIC_VIBES];
-}

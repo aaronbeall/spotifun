@@ -104,3 +104,28 @@ interface TopGenre {
   genre: string;
   count: number;
 }
+
+export interface VACRSScore {
+  valence: number;      // 0 (unpleasant) to 1 (pleasant)
+  arousal: number;      // 0 (calm) to 1 (energetic)
+  complexity: number;   // 0 (simple) to 1 (complex)
+  rawness: number;      // 0 (polished) to 1 (raw)
+  socialPresence: number; // 0 (solitary) to 1 (communal)
+}
+
+export interface GenreProfile extends VACRSScore {
+  aliases: string[];
+  description: string;
+}
+
+export interface MusicVibe {
+  id: string;
+  name: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  color: {
+    light: string;
+    dark: string;
+  };
+  targetScore: VACRSScore;
+}
