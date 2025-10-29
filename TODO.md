@@ -1,13 +1,14 @@
 # Todo
 
 ## Features
-- [ ] Time range
+- [x] Time range
 - [ ] Stats (Plays, Duration, Songs, Albums, Artists)
-- [ ] Tops (Songs, Albums, Artists, Genres)
+-   [ ] Favorite Artist, On Repeat, Top Genre, Genre Diversity, Popularity
+- [x] Tops (Songs, Albums, Artists, Genres)
 - [ ] Charts
 - [ ] Achievements
-- [ ] Music Personality (Discovery Rate, Artist Consistency, Genre Diversity, Session Length)
-- [ ] Current Mood
+- [ ] Music Personality (Artist Consistency, Genre Diversity, Popularity, Dating, Peak Hours)
+- [x] Current Mood
 - [ ] Rankings (Global, Nearby, Friends)
 - [ ] Compare with friends
 - [ ] Competitions
@@ -20,3 +21,9 @@
 - [ ] AI analysis
 - [ ] Create playlist for vibe
 - [ ] Analysis of liked songs
+
+## Enhancements
+- [ ] Music vibe dimension relevance based on range
+- [ ] Recently Played time frame
+- [ ] Vibes for playlist
+- [ ] Vibes for tops
