@@ -8,12 +8,15 @@
 - [ ] Achievements
 - [ ] Music Personality (Discovery Rate, Artist Consistency, Genre Diversity, Session Length)
 - [ ] Current Mood
-- [ ] Rankings (Global, Region, Friends)
+- [ ] Rankings (Global, Nearby, Friends)
 - [ ] Compare with friends
 - [ ] Competitions
 - [ ] Nearby shows
 - [ ] Compatibility Partners
+- - [ ] Send messages
 - [ ] Ranking changes
 - [ ] Currently playing
 - [ ] Create playlist from mood
 - [ ] AI analysis
+- [ ] Create playlist for vibe
+- [ ] Analysis of liked songs

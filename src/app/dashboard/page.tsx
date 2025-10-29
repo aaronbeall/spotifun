@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { BarChart3, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User } from 'lucide-react';
-import { formatDuration, formatNumber, getGenreColorMap } from '@/utils';
+import { formatDuration, formatNumber, getGenreColorMap, getGenreColorClass } from '@/utils';
 import Image from 'next/image';
 import FunStats from '@/components/features/FunStats';
 import MusicProfile from '@/components/features/MusicProfile';
@@ -30,11 +30,6 @@ export default function Dashboard() {
   const ARTISTS_TO_SHOW = 8;
   const TRACKS_TO_SHOW = 16;
   const GENRES_TO_SHOW = 12;
-
-  // Generate consistent colors for genres based on genre name hash
-  const genreColors = useMemo(() => {
-    return getGenreColorMap(stats?.topGenres?.map(g => g.genre) || []);
-  }, [stats?.topGenres]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -351,35 +346,59 @@ export default function Dashboard() {
         </div>
 
         {/* Top Genres */}
-        <div className="bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-700 mb-8">
-          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-purple-400" />
-            Top Genres
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {stats.topGenres.slice(0, showAllGenres ? stats.topGenres.length : GENRES_TO_SHOW).map(({ genre, count }, index) => (
-              <div
-                key={genre}
-                className={`flex items-center justify-between p-4 rounded-lg hover:scale-[1.02] transition-all duration-300 border ${genreColors[genre]?.border} ${genreColors[genre]?.gradient} bg-gradient-to-r bg-opacity-50 hover:bg-opacity-70`}
-              >
-                <div>
-                  <p className="font-medium text-white capitalize">{genre}</p>
-                  <p className="text-sm text-gray-400">
-                    {count} {count === 1 ? 'artist' : 'artists'}
-                  </p>
+        <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-purple-400" />
+              Top Genres
+            </h2>
+            <div className="text-sm text-gray-400">
+              {stats.topGenres.length} total genres
+            </div>
+          </div>
+
+          {/* Genre Cards Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
+            {stats.topGenres.slice(0, showAllGenres ? stats.topGenres.length : GENRES_TO_SHOW).map(({ genre, count }) => {
+              const colorClass = getGenreColorClass(genre, 'bg');
+              const percentage = Math.round((count / stats.topGenres[0]?.count) * 100);
+
+              return (
+                <div
+                  key={genre}
+                  className="bg-gray-800/40 hover:bg-gray-800/80 border border-gray-700/50 rounded-lg p-4 transition-colors group"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-medium text-white capitalize">
+                      {genre.replace(/-/g, ' ')}
+                    </h3>
+                    <span className="text-sm text-gray-300">
+                      {count} {count === 1 ? 'artist' : 'artists'}
+                    </span>
+                  </div>
+
+                  <div className="w-full bg-gray-700/50 rounded-full h-1.5 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${colorClass}`}
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="text-lg font-bold text-white/80">#{index + 1}</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-          <div className="mt-6 flex justify-center">
-            <button
-              onClick={() => setShowAllGenres(!showAllGenres)}
-              className="text-sm text-gray-300 hover:text-white px-4 py-2 rounded-full border border-gray-600 hover:border-gray-400 transition-colors bg-gray-800/50 hover:bg-gray-700/50"
-            >
-              {showAllGenres ? 'Show Less' : `Show All ${stats.topGenres.length} Genres`}
-            </button>
-          </div>
+
+          {/* Show More/Less Button */}
+          {stats.topGenres.length > GENRES_TO_SHOW && (
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={() => setShowAllGenres(!showAllGenres)}
+                className="text-sm text-gray-300 hover:text-white px-4 py-2 rounded-full border border-gray-600 hover:border-gray-400 transition-colors bg-gray-800/50 hover:bg-gray-700/50"
+              >
+                {showAllGenres ? 'Show Less' : `Show All ${stats.topGenres.length} Genres`}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Fun Stats */}
