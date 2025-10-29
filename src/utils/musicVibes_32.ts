@@ -1,18 +1,6 @@
 import { Music, Flame, Moon, Sun, Heart, Star, Wind, Droplets, Sparkles } from 'lucide-react';
 import { VACRSScore } from "@/types";
 
-export interface MusicVibe {
-  id: string;
-  name: string;
-  description: string;
-  icon: React.ComponentType<{ className?: string }>;
-  color: {
-    light: string;
-    dark: string;
-  };
-  targetScore: VACRSScore;
-}
-
 // Define all 32 possible combinations of VACRS high/low values
 const MUSIC_VIBES: MusicVibe[] = [
   // VACRS: V-Low, A-Low, C-Low, R-Low, S-Low

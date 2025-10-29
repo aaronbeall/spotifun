@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/utils';
 import { VACRSScore, MusicVibe, GenreStats } from "@/types";
-import { calculateWeightedVACRSScore, calculateVACRSScoreDistance } from '@/utils/musicClassification';
+import { calculateWeightedVACRSScore, calculateVACRSScoreMatch } from '@/utils/musicClassification';
 import { getAllMusicVibes } from '@/utils/musicVibesAnalyzer';
 import { GenreFilter } from './GenreFilter';
 import { useState, useMemo } from "react";
@@ -194,15 +194,11 @@ export const VibeMatchList = ({
     if (!filteredGenreStats.length) return [];
 
     const userScore = calculateWeightedVACRSScore(filteredGenreStats);
-    return getAllMusicVibes().map(vibe => {
-      const distance = calculateVACRSScoreDistance(userScore, vibe.targetScore);
-      const matchPercentage = Math.max(0, 100 - (distance * 100));
-      return {
-        vibe,
-        score: userScore,
-        matchPercentage,
-      };
-    }).sort((a, b) => b.matchPercentage - a.matchPercentage);
+    return getAllMusicVibes().map(vibe => ({
+      vibe,
+      score: userScore,
+      matchPercentage: calculateVACRSScoreMatch(userScore, vibe.targetScore),
+    })).sort((a, b) => b.matchPercentage - a.matchPercentage);
   }, [filteredGenreStats]);
 
   const handleGenreToggle = (genre: string) => {

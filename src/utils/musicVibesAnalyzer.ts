@@ -1,6 +1,6 @@
 import { Music, Flame, Moon, Sun, Heart, Star, Wind, Droplets, Sparkles } from 'lucide-react';
 import { GenreStats, MusicVibe, VACRSScore } from '@/types';
-import { calculateWeightedVACRSScore, calculateVACRSScoreDistance } from './musicClassification';
+import { calculateWeightedVACRSScore, calculateVACRSScoreMatch } from './musicClassification';
 import { MUSIC_VIBES } from "@/utils/musicVibes";
 
 export interface VibeMatch {
@@ -18,14 +18,14 @@ export function findBestMatchingVibe(genreStats: GenreStats[]): VibeMatch {
   // Calculate the weighted VACRS score for the provided genres
   const userScore = calculateWeightedVACRSScore(genreStats);
 
-  // Find the closest matching vibe
+  // Find the best matching vibe
   let bestMatch: MusicVibe | null = null;
-  let smallestDistance = Infinity;
+  let bestMatchPercentage = -1;
 
   for (const vibe of MUSIC_VIBES) {
-    const distance = calculateVACRSScoreDistance(userScore, vibe.targetScore);
-    if (distance < smallestDistance) {
-      smallestDistance = distance;
+    const matchPercentage = calculateVACRSScoreMatch(userScore, vibe.targetScore);
+    if (matchPercentage > bestMatchPercentage) {
+      bestMatchPercentage = matchPercentage;
       bestMatch = vibe;
     }
   }
@@ -33,18 +33,13 @@ export function findBestMatchingVibe(genreStats: GenreStats[]): VibeMatch {
   if (!bestMatch) {
     // Fallback to the first vibe if no match found (shouldn't happen)
     bestMatch = MUSIC_VIBES[0];
-    smallestDistance = 1;
+    bestMatchPercentage = calculateVACRSScoreMatch(userScore, MUSIC_VIBES[0].targetScore);
   }
-
-  // Calculate match percentage (0-100%)
-  // The maximum possible distance in 5D space with values 0-1 is sqrt(5) ~= 2.236
-  const maxPossibleDistance = Math.sqrt(5);
-  const matchPercentage = Math.max(0, 100 * (1 - (smallestDistance / maxPossibleDistance)));
 
   return {
     vibe: bestMatch,
     score: userScore,
-    matchPercentage: Math.round(matchPercentage * 10) / 10, // Round to 1 decimal place
+    matchPercentage: Math.round(bestMatchPercentage * 10) / 10, // Round to 1 decimal place
   };
 }
 

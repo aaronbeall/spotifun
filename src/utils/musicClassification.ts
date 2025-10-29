@@ -187,3 +187,17 @@ export function calculateVACRSScoreDistance(score1: VACRSScore, score2: VACRSSco
 
   return Math.sqrt(v + a + c + r + s);
 }
+
+/**
+ * Calculates a match percentage (0-100) between two VACRS scores
+ * @param score1 - First VACRS score
+ * @param score2 - Second VACRS score to compare against
+ * @returns A match percentage between 0 and 100, where higher is a better match
+ */
+export function calculateVACRSScoreMatch(score1: VACRSScore, score2: VACRSScore): number {
+  const distance = calculateVACRSScoreDistance(score1, score2);
+  // The maximum possible distance in 5D space with values 0-1 is sqrt(5) ~= 2.236
+  const maxPossibleDistance = Math.sqrt(5);
+  // Convert to percentage (0-100) where 0 distance = 100% match
+  return Math.max(0, 100 * (1 - (distance / maxPossibleDistance)));
+}
