@@ -3,6 +3,7 @@
 
 import { GenreStats, VACRSScore, GenreProfile } from '@/types';
 import { GENRE_PROFILES } from "@/utils/genreProfiles";
+import { GENRE_SCORES } from "./genreScores";
 
 /**
  * Classifies a genre string into VACRS dimensions
@@ -62,6 +63,68 @@ export function classifyGenre(genreString: string): VACRSScore {
   result.socialPresence = Math.min(1, Math.max(0, result.socialPresence / totalWeight));
 
   return result;
+}
+
+/**
+ * Classifies a genre string into VACRS dimensions using the expanded genre scores
+ * @param genreString - The genre string to classify (single genre, will be normalized)
+ * @returns A VACRSScore object with normalized values between 0 and 1
+ */
+export function calculateGenreVACRSScore(genreString: string): VACRSScore {
+  // Default score if no match is found
+  const defaultScore: VACRSScore = {
+    valence: 0.5,
+    arousal: 0.5,
+    complexity: 0.5,
+    rawness: 0.5,
+    socialPresence: 0.5
+  };
+
+  if (!genreString?.trim()) {
+    return defaultScore;
+  }
+
+  // Normalize the input genre
+  const genre = genreString.trim().toLowerCase();
+
+  // Initialize score accumulators and match counters
+  const scoreSums: VACRSScore = {
+    valence: 0,
+    arousal: 0,
+    complexity: 0,
+    rawness: 0,
+    socialPresence: 0
+  };
+
+  const matchCounts = {
+    valence: 0,
+    arousal: 0,
+    complexity: 0,
+    rawness: 0,
+    socialPresence: 0
+  };
+
+  // Check each VACRS dimension
+  for (const dimension of Object.keys(GENRE_SCORES) as Array<keyof VACRSScore>) {
+    const buckets = GENRE_SCORES[dimension];
+
+    // Check each bucket in this dimension
+    for (const bucket of buckets) {
+      if (bucket.genres.some(g => genre.includes(g))) {
+        scoreSums[dimension] += bucket.score;
+        matchCounts[dimension]++;
+      }
+    }
+  }
+
+  // Calculate final scores, using default for dimensions with no matches
+  return {
+    valence: matchCounts.valence > 0 ? scoreSums.valence / matchCounts.valence : defaultScore.valence,
+    arousal: matchCounts.arousal > 0 ? scoreSums.arousal / matchCounts.arousal : defaultScore.arousal,
+    complexity: matchCounts.complexity > 0 ? scoreSums.complexity / matchCounts.complexity : defaultScore.complexity,
+    rawness: matchCounts.rawness > 0 ? scoreSums.rawness / matchCounts.rawness : defaultScore.rawness,
+    socialPresence: matchCounts.socialPresence > 0 ? scoreSums.socialPresence / matchCounts.socialPresence : defaultScore.socialPresence
+  };
 }
 
 /**
@@ -135,7 +198,7 @@ export function calculateWeightedVACRSScore(genreStats: GenreStats[]): VACRSScor
   // If no play counts, give equal weight to all genres
   if (totalWeight === 0) {
     for (const stat of genreStats) {
-      const score = classifyGenre(stat.genre);
+      const score = calculateGenreVACRSScore(stat.genre);
       weightedScores.valence += score.valence;
       weightedScores.arousal += score.arousal;
       weightedScores.complexity += score.complexity;
@@ -156,7 +219,7 @@ export function calculateWeightedVACRSScore(genreStats: GenreStats[]): VACRSScor
   // Calculate weighted scores
   for (const stat of genreStats) {
     const weight = stat.playCount / totalWeight;
-    const score = classifyGenre(stat.genre);
+    const score = calculateGenreVACRSScore(stat.genre);
 
     weightedScores.valence += score.valence * weight;
     weightedScores.arousal += score.arousal * weight;
