@@ -35,9 +35,13 @@ export const VibeMatchItem = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
+      transition={{
+        duration: 0.6,
+        ease: [0.22, 1, 0.36, 1],
+        delay: index * 0.03
+      }}
       className={cn(
         'h-full p-4 rounded-xl border transition-all duration-200 group flex flex-col',
         isCurrentVibe
@@ -53,22 +57,63 @@ export const VibeMatchItem = ({
         boxShadow: isCurrentVibe ? `0 0 0 1px ${vibe.color.light}40` : 'none',
       }}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start space-x-3">
-          <div
-            className={cn(
-              'p-1.5 rounded-lg flex-shrink-0',
-              'transition-all duration-200',
-              isCurrentVibe ? 'bg-opacity-20' : 'bg-opacity-10 group-hover:bg-opacity-15'
-            )}
-            style={{ backgroundColor: `${vibe.color.light}20` }}
-          >
-            <Icon
-              className="w-5 h-5"
-              style={{ color: vibe.color.light }}
-            />
+      {/* Percentage Badge - Top Right */}
+      <div className="absolute top-3 right-3">
+        <span
+          className="text-xs font-bold px-2 py-1 rounded-md flex items-center justify-center"
+          style={{
+            backgroundColor: `${vibe.color.light}15`,
+            color: vibe.color.light,
+            border: `1px solid ${vibe.color.light}20`,
+            backdropFilter: 'blur(4px)'
+          }}
+        >
+          {Math.round(matchPercentage)}% Match
+        </span>
+      </div>
+
+      <div className="flex items-start gap-4 pr-10">
+        <div className="flex items-start space-x-4">
+          <div className="relative flex-shrink-0">
+            {/* Progress circle */}
+            <svg className="w-10 h-10 -rotate-90">
+              <circle
+                cx="50%"
+                cy="50%"
+                r="16"
+                fill="none"
+                stroke={`${vibe.color.light}20`}
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+              <motion.circle
+                cx="50%"
+                cy="50%"
+                r="16"
+                fill="none"
+                stroke={vibe.color.light}
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeDasharray="100 100"
+                initial={{ strokeDashoffset: 100 }}
+                animate={{ strokeDashoffset: 100 - matchPercentage }}
+                transition={{
+                  duration: 1.2,
+                  ease: [0.22, 1, 0.36, 1],
+                  delay: 0.1
+                }}
+              />
+            </svg>
+            {/* Icon */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Icon
+                className="w-4 h-4"
+                style={{ color: vibe.color.light }}
+              />
+            </div>
           </div>
-          <div className="space-y-1">
+
+          <div className="space-y-1 pt-0.5">
             <div className="flex items-center gap-2">
               <h3 className="font-medium" style={{ color: vibe.color.light }}>{vibe.name}</h3>
               {isCurrentVibe && (
@@ -79,30 +124,11 @@ export const VibeMatchItem = ({
                     color: vibe.color.light
                   }}
                 >
-                  Current Match
+                  Current
                 </span>
               )}
             </div>
-            <p className="text-xs" style={{ color: `${vibe.color.light}cc` }}>{vibe.description}</p>
-          </div>
-        </div>
-        <div className="flex flex-col items-end">
-          <span
-            className="text-lg font-bold"
-            style={{ color: vibe.color.light }}
-          >
-            {Math.round(matchPercentage)}%
-          </span>
-          <div className="h-1.5 w-16 bg-gray-800/50 rounded-full overflow-hidden mt-1">
-            <motion.div
-              className="h-full rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: `${matchPercentage}%` }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              style={{
-                background: `linear-gradient(90deg, ${vibe.color.light}, ${vibe.color.dark})`
-              }}
-            />
+            <p className="text-xs text-gray-300">{vibe.description}</p>
           </div>
         </div>
       </div>
