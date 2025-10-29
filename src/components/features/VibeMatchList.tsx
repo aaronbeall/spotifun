@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/utils';
 import { VACRSScore, MusicVibe, GenreStats } from "@/types";
 import { calculateWeightedVACRSScore, calculateVACRSScoreMatch } from '@/utils/musicClassification';
+import { capitalCase } from 'change-case';
 import { getAllMusicVibes } from '@/utils/musicVibesAnalyzer';
 import { GenreFilter } from './GenreFilter';
 import { useState, useMemo } from "react";
@@ -109,7 +110,7 @@ export const VibeMatchItem = ({
       <div className="mt-4 space-y-2.5 flex-grow">
         {Object.entries(vibe.targetScore).map(([key, value], i) => {
           const currentValue = currentVibeScore[key as keyof VACRSScore];
-          const dimensionName = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' ');
+          const dimensionName = capitalCase(key);
           const color = COLORS[i % COLORS.length];
 
           return (
