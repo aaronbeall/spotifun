@@ -7,10 +7,9 @@ import { formatDuration, formatNumber, getGenreColorMap, getGenreColorClass } fr
 import Image from 'next/image';
 import FunStats from '@/components/features/FunStats';
 import TimeRangeToggle from '@/components/TimeRangeToggle';
-import MusicProfile from '@/components/features/MusicProfile';
 import Achievements from '@/components/features/Achievements';
 import Rankings from '@/components/features/Rankings';
-import RecentlyPlayed from '@/components/features/RecentlyPlayed';
+import MusicProfile from '@/components/features/MusicProfile';
 
 import { UserProfile, Stats, TimeRange } from '@/types';
 
@@ -198,7 +197,7 @@ export default function Dashboard() {
       <div className="container mx-auto px-4 py-8">
         {/* Recently Played Stats */}
         <div className="mb-8">
-          <RecentlyPlayed
+          <MusicProfile
             stats={stats}
             isLoadingTimeRange={isLoadingTimeRange}
             playLimit={playLimit}
@@ -420,11 +419,6 @@ export default function Dashboard() {
         {/* Fun Stats */}
         <div className="mb-8">
           <FunStats stats={stats} />
-        </div>
-
-        {/* Music Profile */}
-        <div className="mb-8">
-          <MusicProfile stats={stats} />
         </div>
 
         {/* Achievements */}

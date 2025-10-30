@@ -6,7 +6,7 @@ interface StatCardProps {
   icon: React.ComponentType<HTMLProps<unknown>>;
   className?: string;
   title: string;
-  value: string | React.ReactNode;
+  value: string;
   description: string;
   gradient: string;
   iconColor: string;
@@ -111,7 +111,15 @@ export const StatCard = ({
             </div>
             <div className="pt-0.5">
               <h3 className="text-xs font-semibold text-white/70 uppercase tracking-wider">{title}</h3>
-              <p className="text-2xl font-bold text-white mt-1.5 leading-none">{value}</p>
+              <p
+                className="text-2xl font-bold mt-1.5 leading-none"
+                style={{
+                  color: iconColor,
+                  textShadow: `0 0 8px ${iconColor}40`
+                }}
+              >
+                {value}
+              </p>
               {/*<p className="text-sm text-white/60 mt-1.5">{description}</p>*/}
             </div>
           </div>
