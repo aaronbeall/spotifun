@@ -31,7 +31,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
     ));
 
     // Fetch all artist details in batches
-    const artistDetails = await fetchArtistsInBatches(artistIds);
+    const recentlyPlayedArtistsById = await fetchArtistsInBatches(artistIds);
 
     // Calculate top genres from top artists
     const topGenres = calculateTopGenres(topArtists);
@@ -39,14 +39,14 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
     // Calculate statistics in parallel with pre-fetched artist data
     const [trackStats, artistStats, genreStats] = await Promise.all([
       calculateTrackStats(recentlyPlayed),
-      calculateArtistStats(recentlyPlayed, artistDetails),
-      calculateGenreStats(recentlyPlayed, artistDetails)
+      calculateArtistStats(recentlyPlayed, recentlyPlayedArtistsById),
+      calculateGenreStats(recentlyPlayed, recentlyPlayedArtistsById)
     ]);
 
     // Calculate additional metrics
     const totalPlays = recentlyPlayed.length;
     const totalDuration = recentlyPlayed.reduce((sum, item) => sum + item.track.duration_ms, 0);
-    const totalGenres = Object.values(artistDetails).reduce((sum, artist) => sum + (artist.genres?.length || 0), 0);
+    const totalGenres = Object.values(recentlyPlayedArtistsById).reduce((sum, artist) => sum + (artist.genres?.length || 0), 0);
 
     // Calculate average track popularity (0-100 scale)
     const totalPopularity = recentlyPlayed.reduce((sum, item) => sum + (item.track.popularity || 0), 0);
