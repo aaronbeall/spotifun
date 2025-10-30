@@ -101,12 +101,16 @@ export async function fetchArtistsInBatches(artistIds: string[]) {
 }
 
 // Calculate track statistics from play history
-export const calculateTrackStats = (playHistory: SpotifyApi.PlayHistoryObject[]): TrackStats[] => {
+export const calculateTrackStats = (
+  playHistory: SpotifyApi.PlayHistoryObject[],
+  artistDetails: Record<string, SpotifyApi.ArtistObjectFull> = {}
+): TrackStats[] => {
   const trackMap = new Map<string, TrackStats>();
 
   playHistory.forEach(item => {
     const trackId = item.track.id;
     const playedAt = new Date(item.played_at);
+    const artists = item.track.artists.map(artist => artistDetails[artist.id] || artist);
 
     if (trackMap.has(trackId)) {
       const stats = trackMap.get(trackId)!;
@@ -122,6 +126,7 @@ export const calculateTrackStats = (playHistory: SpotifyApi.PlayHistoryObject[])
     } else {
       trackMap.set(trackId, {
         track: item.track,
+        artists,
         playCount: 1,
         firstPlayed: item.played_at,
         lastPlayed: item.played_at,
@@ -130,7 +135,13 @@ export const calculateTrackStats = (playHistory: SpotifyApi.PlayHistoryObject[])
     }
   });
 
-  return Array.from(trackMap.values()).sort((a, b) => b.playCount - a.playCount);
+  // Ensure all returned TrackStats have artists populated
+  return Array.from(trackMap.values())
+    .map(stats => ({
+      ...stats,
+      artists: stats.artists || stats.track.artists.map(artist => artistDetails[artist.id] || artist)
+    }))
+    .sort((a, b) => b.playCount - a.playCount);
 };
 
 // Calculate artist statistics

@@ -2,6 +2,7 @@
 
 export interface TrackStats {
   track: SpotifyApi.TrackObjectFull;
+  artists: SpotifyApi.ArtistObjectFull[];
   playCount: number;
   firstPlayed: string;
   lastPlayed: string;

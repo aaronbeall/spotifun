@@ -3,7 +3,7 @@ import { Stats } from '@/types';
 import { formatNumber, formatDuration, getGenreColorClass } from "@/utils";
 import { analyzePopularity } from "@/utils/popularity";
 import { useState, useMemo, HTMLProps } from "react";
-import { MusicVibes } from "./MusicVibess";
+import { MusicVibes } from "./MusicVibes";
 import { motion } from "framer-motion";
 
 interface StatCardProps {

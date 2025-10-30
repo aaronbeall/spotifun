@@ -38,7 +38,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
 
     // Calculate statistics in parallel with pre-fetched artist data
     const [trackStats, artistStats, genreStats] = await Promise.all([
-      calculateTrackStats(recentlyPlayed),
+      calculateTrackStats(recentlyPlayed, recentlyPlayedArtistsById),
       calculateArtistStats(recentlyPlayed, recentlyPlayedArtistsById),
       calculateGenreStats(recentlyPlayed, recentlyPlayedArtistsById)
     ]);
