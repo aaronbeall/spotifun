@@ -21,6 +21,7 @@ export default function Dashboard() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isLoadingTimeRange, setIsLoadingTimeRange] = useState(false);
   const [timeRange, setTimeRange] = useState<TimeRange>('medium_term');
+  const [playLimit, setPlayLimit] = useState<number>(50);
   const [showAllArtists, setShowAllArtists] = useState(false);
   const [showAllTracks, setShowAllTracks] = useState(false);
   const [showAllGenres, setShowAllGenres] = useState(false);
@@ -36,7 +37,7 @@ export default function Dashboard() {
       try {
         const [userResponse, statsResponse] = await Promise.all([
           fetch('/api/user'),
-          fetch('/api/stats')
+          fetch(`/api/stats?timeRange=medium_term&limit=${playLimit}`)
         ]);
 
         if (userResponse.ok) {
@@ -66,7 +67,7 @@ export default function Dashboard() {
     setIsLoadingTimeRange(true);
 
     try {
-      const response = await fetch(`/api/stats?timeRange=${newTimeRange}`);
+      const response = await fetch(`/api/stats?timeRange=${newTimeRange}&limit=${playLimit}`);
       if (response.ok) {
         const data = await response.json();
         setStats(data);
@@ -221,6 +222,22 @@ export default function Dashboard() {
           <RecentlyPlayed
             stats={stats}
             isLoadingTimeRange={isLoadingTimeRange}
+            playLimit={playLimit}
+            onPlayLimitChange={async (newLimit) => {
+              setPlayLimit(newLimit);
+              setIsLoadingTimeRange(true);
+              try {
+                const response = await fetch(`/api/stats?timeRange=${timeRange}&limit=${newLimit}`);
+                if (response.ok) {
+                  const data = await response.json();
+                  setStats(data);
+                }
+              } catch (error) {
+                console.error('Error fetching stats with new limit:', error);
+              } finally {
+                setIsLoadingTimeRange(false);
+              }
+            }}
           />
         </div>
 

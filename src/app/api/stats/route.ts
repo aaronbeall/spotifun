@@ -10,6 +10,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
     const accessToken = request.cookies.get('spotify_access_token')?.value;
     const { searchParams } = new URL(request.url);
     const timeRange = (searchParams.get('timeRange') as TimeRange) || 'medium_term';
+    const limit = Math.min(50, Math.max(5, parseInt(searchParams.get('limit') || '50', 10))); // Ensure limit is between 5 and 50
 
     if (!accessToken) {
       return NextResponse.json({ error: 'No access token' }, { status: 401 });
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
 
     // Fetch initial data in parallel
     const [recentlyPlayed, topTracks, topArtists] = await Promise.all([
-      getRecentlyPlayed(50),
+      getRecentlyPlayed(limit),
       getTopTracks(timeRange, 50),
       getTopArtists(timeRange, 50)
     ]);

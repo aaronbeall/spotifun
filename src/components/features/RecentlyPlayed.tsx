@@ -78,7 +78,9 @@ const StatCard = ({
               <Star className="w-3.5 h-3.5" fill="currentColor" />
               <span className="drop-shadow-sm">{badge.label}</span>
             </div>
-            <div className="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 absolute top-full right-0 mt-2 w-64 bg-gray-900/95 backdrop-blur-sm text-white text-sm rounded-lg shadow-xl border border-white/10 p-3 pointer-events-none z-50">
+              <div className="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 absolute top-full right-0 mt-2 w-64 bg-gray-900/95 backdrop-blur-sm text-white text-sm rounded-lg shadow-xl border border-white/10 p-3 pointer-events-none z-50">
+                {/* Tooltip Arrow */}
+                <div className="absolute -top-2 right-4 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-gray-900/95"></div>
               <div className="flex items-center gap-2 font-semibold text-white mb-1.5">
                 <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
                 {badge.label}
@@ -341,9 +343,11 @@ const GenrePill = ({ genre, count }: { genre: string; count: number }) => {
 interface RecentlyPlayedProps {
   stats: Stats;
   isLoadingTimeRange: boolean;
+  playLimit: number;
+  onPlayLimitChange: (limit: number) => void;
 }
 
-export default function RecentlyPlayed({ stats, isLoadingTimeRange }: RecentlyPlayedProps) {
+export default function RecentlyPlayed({ stats, isLoadingTimeRange, playLimit, onPlayLimitChange }: RecentlyPlayedProps) {
   // Calculate average plays per day (assuming 30 days for the time range)
   const avgPlaysPerDay = Math.round(stats.overview.totalPlays / 30);
 
@@ -364,10 +368,26 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange }: RecentlyPl
                   <h2 className="px-2 py-1 bg-white/5 rounded-md text-xs text-white/60 border border-white/10 w-fit">
                     Recently Played
                   </h2>
-                  <span className="px-2.5 py-1 bg-white/5 rounded-full backdrop-blur-sm flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-pink-400"></span>
-                    <span className="font-medium text-white">{stats.overview.totalPlays}</span> plays
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {[50, 25, 10, 5].map((limit) => (
+                      <button
+                        key={limit}
+                        onClick={() => onPlayLimitChange(limit)}
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                          playLimit === limit
+                            ? 'bg-pink-500 text-white'
+                            : 'bg-white/5 text-white/60 hover:bg-white/10'
+                        }`}
+                        disabled={isLoadingTimeRange}
+                      >
+                        {limit}
+                      </button>
+                    ))}
+                    <span className="px-2.5 py-1 bg-white/5 rounded-full backdrop-blur-sm flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-pink-400"></span>
+                      <span className="font-medium text-white">{stats.overview.totalPlays}</span> plays
+                    </span>
+                  </div>
                   <span className="px-2.5 py-1 bg-white/5 rounded-full backdrop-blur-sm flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-blue-400"></span>
                     <span className="font-medium text-white">{formatDuration(stats.overview.totalDuration)}</span>
