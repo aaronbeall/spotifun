@@ -6,6 +6,7 @@ import { BarChart3, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, S
 import { formatDuration, formatNumber, getGenreColorMap, getGenreColorClass } from '@/utils';
 import Image from 'next/image';
 import FunStats from '@/components/features/FunStats';
+import TimeRangeToggle from '@/components/TimeRangeToggle';
 import MusicProfile from '@/components/features/MusicProfile';
 import Achievements from '@/components/features/Achievements';
 import Rankings from '@/components/features/Rankings';
@@ -170,28 +171,6 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                {isLoadingTimeRange && (
-                  <div className="flex items-center gap-1 mr-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-400"></div>
-                    <span className="text-sm text-gray-400">Updating...</span>
-                  </div>
-                )}
-                {(['short_term', 'medium_term', 'long_term'] as const).map((range) => (
-                  <button
-                    key={range}
-                    onClick={() => handleTimeRangeChange(range)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      timeRange === range
-                        ? 'bg-green-600 text-white'
-                        : 'bg-gray-700 text-gray-200 hover:bg-gray-600'
-                    }`}
-                    disabled={isLoadingTimeRange}
-                  >
-                    {range === 'short_term' ? '4 weeks' : range === 'medium_term' ? '6 months' : 'All time'}
-                  </button>
-                ))}
-              </div>
 
               <div className="h-6 w-px bg-gray-600"></div>
 
@@ -243,10 +222,18 @@ export default function Dashboard() {
 
         {/* Top Artists */}
         <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
-          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            <Star className="w-5 h-5 text-yellow-400" />
-            Top Artists
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <Star className="w-5 h-5 text-yellow-400" />
+              Top Artists
+            </h2>
+            <TimeRangeToggle
+              value={timeRange}
+              onChange={handleTimeRangeChange}
+              disabled={isLoadingTimeRange}
+              isLoading={isLoadingTimeRange}
+            />
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-4">
             {stats.topArtists.slice(0, showAllArtists ? stats.topArtists.length : ARTISTS_TO_SHOW).map((artist, index) => {
               const recentPlays = stats.artists.find(a => a.artist.id === artist.id)?.playCount || 0;
@@ -297,10 +284,18 @@ export default function Dashboard() {
 
         {/* Top Tracks */}
         <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
-          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-green-400" />
-            Top Tracks
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-green-400" />
+              Top Tracks
+            </h2>
+            <TimeRangeToggle
+              value={timeRange}
+              onChange={handleTimeRangeChange}
+              disabled={isLoadingTimeRange}
+              isLoading={isLoadingTimeRange}
+            />
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
             {stats.topTracks.slice(0, showAllTracks ? stats.topTracks.length : TRACKS_TO_SHOW).map((track, index) => {
               const trackStats = stats.tracks.find(t => t.track.id === track.id);
@@ -369,9 +364,13 @@ export default function Dashboard() {
               <BarChart3 className="w-5 h-5 text-purple-400" />
               Top Genres
             </h2>
-            <div className="text-sm text-gray-400">
-              {stats.topGenres.length} total genres
-            </div>
+            <TimeRangeToggle
+              value={timeRange}
+              onChange={handleTimeRangeChange}
+              disabled={isLoadingTimeRange}
+              isLoading={isLoadingTimeRange}
+              className="mr-2"
+            />
           </div>
 
           {/* Genre Cards Grid */}
