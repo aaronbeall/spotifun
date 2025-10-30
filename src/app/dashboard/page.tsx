@@ -385,7 +385,7 @@ export default function Dashboard() {
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-medium text-white capitalize">
-                      {genre.replace(/-/g, ' ')}
+                      {genre}
                     </h3>
                     <span className="text-sm text-gray-300">
                       {count} {count === 1 ? 'artist' : 'artists'}

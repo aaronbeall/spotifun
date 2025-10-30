@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, HTMLProps } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Award, Trophy, Zap, ChevronDown, ChevronUp, Palette, Users } from 'lucide-react';
 import { findBestMatchingVibe, getAllMusicVibes } from '@/utils/musicVibesAnalyzer';
@@ -214,21 +214,17 @@ const VibeBadge = ({
   );
 };
 
-interface BadgeItem {
+interface BadgeProps {
+  title: string;
   name: string;
   image?: string;
-  percentage: number;
   count: number;
-  type: 'artist' | 'genre';
+  color: string;
+  icon: React.ComponentType<HTMLProps<'svg'>>;
+  className?: string;
 }
 
-const Badge = ({ item, className = '' }: { item: BadgeItem; className?: string }) => {
-  const { name, image, type, count } = item;
-  const color = type === 'artist' ? '#a78bfa' : '#60a5fa';
-  const Icon = type === 'artist' ? Users : Palette;
-
-  const title = type === 'artist' ? 'Top Artist' : 'Top Genre';
-
+const Badge = ({ title, name, image, count, color, icon: Icon, className = '' }: BadgeProps) => {
   return (
     <div className={`flex flex-col items-center hover:scale-105 ${className}`}>
       {/* Header with icon and title */}
@@ -238,11 +234,11 @@ const Badge = ({ item, className = '' }: { item: BadgeItem; className?: string }
       </div>
 
       <div className="relative">
-        {/* Image container */}
-        <div className="w-24 h-24 rounded-full overflow-hidden border-2 flex items-center justify-center transition-transform duration-300 hover:scale-105"
+        {/* Image container - larger size */}
+        <div className="w-32 h-32 rounded-full overflow-hidden border-2 flex items-center justify-center transition-transform duration-300 hover:scale-105"
           style={{
             borderColor: color,
-            boxShadow: `0 0 12px ${color}40`
+            boxShadow: `0 0 16px ${color}40`
           }}
         >
           {image ? (
@@ -263,8 +259,8 @@ const Badge = ({ item, className = '' }: { item: BadgeItem; className?: string }
       </div>
 
       {/* Name and plays */}
-      <div className="mt-3 text-center">
-        <h3 className="text-sm font-semibold text-white line-clamp-1 group-hover:text-white/90 transition-colors">
+      <div className="mt-4 text-center">
+        <h3 className="text-base font-semibold text-white line-clamp-1 group-hover:text-white/90 transition-colors">
           {name}
         </h3>
         <div className="text-xs text-white/60 mt-1 group-hover:text-white/70 transition-colors">
@@ -277,8 +273,8 @@ const Badge = ({ item, className = '' }: { item: BadgeItem; className?: string }
 
 interface MusicVibesProps {
   genreStats: GenreStats[];
-  topArtist?: Omit<BadgeItem, 'type'>;
-  topGenre?: Omit<BadgeItem, 'type'>;
+  topArtist?: Pick<BadgeProps, 'name' | 'image' | 'count'>;
+  topGenre?: Pick<BadgeProps, 'name' | 'image' | 'count'>;
   className?: string;
 }
 
@@ -342,10 +338,10 @@ export function MusicVibes({
             {/* Top Artist Badge */}
             {topArtist && (
               <Badge
-                item={{
-                  ...topArtist,
-                  type: 'artist' as const
-                }}
+                {...topArtist}
+                title="Top Artist"
+                color="#a78bfa"
+                icon={Users}
               />
             )}
 
@@ -362,10 +358,10 @@ export function MusicVibes({
             {/* Top Genre Badge */}
             {topGenre && (
               <Badge
-                item={{
-                  ...topGenre,
-                  type: 'genre' as const
-                }}
+                {...topGenre}
+                title="Top Genre"
+                color="#60a5fa"
+                icon={Palette}
               />
             )}
           </div>

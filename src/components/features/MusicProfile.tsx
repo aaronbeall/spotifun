@@ -79,12 +79,10 @@ export default function MusicProfile({ stats, isLoadingTimeRange, playLimit, onP
               topArtist={stats.artists.length > 0 ? {
                 name: stats.artists[0].artist.name,
                 image: stats.artists[0].artist.images?.[0]?.url,
-                percentage: Math.round((stats.artists[0].playCount / stats.overview.totalPlays) * 100),
                 count: stats.artists[0].playCount
               } : undefined}
               topGenre={stats.genres.length > 0 ? {
                 name: stats.genres[0].genre,
-                percentage: Math.round((stats.genres[0].playCount / stats.overview.totalPlays) * 100),
                 count: stats.genres[0].playCount,
                 image: (() => {
                   // First find an artist that has this genre
