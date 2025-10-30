@@ -398,27 +398,14 @@ export function MusicVibes({
                   currentVibeId={vibe.id}
                 />
             ) : (
-              <motion.div
-                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6"
-                initial="visible"
-                animate="visible"
-                variants={{
-                  visible: {
-                    transition: {
-                      staggerChildren: 0.08,
-                    },
-                  },
-                }}
-              >
-                {allVibes.slice(0, 5).map((v) => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                {allVibes.slice(0, 5).map((v, i) => (
                   <motion.div
                     key={v.id}
                     className="group"
-                    variants={{
-                      visible: { opacity: 1, y: 0 },
-                    }}
                     initial={{ opacity: 0, y: 16 }}
-                    transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.42 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1], delay: i * 0.08 }}
                   >
                     <VibeBadge
                       vibe={v}
@@ -428,7 +415,7 @@ export function MusicVibes({
                     />
                   </motion.div>
                 ))}
-              </motion.div>
+              </div>
             )}
         </div>
       </div>
