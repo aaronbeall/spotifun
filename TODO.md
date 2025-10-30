@@ -27,3 +27,5 @@
 - [ ] Recently Played time frame
 - [ ] Vibes for playlist
 - [ ] Vibes for tops
+- [ ] Spotify links for all the artist/track/album/playlist/genre
+- [ ] Share option
