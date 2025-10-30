@@ -7,21 +7,6 @@ import { GenreStats, MusicVibe } from '@/types';
 import { VibeMatchList } from './VibeMatchList';
 import { cn } from '@/utils';
 
-interface BadgeItem {
-  name: string;
-  image?: string;
-  percentage: number;
-  count: number;
-  type: 'artist' | 'genre';
-}
-
-interface MusicVibesBannerProps {
-  genreStats: GenreStats[];
-  topArtist?: Omit<BadgeItem, 'type'>;
-  topGenre?: Omit<BadgeItem, 'type'>;
-  className?: string;
-}
-
 interface VibeBadgeProps {
   vibe: MusicVibe;
   matchPercentage: number;
@@ -229,6 +214,14 @@ const VibeBadge = ({
   );
 };
 
+interface BadgeItem {
+  name: string;
+  image?: string;
+  percentage: number;
+  count: number;
+  type: 'artist' | 'genre';
+}
+
 const Badge = ({ item, className = '' }: { item: BadgeItem; className?: string }) => {
   const { name, image, type, count } = item;
   const color = type === 'artist' ? '#a78bfa' : '#60a5fa';
@@ -282,12 +275,19 @@ const Badge = ({ item, className = '' }: { item: BadgeItem; className?: string }
   );
 };
 
-export function MusicVibesBanner({
+interface MusicVibesProps {
+  genreStats: GenreStats[];
+  topArtist?: Omit<BadgeItem, 'type'>;
+  topGenre?: Omit<BadgeItem, 'type'>;
+  className?: string;
+}
+
+export function MusicVibes({
   genreStats,
   topArtist,
   topGenre,
   className = ''
-}: MusicVibesBannerProps) {
+}: MusicVibesProps) {
   const [showAllVibes, setShowAllVibes] = useState(false);
   const { vibe, matchPercentage } = useMemo(
     () => findBestMatchingVibe(genreStats),

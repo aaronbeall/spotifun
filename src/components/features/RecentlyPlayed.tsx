@@ -3,7 +3,7 @@ import { Stats } from '@/types';
 import { formatNumber, formatDuration, getGenreColorClass } from "@/utils";
 import { analyzePopularity } from "@/utils/popularity";
 import { useState, useMemo, HTMLProps } from "react";
-import { MusicVibesBanner } from "./MusicVibesBanner";
+import { MusicVibes } from "./MusicVibess";
 import { motion } from "framer-motion";
 
 interface StatCardProps {
@@ -408,7 +408,7 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange, playLimit, o
         {/* Music Vibe Banner */}
         {stats.genres?.length > 0 && (
           <div className="mb-6">
-            <MusicVibesBanner 
+            <MusicVibes 
               genreStats={stats.genres}
               topArtist={stats.artists.length > 0 ? {
                 name: stats.artists[0].artist.name,
