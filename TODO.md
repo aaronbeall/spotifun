@@ -2,8 +2,7 @@
 
 ## Features
 - [x] Time range
-- [ ] Stats (Plays, Duration, Songs, Albums, Artists)
--   [ ] Favorite Artist, On Repeat, Top Genre, Genre Diversity, Popularity
+- [x] Stats (Plays, Duration, Songs, Albums, Artists)
 - [x] Tops (Songs, Albums, Artists, Genres)
 - [ ] Charts
 - [ ] Achievements
@@ -12,14 +11,14 @@
 - [ ] Rankings (Global, Nearby, Friends)
 - [ ] Compare with friends
 - [ ] Competitions
-- [ ] Nearby shows
+- [ ] Shows
 - [ ] Compatibility Partners
 - - [ ] Send messages
 - [ ] Ranking changes
 - [ ] Currently playing
 - [ ] Create playlist from mood
-- [ ] AI analysis
-- [ ] Create playlist for vibe
+- [ ] Mood timeline
+- [ ] AI insights
 - [ ] Analysis of liked songs
 
 ## Enhancements
@@ -29,3 +28,5 @@
 - [ ] Vibes for tops
 - [ ] Spotify links for all the artist/track/album/playlist/genre
 - [ ] Share option
+- [ ] Timeout/refresh handling
+- [ ] PWA
