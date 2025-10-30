@@ -78,8 +78,8 @@ export const MUSIC_VIBES: MusicVibe[] = [
     description: 'A sense of awe and innocent curiosity',
     icon: Sparkles,
     color: {
-      light: '#c7d2fe',
-      dark: '#4c1d95',
+      light: '#86efac', // green-300
+      dark: '#166534',  // green-800
     },
     targetScore: {
       valence: 0.8,
@@ -146,8 +146,8 @@ export const MUSIC_VIBES: MusicVibe[] = [
     description: 'Comfortable aloneness and self-reflection',
     icon: Moon,
     color: {
-      light: '#bae6fd',
-      dark: '#075985',
+      light: '#bbf7d0', // green-200
+      dark: '#065f46',  // green-900
     },
     targetScore: {
       valence: 0.6,

@@ -1,8 +1,8 @@
 import { Music, Flame, Moon, Sun, Heart, Star, Wind, Droplets, Sparkles } from 'lucide-react';
-import { VACRSScore } from "@/types";
+import { MusicVibe } from "@/types";
 
 // Define all 32 possible combinations of VACRS high/low values
-const MUSIC_VIBES: MusicVibe[] = [
+export const MUSIC_VIBES: MusicVibe[] = [
   // VACRS: V-Low, A-Low, C-Low, R-Low, S-Low
   {
     id: 'v0-a0-c0-r0-s0',
