@@ -226,7 +226,7 @@ interface BadgeProps {
 
 const Badge = ({ title, name, image, count, color, icon: Icon, className = '' }: BadgeProps) => {
   return (
-    <div className={`flex flex-col items-center hover:scale-105 ${className}`}>
+    <div className={`flex flex-col items-center group hover:scale-105 transition-all ${className}`}>
       {/* Header with icon and title */}
       <div className="flex items-center gap-2 text-sm text-white/70 mb-3">
         <Icon className="w-4 h-4" style={{ color: color }} />
@@ -235,7 +235,7 @@ const Badge = ({ title, name, image, count, color, icon: Icon, className = '' }:
 
       <div className="relative">
         {/* Image container - larger size */}
-        <div className="w-32 h-32 rounded-full overflow-hidden border-2 flex items-center justify-center transition-transform duration-300 hover:scale-105"
+        <div className="w-32 h-32 rounded-full overflow-hidden border-2 flex items-center justify-center transition-transform group-hover:scale-110"
           style={{
             borderColor: color,
             boxShadow: `0 0 16px ${color}40`
@@ -392,40 +392,44 @@ export function MusicVibes({
             </button>
           </div>
 
-          <AnimatePresence>
             {showAllVibes ? (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-                className="overflow-hidden"
-              >
-                <VibeMatchList
+              <VibeMatchList
                   genreStats={filteredGenreStats}
                   currentVibeId={vibe.id}
                 />
-              </motion.div>
             ) : (
               <motion.div
                 className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
+                initial="visible"
+                animate="visible"
+                variants={{
+                  visible: {
+                    transition: {
+                      staggerChildren: 0.08,
+                    },
+                  },
+                }}
               >
-                {allVibes.slice(0, 5).map((v, i) => (
-                  <div key={v.id} className="group">
+                {allVibes.slice(0, 5).map((v) => (
+                  <motion.div
+                    key={v.id}
+                    className="group"
+                    variants={{
+                      visible: { opacity: 1, y: 0 },
+                    }}
+                    initial={{ opacity: 0, y: 16 }}
+                    transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.42 }}
+                  >
                     <VibeBadge
                       vibe={v}
                       matchPercentage={v.matchPercentage || 0}
                       size="md"
                       className="mx-auto"
                     />
-                  </div>
+                  </motion.div>
                 ))}
               </motion.div>
             )}
-          </AnimatePresence>
         </div>
       </div>
     </div>
