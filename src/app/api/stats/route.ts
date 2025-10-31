@@ -64,6 +64,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
         artistDiversity: artistStats.length / Math.max(totalPlays, 1),
         averagePopularity
       },
+      recentlyPlayed,
       tracks: trackStats,
       artists: artistStats,
       genres: genreStats,

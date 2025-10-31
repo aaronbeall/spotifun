@@ -19,6 +19,7 @@ export const formatNumber = (num: number): string => {
 export type GenreColorType = 'gradient' | 'border' | 'bg' | 'text';
 
 type GenreColor = {
+  color: string;
   gradient: string;
   border: string;
   bg: string;
@@ -33,6 +34,7 @@ const genreColorThemes = [
     border: 'border-purple-500',
     bg: 'bg-purple-500',
     text: 'text-purple-500',
+    color: '#6366f1',
   },
   // Pink/Rose
   {
@@ -40,6 +42,7 @@ const genreColorThemes = [
     border: 'border-pink-500',
     bg: 'bg-pink-500',
     text: 'text-pink-500',
+    color: '#ec4899',
   },
   // Cyan/Emerald
   {
@@ -47,6 +50,7 @@ const genreColorThemes = [
     border: 'border-cyan-500',
     bg: 'bg-cyan-500',
     text: 'text-cyan-500',
+    color: '#06b6d4',
   },
   // Amber/Orange
   {
@@ -54,6 +58,7 @@ const genreColorThemes = [
     border: 'border-amber-500',
     bg: 'bg-amber-500',
     text: 'text-amber-500',
+    color: '#f59e0b',
   },
   // Violet/Fuchsia
   {
@@ -61,6 +66,7 @@ const genreColorThemes = [
     border: 'border-violet-500',
     bg: 'bg-violet-500',
     text: 'text-violet-500',
+    color: '#8b5cf6',
   },
   // Emerald/Teal
   {
@@ -68,6 +74,7 @@ const genreColorThemes = [
     border: 'border-emerald-500',
     bg: 'bg-emerald-500',
     text: 'text-emerald-500',
+    color: '#10b981',
   },
   // Rose/Pink
   {
@@ -75,6 +82,7 @@ const genreColorThemes = [
     border: 'border-rose-500',
     bg: 'bg-rose-500',
     text: 'text-rose-500',
+    color: '#f43f5e',
   },
   // Blue/Indigo
   {
@@ -82,6 +90,7 @@ const genreColorThemes = [
     border: 'border-blue-500',
     bg: 'bg-blue-500',
     text: 'text-blue-500',
+    color: '#3b82f6',
   },
   // Fuchsia/Purple
   {
@@ -89,6 +98,7 @@ const genreColorThemes = [
     border: 'border-fuchsia-500',
     bg: 'bg-fuchsia-500',
     text: 'text-fuchsia-500',
+    color: '#d946ef',
   },
   // Sky/Cyan
   {
@@ -96,6 +106,7 @@ const genreColorThemes = [
     border: 'border-sky-500',
     bg: 'bg-sky-500',
     text: 'text-sky-500',
+    color: '#0ea5e9',
   },
   // Lime/Emerald
   {
@@ -103,6 +114,7 @@ const genreColorThemes = [
     border: 'border-lime-400',
     bg: 'bg-lime-400',
     text: 'text-lime-400',
+    color: '#84cc16',
   },
   // Yellow/Amber
   {
@@ -110,6 +122,7 @@ const genreColorThemes = [
     border: 'border-yellow-400',
     bg: 'bg-yellow-400',
     text: 'text-yellow-400',
+    color: '#fde047',
   },
   // Red/Orange
   {
@@ -117,6 +130,7 @@ const genreColorThemes = [
     border: 'border-red-500',
     bg: 'bg-red-500',
     text: 'text-red-500',
+    color: '#ef4444',
   },
   // Indigo/Violet
   {
@@ -124,6 +138,7 @@ const genreColorThemes = [
     border: 'border-indigo-500',
     bg: 'bg-indigo-500',
     text: 'text-indigo-500',
+    color: '#6366f1',
   },
   // Teal/Cyan
   {
@@ -131,6 +146,7 @@ const genreColorThemes = [
     border: 'border-teal-400',
     bg: 'bg-teal-400',
     text: 'text-teal-400',
+    color: '#14b8a6',
   },
   // Pink/Rose/Fuchsia
   {
@@ -138,6 +154,7 @@ const genreColorThemes = [
     border: 'border-pink-500',
     bg: 'bg-pink-500',
     text: 'text-pink-500',
+    color: '#ec4899',
   },
   // Blue/Sky/Cyan
   {
@@ -145,6 +162,7 @@ const genreColorThemes = [
     border: 'border-blue-500',
     bg: 'bg-blue-500',
     text: 'text-blue-500',
+    color: '#0ea5e9',
   },
 ];
 

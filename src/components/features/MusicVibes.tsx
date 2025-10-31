@@ -6,6 +6,7 @@ import { calculateWeightedVACRSScore, calculateVACRSScoreMatch } from '@/utils/m
 import { GenreStats, MusicVibe } from '@/types';
 import { VibeMatchList } from './VibeMatchList';
 import { cn } from '@/utils';
+import { ImageBadge } from '../ImageBadge';
 
 interface VibeBadgeProps {
   vibe: MusicVibe;
@@ -214,67 +215,11 @@ const VibeBadge = ({
   );
 };
 
-interface BadgeProps {
-  title: string;
-  name: string;
-  image?: string;
-  count: number;
-  color: string;
-  icon: React.ComponentType<HTMLProps<'svg'>>;
-  className?: string;
-}
-
-const Badge = ({ title, name, image, count, color, icon: Icon, className = '' }: BadgeProps) => {
-  return (
-    <div className={`flex flex-col items-center group hover:scale-105 transition-all ${className}`}>
-      {/* Header with icon and title */}
-      <div className="flex items-center gap-2 text-sm text-white/70 mb-3">
-        <Icon className="w-4 h-4" style={{ color: color }} />
-        <span className="font-medium">{title}</span>
-      </div>
-
-      <div className="relative">
-        {/* Image container - larger size */}
-        <div className="w-32 h-32 rounded-full overflow-hidden border-2 flex items-center justify-center transition-transform group-hover:scale-110"
-          style={{
-            borderColor: color,
-            boxShadow: `0 0 16px ${color}40`
-          }}
-        >
-          {image ? (
-            <img
-              src={image}
-              alt={name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div
-              className="w-full h-full flex items-center justify-center text-2xl font-bold text-white/80"
-              style={{ backgroundColor: `${color}20` }}
-            >
-              {name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Name and plays */}
-      <div className="mt-4 text-center">
-        <h3 className="text-base font-semibold text-white line-clamp-1 group-hover:text-white/90 transition-colors">
-          {name}
-        </h3>
-        <div className="text-xs text-white/60 mt-1 group-hover:text-white/70 transition-colors">
-          {count} {count === 1 ? 'play' : 'plays'}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 interface MusicVibesProps {
   genreStats: GenreStats[];
-  topArtist?: Pick<BadgeProps, 'name' | 'image' | 'count'>;
-  topGenre?: Pick<BadgeProps, 'name' | 'image' | 'count'>;
+  topArtist?: { name: string; image?: string; count: number };
+  topGenre?: { name: string; image?: string; count: number };
   className?: string;
 }
 
@@ -337,7 +282,7 @@ export function MusicVibes({
           <div className="flex items-center justify-center gap-16">
             {/* Top Artist Badge */}
             {topArtist && (
-              <Badge
+              <ImageBadge
                 {...topArtist}
                 title="Top Artist"
                 color="#a78bfa"
@@ -357,7 +302,7 @@ export function MusicVibes({
 
             {/* Top Genre Badge */}
             {topGenre && (
-              <Badge
+              <ImageBadge
                 {...topGenre}
                 title="Top Genre"
                 color="#60a5fa"

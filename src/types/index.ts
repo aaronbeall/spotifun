@@ -2,7 +2,6 @@
 
 export interface TrackStats {
   track: SpotifyApi.TrackObjectFull;
-  artists: SpotifyApi.ArtistObjectFull[];
   playCount: number;
   firstPlayed: string;
   lastPlayed: string;
@@ -92,6 +91,7 @@ export type TimeRange = 'short_term' | 'medium_term' | 'long_term';
 
 export interface Stats {
   overview: StatsOverview;
+  recentlyPlayed: SpotifyApi.PlayHistoryObject[];
   tracks: TrackStats[];
   artists: ArtistStats[];
   genres: GenreStats[];

@@ -6,7 +6,7 @@ interface StatCardProps {
   icon: React.ComponentType<HTMLProps<unknown>>;
   className?: string;
   title: string;
-  value: string;
+  value: string | number;
   description: string;
   gradient: string;
   iconColor: string;

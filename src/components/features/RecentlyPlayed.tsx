@@ -2,18 +2,18 @@ import { Headphones, Users, Music, Clock, Sparkles, Palette, Disc, Disc3, Disc2,
 import { Stats } from '@/types';
 import { formatNumber, formatDuration, getGenreColorClass } from "@/utils";
 import { analyzePopularity } from "@/utils/popularity";
-import { WrappedMusicProfile } from "./WrappedMusicProfile";
+import { MusicVibes } from "./MusicVibes";
 import { StatCard } from './StatCard';
 
 
-interface MusicProfileProps {
+interface RecentlyPlayedProps {
   stats: Stats;
   isLoadingTimeRange: boolean;
   playLimit: number;
   onPlayLimitChange: (limit: number) => void;
 }
 
-export default function MusicProfile({ stats, isLoadingTimeRange, playLimit, onPlayLimitChange }: MusicProfileProps) {
+export default function RecentlyPlayed({ stats, isLoadingTimeRange, playLimit, onPlayLimitChange }: RecentlyPlayedProps) {
   // Calculate average plays per day (assuming 30 days for the time range)
   const avgPlaysPerDay = Math.round(stats.overview.totalPlays / 30);
 
@@ -71,15 +71,41 @@ export default function MusicProfile({ stats, isLoadingTimeRange, playLimit, onP
           </div>
         </div>
 
-        {/* Wrapped Music Profile Sequence */}
-        <div className="mb-6">
-          <WrappedMusicProfile
-            stats={stats}
-            isLoadingTimeRange={isLoadingTimeRange}
-            playLimit={playLimit}
-            onPlayLimitChange={onPlayLimitChange}
-          />
-        </div>
+        {/* Music Vibe Banner */}
+        {stats.genres?.length > 0 && (
+          <div className="mb-6">
+            <MusicVibes 
+              genreStats={stats.genres}
+              topArtist={stats.artists.length > 0 ? {
+                name: stats.artists[0].artist.name,
+                image: stats.artists[0].artist.images?.[0]?.url,
+                percentage: Math.round((stats.artists[0].playCount / stats.overview.totalPlays) * 100),
+                count: stats.artists[0].playCount
+              } : undefined}
+              topGenre={stats.genres.length > 0 ? {
+                name: stats.genres[0].genre,
+                percentage: Math.round((stats.genres[0].playCount / stats.overview.totalPlays) * 100),
+                count: stats.genres[0].playCount,
+                image: (() => {
+                  // First find an artist that has this genre
+                  const genreArtist = stats.artists.find(a => 
+                    a.artist.genres?.includes(stats.genres[0].genre)
+                  );
+                  
+                  if (!genreArtist) return undefined;
+                  
+                  // Then find a track by this artist
+                  const track = stats.tracks.find(t => 
+                    t.track.album?.images?.[0]?.url &&
+                    t.track.artists.some(a => a.id === genreArtist.artist.id)
+                  );
+                  
+                  return track?.track.album.images[0]?.url;
+                })()
+              } : undefined}
+            />
+          </div>
+        )}
 
         <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ${isLoadingTimeRange ? 'opacity-50' : ''}`}>
 
