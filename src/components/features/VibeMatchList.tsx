@@ -6,6 +6,7 @@ import { capitalCase } from 'change-case';
 import { getAllMusicVibes } from '@/utils/musicVibesAnalyzer';
 import { GenreFilter } from './GenreFilter';
 import { useState, useMemo } from "react";
+import { VACRS_COLORS } from '@/utils/vacrs';
 
 export interface VibeMatchItemProps {
   vibe: MusicVibe;
@@ -25,13 +26,6 @@ export const VibeMatchItem = ({
   index
 }: VibeMatchItemProps) => {
   const Icon = vibe.icon;
-  const COLORS = [
-    '#3B82F6', // Blue
-    '#10B981', // Green
-    '#F59E0B', // Yellow
-    '#EC4899', // Pink
-    '#8B5CF6', // Purple
-  ];
 
   return (
     <motion.div
@@ -137,7 +131,7 @@ export const VibeMatchItem = ({
         {Object.entries(vibe.targetScore).map(([key, value], i) => {
           const currentValue = currentVibeScore[key as keyof VACRSScore];
           const dimensionName = capitalCase(key);
-          const color = COLORS[i % COLORS.length];
+          const color = VACRS_COLORS[key as keyof VACRSScore];
 
           return (
             <div key={key} className="flex items-center gap-2 text-xs">
