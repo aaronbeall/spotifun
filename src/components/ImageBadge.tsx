@@ -1,6 +1,7 @@
 interface ImageBadgeProps {
   title: string;
   name: string;
+  subtitle?: string;
   image?: string;
   count: number;
   color: string;
@@ -9,7 +10,7 @@ interface ImageBadgeProps {
   percent?: number;
 }
 
-export const ImageBadge = ({ title, name, image, count, color, icon: Icon, className = '', percent }: ImageBadgeProps) => {
+export const ImageBadge = ({ title, name, subtitle, image, count, color, icon: Icon, className = '', percent }: ImageBadgeProps) => {
   return (
     <div className={`flex flex-col items-center group hover:scale-105 transition-all ${className}`}>
       {/* Header with icon and title */}
@@ -62,6 +63,11 @@ export const ImageBadge = ({ title, name, image, count, color, icon: Icon, class
         <h3 className="text-base font-semibold text-white line-clamp-1 group-hover:text-white/90 transition-colors">
           {name}
         </h3>
+        {subtitle && (
+          <div className="text-xs text-white/40 mt-0.5 line-clamp-1 group-hover:text-white/50 transition-colors">
+            {subtitle}
+          </div>
+        )}
         <div className="text-xs text-white/60 mt-1 group-hover:text-white/70 transition-colors">
           {count} {count === 1 ? 'play' : 'plays'}
         </div>

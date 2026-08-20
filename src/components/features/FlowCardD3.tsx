@@ -1,30 +1,49 @@
-import React, { useState } from "react";
-import { Sparkles, Share2 } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { motion } from 'framer-motion';
+import { Sparkles, Share2, ArrowRight } from 'lucide-react';
 import { VACRSScore } from '@/types';
 import { calculateGenreVACRSScore } from '@/utils/musicClassification';
-import { VACRS_DIMENSIONS, VACRS_COLORS } from '@/utils/vacrs';
+import { VACRS_DIMENSIONS, VACRS_COLORS, VACRS_RANGE_LABELS } from '@/utils/vacrs';
 import { getGenreColor } from '@/utils/format';
 import { MUSIC_VIBES } from '@/utils/musicVibes';
 import { useTooltip } from '@/hooks/useTooltip';
-import { FlowStreamChart, FlowChartMode, FlowTrack, getFlowData, getFlowDimensionsAndColors } from './FlowStreamChart';
+import { FlowStreamChart, FlowChartMode, FlowTrack, getFlowData, getFlowDimensionsAndColors, getTopGenres } from './FlowStreamChart';
 
-const CHART_MODE_LABELS: Record<FlowChartMode, string> = {
-  fullSpectrum: 'Genre Spectrum',
+const CHART_MODES = ['genres', 'traits', 'vibes'] as const;
+
+// Short labels for the mode tab selector
+export const CHART_MODE_LABELS: Record<FlowChartMode, string> = {
+  genres: 'Genres',
+  traits: 'Traits',
   vibes: 'Vibes',
 };
 
-const CHART_MODE_DESCRIPTIONS: Record<FlowChartMode, string> = {
-  fullSpectrum: "Every trait's full light-to-dark range over time, not just whichever side is dominant.",
+// Full titles shown below the chart and on the share card
+export const CHART_MODE_TITLES: Record<FlowChartMode, string> = {
+  genres: 'Genre Spectrum',
+  traits: 'Trait Spectrum',
+  vibes: 'Vibes Spectrum',
+};
+
+export const CHART_MODE_DESCRIPTIONS: Record<FlowChartMode, string> = {
+  genres: 'Tracks how your top genres ebb and flow across your recent plays.',
+  traits: "Every trait's full light-to-dark range over time, not just whichever side is dominant.",
   vibes: "Tracks which named vibes best match your evolving taste over time.",
 };
 
 interface FlowCardProps {
   tracks: FlowTrack[];
   onShare?: () => void;
+  /** Reports the active chart mode upward so a parent (e.g. the share card) can mirror it. */
+  onChartModeChange?: (mode: FlowChartMode) => void;
 }
 
-export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare }) => {
-  const [chartMode, setChartMode] = useState<FlowChartMode>('fullSpectrum');
+export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartModeChange }) => {
+  const [chartMode, setChartMode] = useState<FlowChartMode>('genres');
+
+  useEffect(() => {
+    onChartModeChange?.(chartMode);
+  }, [chartMode, onChartModeChange]);
   const modeTooltip = useTooltip();
   const [tooltip, setTooltip] = React.useState<{
     x: number;
@@ -34,7 +53,8 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare }) => {
   const width = 420;
   const height = 340;
 
-  const { colors } = getFlowDimensionsAndColors(chartMode);
+  const { colors } = getFlowDimensionsAndColors(chartMode, tracks);
+  const topGenres = getTopGenres(tracks);
 
   if (!tracks?.length) return null;
   const flowData = getFlowData(tracks, chartMode);
@@ -51,7 +71,7 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare }) => {
             <h2 className="text-2xl font-bold text-white">Listening Flow</h2>
           </div>
           <p className="text-gray-400 text-sm mt-1">
-            Vibe dimension stream graph of your recent plays
+            Stream graph of your recent plays, by genre, trait, or vibe
           </p>
         </div>
         {onShare && (
@@ -64,25 +84,35 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare }) => {
           </button>
         )}
       </div>
-      {/* Chart mode toggle buttons */}
       {modeTooltip.Tooltip}
-      <div className="flex gap-2 mb-4 flex-wrap">
-        {(['fullSpectrum', 'vibes'] as const).map((mode) => (
-          <button
-            key={mode}
-            onClick={() => setChartMode(mode)}
-            onMouseEnter={e => modeTooltip.show(CHART_MODE_DESCRIPTIONS[mode], e)}
-            onMouseMove={modeTooltip.move}
-            onMouseLeave={modeTooltip.hide}
-            className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-              chartMode === mode
-                ? 'bg-pink-400 text-white border-pink-400'
-                : 'text-gray-400 border-white/20 hover:border-pink-400/50'
-            }`}
-          >
-            {CHART_MODE_LABELS[mode]}
-          </button>
-        ))}
+      <div className="flex justify-center mb-6">
+        <div className="relative inline-flex items-center gap-1 bg-gray-900/60 border border-gray-700/60 rounded-full p-1">
+          {CHART_MODES.map((mode) => {
+            const isActive = chartMode === mode;
+            return (
+              <button
+                key={mode}
+                onClick={() => setChartMode(mode)}
+                onMouseEnter={e => modeTooltip.show(CHART_MODE_DESCRIPTIONS[mode], e)}
+                onMouseMove={modeTooltip.move}
+                onMouseLeave={modeTooltip.hide}
+                className={`relative px-4 py-1.5 rounded-full text-xs font-medium transition-colors focus:outline-none ${
+                  isActive ? 'text-white' : 'text-gray-400 hover:text-gray-200'
+                }`}
+                aria-current={isActive ? 'true' : undefined}
+              >
+                {isActive && (
+                  <motion.span
+                    layoutId="flow-mode-pill"
+                    className="absolute inset-0 -z-10 rounded-full bg-pink-400 shadow-md"
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  />
+                )}
+                {CHART_MODE_LABELS[mode]}
+              </button>
+            );
+          })}
+        </div>
       </div>
       <div className="w-full flex justify-center" style={{ position: 'relative' }}>
         <FlowStreamChart
@@ -178,8 +208,31 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare }) => {
                     );
                   });
                 })()
+              ) : chartMode === 'genres' ? (
+                // Genres mode: show the running presence of each tracked genre
+                topGenres.map((genre, i) => {
+                  const rowData = flowData[tooltip.idx] as unknown as Record<string, number>;
+                  const value = rowData[`genre_${i}`] || 0;
+                  const color = colors[i];
+
+                  return (
+                    <div key={genre} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ color, fontWeight: 500, fontSize: 12, minWidth: 120 }}>{genre}</span>
+                      <div style={{ background: '#1e293b', borderRadius: 3, height: 6, width: 48, margin: '0 6px' }}>
+                        <div style={{
+                          background: color,
+                          height: '100%',
+                          width: `${Math.round(value * 100)}%`,
+                          borderRadius: 3,
+                          transition: 'width 0.2s',
+                        }} />
+                      </div>
+                      <span style={{ fontSize: 11, color: '#e5e7eb', minWidth: 28, textAlign: 'right' }}>{Math.round(value * 100)}%</span>
+                    </div>
+                  );
+                })
               ) : (
-                // Full spectrum mode: show original VACRS value
+                // Traits mode: show original VACRS value
                 VACRS_DIMENSIONS.map((dim) => {
                   const originalRow = tracks[tooltip.idx];
                   if (!originalRow.genres || originalRow.genres.length === 0) {
@@ -211,6 +264,10 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare }) => {
           </div>
         )}
       </div>
+      <div className="text-center mt-6 mb-2">
+        <h3 className="text-xl font-bold text-pink-400">{CHART_MODE_TITLES[chartMode]}</h3>
+        <p className="text-sm text-gray-400 mt-1 max-w-md mx-auto">{CHART_MODE_DESCRIPTIONS[chartMode]}</p>
+      </div>
       <div className="flex justify-between mt-2 text-xs text-white/60">
         <span>{firstDate}</span>
         <span>{lastDate}</span>
@@ -230,28 +287,46 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare }) => {
             // Show only vibes that appeared
             return MUSIC_VIBES.map((vibe, i) => {
               if (!appearedVibeIndices.has(i)) return null;
-              const VibeIcon = vibe.icon;
+              const lightColor = colors[i * 2];
               return (
-                <span key={vibe.id} className="flex items-center gap-1 text-xs" style={{ color: colors[i] }}>
-                  <span className="inline-block w-2 h-2 rounded-full" style={{ background: colors[i] }}></span>
-                  <VibeIcon className="w-3 h-3" />
+                <span key={vibe.id} className="flex items-center gap-1.5 text-xs" style={{ color: lightColor }}>
+                  <span
+                    className="inline-block w-4 h-4 rounded-full overflow-hidden ring-1 ring-white/20 shrink-0"
+                    style={{ boxShadow: `0 0 4px ${lightColor}80` }}
+                  >
+                    {vibe.image ? (
+                      <img src={vibe.image} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="block w-full h-full" style={{ background: lightColor }} />
+                    )}
+                  </span>
                   {vibe.name}
                 </span>
               );
             }).filter(Boolean);
           })()
+        ) : chartMode === 'genres' ? (
+          topGenres.map((genre, i) => (
+            <span key={genre} className="flex items-center gap-1.5 text-xs" style={{ color: colors[i] }}>
+              <span className="inline-block w-2 h-2 rounded-full" style={{ background: colors[i] }}></span>
+              {genre}
+            </span>
+          ))
         ) : (
           VACRS_DIMENSIONS.map((dim, i) => {
             const baseColorIndex = i * 2;
             const lightColor = colors[baseColorIndex];
             const darkColor = colors[baseColorIndex + 1];
+            const [lowLabel, highLabel] = VACRS_RANGE_LABELS[dim];
             return (
-              <span key={dim} className="flex items-center gap-1 text-xs" style={{ color: darkColor }}>
+              <span key={dim} className="flex items-center gap-1.5 text-xs">
                 <span className="inline-flex gap-0.5">
                   <span className="inline-block w-2 h-2 rounded-full" style={{ background: lightColor }}></span>
                   <span className="inline-block w-2 h-2 rounded-full" style={{ background: darkColor }}></span>
                 </span>
-                {dim.charAt(0).toUpperCase() + dim.slice(1)}
+                <span style={{ color: lightColor }}>{highLabel}</span>
+                <ArrowRight className="w-3 h-3 text-white/25" />
+                <span style={{ color: darkColor }}>{lowLabel}</span>
               </span>
             );
           })

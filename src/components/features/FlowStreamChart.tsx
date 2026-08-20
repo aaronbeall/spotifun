@@ -4,9 +4,18 @@ import { VACRSScore } from '@/types';
 import { calculateGenreVACRSScore, calculateVACRSScoreMatch } from '@/utils/musicClassification';
 import { VACRS_DIMENSIONS, VACRS_COLORS } from '@/utils/vacrs';
 import { MUSIC_VIBES } from '@/utils/musicVibes';
+import { getGenreColor } from '@/utils/format';
 import { darkenHex } from '@/utils/color';
 
-export type FlowChartMode = 'fullSpectrum' | 'vibes';
+export type FlowChartMode = 'genres' | 'traits' | 'vibes';
+
+export const GENRE_TRACK_COUNT = 5;
+
+// Light-fraction range for the Vibes rank-based light/dark split: the
+// dominant vibe at a given moment gets close to VIBE_LIGHT_MAX, the most
+// recessive gets close to VIBE_LIGHT_MIN, with others interpolated between.
+const VIBE_LIGHT_MAX = 0.9;
+const VIBE_LIGHT_MIN = 0.2;
 
 export interface FlowTrack {
   playedAt: string;
@@ -15,7 +24,19 @@ export interface FlowTrack {
   artist?: string;
 }
 
-export function getFlowData(tracks: FlowTrack[], mode: FlowChartMode = 'fullSpectrum') {
+// The N most frequently-tagged genres across the given plays, most common first.
+export function getTopGenres(tracks: FlowTrack[], n: number = GENRE_TRACK_COUNT): string[] {
+  const counts = new Map<string, number>();
+  tracks.forEach(t => {
+    (t.genres || []).forEach(g => counts.set(g, (counts.get(g) || 0) + 1));
+  });
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, n)
+    .map(([genre]) => genre);
+}
+
+export function getFlowData(tracks: FlowTrack[], mode: FlowChartMode = 'traits') {
   // Sort tracks by playedAt ascending
   const sortedTracks = [...tracks].sort((a, b) => new Date(a.playedAt).getTime() - new Date(b.playedAt).getTime());
 
@@ -48,6 +69,23 @@ export function getFlowData(tracks: FlowTrack[], mode: FlowChartMode = 'fullSpec
       socialPresence: avg('socialPresence'),
     };
   });
+
+  if (mode === 'genres') {
+    const topGenres = getTopGenres(sortedTracks);
+    const runningPresence = topGenres.map(() => 0);
+
+    return rawData.map((row, idx) => {
+      const trackGenres = sortedTracks[idx].genres || [];
+      const result = { ...row } as typeof row & Record<string, number>;
+      topGenres.forEach((genre, i) => {
+        const present = trackGenres.includes(genre) ? 1 : 0;
+        // Smooth with a running average so the stream reads as a trend, not noise
+        runningPresence[i] = runningPresence[i] * 0.7 + present * 0.3;
+        result[`genre_${i}`] = runningPresence[i];
+      });
+      return result;
+    });
+  }
 
   if (mode === 'vibes') {
     const vibesData: Array<typeof rawData[0] & { matchedVibes?: Array<{ vibeId: string; match: number; vibeIndex: number }> }> = [];
@@ -128,16 +166,23 @@ export function getFlowData(tracks: FlowTrack[], mode: FlowChartMode = 'fullSpec
 
       // Initialize all vibe dimensions to 0
       MUSIC_VIBES.forEach((vibe, i) => {
-        const key = `vibe_${i}`;
-        (result as Record<string, unknown>)[key] = 0;
+        (result as Record<string, unknown>)[`vibe_${i}_light`] = 0;
+        (result as Record<string, unknown>)[`vibe_${i}_dark`] = 0;
       });
 
-      // Set only top 3 vibes with normalized values
-      top3.forEach(vibeMatch => {
-        const key = `vibe_${vibeMatch.vibeIndex}`;
+      // Set only top 3 vibes with normalized values, split into a light and
+      // dark portion based on each vibe's rank at this moment: the dominant
+      // (top) vibe reads as mostly light, the most recessive (bottom of the
+      // top 3) reads as mostly dark, with the middle one in between.
+      top3.forEach((vibeMatch, rank) => {
+        const lightFraction = top3.length > 1
+          ? VIBE_LIGHT_MAX - (rank / (top3.length - 1)) * (VIBE_LIGHT_MAX - VIBE_LIGHT_MIN)
+          : VIBE_LIGHT_MAX;
         // Normalize: (value - min) / range
         const normalizedValue = matchRange > 0 ? (vibeMatch.match - minMatch) / matchRange : 0;
-        (result as Record<string, unknown>)[key] = normalizedValue;
+        const key = `vibe_${vibeMatch.vibeIndex}`;
+        (result as Record<string, unknown>)[`${key}_light`] = normalizedValue * lightFraction;
+        (result as Record<string, unknown>)[`${key}_dark`] = normalizedValue * (1 - lightFraction);
       });
 
       vibesData.push(result);
@@ -145,7 +190,7 @@ export function getFlowData(tracks: FlowTrack[], mode: FlowChartMode = 'fullSpec
     return vibesData;
   }
 
-  // fullSpectrum: streams vary independently based on distance from 0.5
+  // traits: streams vary independently based on distance from 0.5
   // At 50%: both light and dark are 5%
   // At 100%: light is 100%, dark is 0%
   // At 0%: light is 0%, dark is 100%
@@ -170,20 +215,32 @@ export function getFlowData(tracks: FlowTrack[], mode: FlowChartMode = 'fullSpec
   });
 }
 
-export function getFlowDimensionsAndColors(chartMode: FlowChartMode) {
-  const dimensions = chartMode === 'vibes'
-    ? MUSIC_VIBES.map((_, i) => `vibe_${i}`)
-    : VACRS_DIMENSIONS.flatMap(dim => [`${dim}_light`, `${dim}_dark`]);
+export function getFlowDimensionsAndColors(chartMode: FlowChartMode, tracks: FlowTrack[] = []) {
+  if (chartMode === 'genres') {
+    const topGenres = getTopGenres(tracks);
+    return {
+      dimensions: topGenres.map((_, i) => `genre_${i}`),
+      // Same per-genre color used for genre badges/tags elsewhere in the app
+      colors: topGenres.map(genre => getGenreColor(genre).color),
+    };
+  }
 
-  const colors = chartMode === 'vibes'
-    // Use each vibe's own theme color (the same swatch used on vibe badges elsewhere)
-    ? MUSIC_VIBES.map(vibe => vibe.color.light)
-    : VACRS_DIMENSIONS.flatMap(dim => {
+  if (chartMode === 'vibes') {
+    return {
+      dimensions: MUSIC_VIBES.flatMap((_, i) => [`vibe_${i}_light`, `vibe_${i}_dark`]),
+      // Use each vibe's own light/dark theme colors (the same pair used on vibe badges elsewhere)
+      colors: MUSIC_VIBES.flatMap(vibe => [vibe.color.light, vibe.color.dark]),
+    };
+  }
+
+  // traits
+  return {
+    dimensions: VACRS_DIMENSIONS.flatMap(dim => [`${dim}_light`, `${dim}_dark`]),
+    colors: VACRS_DIMENSIONS.flatMap(dim => {
       const baseColor = VACRS_COLORS[dim];
       return [baseColor, darkenHex(baseColor, 0.5)];
-    });
-
-  return { dimensions, colors };
+    }),
+  };
 }
 
 interface FlowStreamChartProps {
@@ -196,11 +253,21 @@ interface FlowStreamChartProps {
 
 // The core D3 stream-graph visual, extracted so it can be reused both in the
 // live interactive Flow card and in the static share graphic.
-export function FlowStreamChart({ tracks, chartMode = 'fullSpectrum', width = 420, height = 340, onHover }: FlowStreamChartProps) {
+export function FlowStreamChart({ tracks, chartMode = 'traits', width = 420, height = 340, onHover }: FlowStreamChartProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const verticalPadding = 72;
 
-  const { dimensions, colors } = useMemo(() => getFlowDimensionsAndColors(chartMode), [chartMode]);
+  const { dimensions, colors } = useMemo(() => getFlowDimensionsAndColors(chartMode, tracks), [chartMode, tracks]);
+
+  // Keep the latest onHover in a ref so the draw effect below doesn't need to
+  // depend on it directly — onHover is a new function identity on every parent
+  // render (it calls setState), and including it in the deps array caused the
+  // chart (and its hover listeners) to be torn down and rebuilt on every
+  // mousemove, which could drop the mouseleave binding and strand the tooltip.
+  const onHoverRef = useRef(onHover);
+  useEffect(() => {
+    onHoverRef.current = onHover;
+  }, [onHover]);
 
   useEffect(() => {
     if (!tracks?.length) return;
@@ -240,7 +307,7 @@ export function FlowStreamChart({ tracks, chartMode = 'fullSpectrum', width = 42
         .attr("fill-opacity", 1);
     });
 
-    if (onHover) {
+    if (onHoverRef.current) {
       g.selectAll("rect.tooltip-area")
         .data(flowData)
         .enter()
@@ -253,15 +320,15 @@ export function FlowStreamChart({ tracks, chartMode = 'fullSpectrum', width = 42
         .attr("fill", "transparent")
         .on("mousemove", function(event, d) {
           const idx = flowData.indexOf(d);
-          onHover(idx, x(idx), event.offsetY);
+          onHoverRef.current?.(idx, x(idx), event.offsetY);
           d3.select(this).attr("fill", "#64748b22"); // subtle slate hover
         })
         .on("mouseleave", function() {
-          onHover(null, 0, 0);
+          onHoverRef.current?.(null, 0, 0);
           d3.select(this).attr("fill", "transparent");
         });
     }
-  }, [tracks, chartMode, colors, dimensions, width, height, onHover]);
+  }, [tracks, chartMode, colors, dimensions, width, height]);
 
   if (!tracks?.length) return null;
 

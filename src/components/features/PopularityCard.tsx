@@ -51,6 +51,7 @@ export const PopularityCard: React.FC<PopularityCardProps> = ({ tracks, onShare 
             <ImageBadge
               title="Most Niche"
               name={leastPopularTrack.name}
+              subtitle={leastPopularTrack.artists?.[0]?.name}
               image={leastPopularTrack.album?.images?.[0]?.url}
               count={leastPopularCount}
               color="#818cf8"
@@ -72,6 +73,7 @@ export const PopularityCard: React.FC<PopularityCardProps> = ({ tracks, onShare 
             <ImageBadge
               title="Most Popular"
               name={mostPopularTrack.name}
+              subtitle={mostPopularTrack.artists?.[0]?.name}
               image={mostPopularTrack.album?.images?.[0]?.url}
               count={mostPopularCount}
               color="#f472b6"

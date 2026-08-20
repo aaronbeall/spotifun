@@ -8,8 +8,8 @@ import { Stats } from "@/types";
 import { PopularityCard } from "./PopularityCard";
 import { PopularityHistogram } from "./PopularityHistogram";
 import { PersonaCard } from "./PersonaCard";
-import { FlowCardD3 } from "./FlowCardD3";
-import { FlowStreamChart, FlowTrack } from "./FlowStreamChart";
+import { FlowCardD3, CHART_MODE_TITLES, CHART_MODE_DESCRIPTIONS } from "./FlowCardD3";
+import { FlowStreamChart, FlowChartMode, FlowTrack } from "./FlowStreamChart";
 import { ShareModal } from "../ShareModal";
 import { ShareContent } from "../ShareCardTemplate";
 import { GenerativeArt } from "../GenerativeArt";
@@ -54,6 +54,7 @@ function CircularVisual({ children, glow }: { children: React.ReactNode; glow: s
 export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPlayLimitChange }: WrappedMusicProfileProps) {
   const [currentCard, setCurrentCard] = useState(0);
   const [shareOpen, setShareOpen] = useState(false);
+  const [flowChartMode, setFlowChartMode] = useState<FlowChartMode>('genres');
 
   const recentlyPlayedGenres = useMemo(() => stats.recentlyPlayed.map(t => {
     const fullArtist = stats.artists.find(a => a.artist.id === t.track.artists[0].id);
@@ -154,10 +155,10 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
       case 2: {
         return {
           eyebrow: 'Listening Flow',
-          title: 'Genre Spectrum',
-          description: "Every trait's light-to-dark range across your recent plays, mapped over time.",
+          title: CHART_MODE_TITLES[flowChartMode],
+          description: CHART_MODE_DESCRIPTIONS[flowChartMode],
           color: CARD_THEMES.flow,
-          visual: <FlowStreamChart tracks={flowTracks} chartMode="fullSpectrum" width={480} height={260} />,
+          visual: <FlowStreamChart tracks={flowTracks} chartMode={flowChartMode} width={480} height={260} />,
         };
       }
       case 3: {
@@ -175,6 +176,7 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
               <ImageBadge
                 title="Most Niche"
                 name={leastPopularTrack.name}
+                subtitle={leastPopularTrack.artists?.[0]?.name}
                 image={leastPopularTrack.album?.images?.[0]?.url}
                 count={leastPopularCount}
                 color="#818cf8"
@@ -186,6 +188,7 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
               <ImageBadge
                 title="Most Popular"
                 name={mostPopularTrack.name}
+                subtitle={mostPopularTrack.artists?.[0]?.name}
                 image={mostPopularTrack.album?.images?.[0]?.url}
                 count={mostPopularCount}
                 color="#f472b6"
@@ -214,7 +217,7 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
         };
       }
     }
-  }, [currentCard, stats, flowTracks, topArtist, topGenre]);
+  }, [currentCard, stats, flowTracks, topArtist, topGenre, flowChartMode]);
 
   const openShare = () => setShareOpen(true);
 
@@ -239,7 +242,7 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
           <SpectrumCard genreStats={stats.genres} onShare={openShare} />
         )}
         {currentCard === 2 && (
-          <FlowCardD3 tracks={flowTracks} onShare={openShare} />
+          <FlowCardD3 tracks={flowTracks} onShare={openShare} onChartModeChange={setFlowChartMode} />
         )}
         {currentCard === 3 && (
           <PopularityCard tracks={stats.tracks.map(t => t.track)} onShare={openShare} />
