@@ -8,6 +8,10 @@ import { VibeMatchList } from './VibeMatchList';
 import { cn } from '@/utils';
 import { ImageBadge } from '../ImageBadge';
 
+// Lets the center badges (vibe + flanking top artist/genre) finish their own
+// reveal sequence before the Other Vibe Matches section starts fading in.
+const OTHER_VIBES_BASE_DELAY = 0.6;
+
 interface VibeBadgeProps {
   vibe: MusicVibe;
   matchPercentage: number;
@@ -290,39 +294,61 @@ export function MusicVibes({
           <div className="flex items-center justify-center gap-16">
             {/* Top Artist Badge */}
             {topArtist && (
-              <ImageBadge
-                {...topArtist}
-                title="Top Artist"
-                color="#a78bfa"
-                icon={Users}
-              />
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+              >
+                <ImageBadge
+                  {...topArtist}
+                  title="Top Artist"
+                  color="#a78bfa"
+                  icon={Users}
+                />
+              </motion.div>
             )}
 
             {/* Main Vibe Badge */}
-            <div className="relative z-10">
+            <motion.div
+              className="relative z-10"
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0 }}
+            >
               <VibeBadge
                 vibe={vibe}
                 matchPercentage={matchPercentage}
                 isCurrent
                 size="lg"
               />
-            </div>
+            </motion.div>
 
             {/* Top Genre Badge */}
             {topGenre && (
-              <ImageBadge
-                {...topGenre}
-                title="Top Genre"
-                color="#60a5fa"
-                icon={Palette}
-              />
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+              >
+                <ImageBadge
+                  {...topGenre}
+                  title="Top Genre"
+                  color="#60a5fa"
+                  icon={Palette}
+                />
+              </motion.div>
             )}
           </div>
         </div>
 
-        {/* All Vibes Grid */}
+        {/* All Vibes Grid — reveals after the center badges so it doesn't compete for attention */}
         <div className="mt-12">
-          <div className="flex items-center justify-between mb-6">
+          <motion.div
+            className="flex items-center justify-between mb-6"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: OTHER_VIBES_BASE_DELAY }}
+          >
             <h3 className="text-lg font-medium text-white flex items-center gap-2">
               <Trophy className="w-5 h-5 text-amber-400" />
               Other Vibe Matches
@@ -343,7 +369,7 @@ export function MusicVibes({
                 </>
               )}
             </button>
-          </div>
+          </motion.div>
 
             {showAllVibes ? (
               <VibeMatchList
@@ -358,7 +384,7 @@ export function MusicVibes({
                     className="group"
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1], delay: i * 0.08 }}
+                    transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1], delay: OTHER_VIBES_BASE_DELAY + i * 0.04 }}
                   >
                     <VibeBadge
                       vibe={v}

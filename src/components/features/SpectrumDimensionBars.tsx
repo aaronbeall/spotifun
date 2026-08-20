@@ -1,9 +1,62 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useState, useLayoutEffect, useId } from "react";
 import { motion } from 'framer-motion';
+import * as d3 from "d3";
 import { GenreStats } from '@/types';
 import { calculateGenreVACRSScore, calculateWeightedVACRSScore } from '@/utils/musicClassification';
 import { VACRS_COLORS, VACRS_DIMENSIONS, VACRS_NAMES, VACRS_RANGE_LABELS } from '@/utils/vacrs';
 import { useTooltip } from "@/hooks/useTooltip";
+
+// Fan of wave steps from the min (-1) through the calculated value (0) to the
+// max (1), used to draw the left-to-right curves through each dimension.
+const WAVE_STEP_SIZE = 0.25;
+const WAVE_STEPS = [-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1];
+const WAVE_COLOR = '#60a5fa';
+
+// Measures where each dimension's scatter column actually sits (accounting
+// for the responsive grid, gaps, etc.) so the wave curves line up exactly
+// with the existing weighted-score markers instead of guessing positions.
+function useDimensionColumnGeometry(deps: unknown[]) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const boxRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [geometry, setGeometry] = useState<{ centers: number[]; top: number; width: number; height: number } | null>(null);
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    const boxes = boxRefs.current;
+    if (!container || boxes.length !== VACRS_DIMENSIONS.length || boxes.some(b => !b)) {
+      setGeometry(null);
+      return;
+    }
+
+    const measure = () => {
+      const containerRect = container.getBoundingClientRect();
+      const rects = boxes.map(b => b!.getBoundingClientRect());
+      const tops = rects.map(r => r.top - containerRect.top);
+      // Only draw the wave when all five columns sit on the same row —
+      // it wraps to multiple rows on narrow screens, where a single
+      // left-to-right curve wouldn't make sense.
+      const sameRow = tops.every(t => Math.abs(t - tops[0]) < 1);
+      if (!sameRow) {
+        setGeometry(null);
+        return;
+      }
+      setGeometry({
+        centers: rects.map(r => r.left - containerRect.left + r.width / 2),
+        top: tops[0],
+        width: containerRect.width,
+        height: containerRect.height,
+      });
+    };
+
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(container);
+    return () => ro.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+
+  return { containerRef, boxRefs, geometry };
+}
 
 export function getVACRSDiversity(genreStats: GenreStats[]) {
   // Calculate VACRS scores for each genre
@@ -39,10 +92,13 @@ interface SpectrumDimensionBarsProps {
 // interactive Spectrum card and in the static share graphic.
 export function SpectrumDimensionBars({ genreStats, interactive = true, compact = false }: SpectrumDimensionBarsProps) {
   const tooltip = useTooltip();
+  const waveClipId = useId();
   const { spread, values, weightedScore } = useMemo(() => {
     const { spread, values } = getVACRSDiversity(genreStats);
     return { spread, values, weightedScore: calculateWeightedVACRSScore(genreStats) };
   }, [genreStats]);
+  const { containerRef, boxRefs, geometry } = useDimensionColumnGeometry([genreStats, compact]);
+  boxRefs.current = [];
 
   if (!genreStats?.length) return null;
 
@@ -52,9 +108,66 @@ export function SpectrumDimensionBars({ genreStats, interactive = true, compact 
   const maxSize = compact ? 18 : 30;
   const dotOpacity = compact ? 0.7 : 0.45;
 
+  // Value at each wave step for a dimension: -1 lands on its min, 0 on the
+  // calculated (weighted) score, 1 on its max — interpolated in between.
+  const waveValueAt = (dim: typeof VACRS_DIMENSIONS[number], t: number) => {
+    const w = weightedScore[dim];
+    const dimScores = values[dim].map(v => v.score);
+    if (t >= 0) return w + t * (Math.max(...dimScores) - w);
+    return w + t * (w - Math.min(...dimScores));
+  };
+
+  // Reveal the wave left-to-right shortly after the bars/dots start their
+  // own entrance. This bezier holds near the start and end (a lingering
+  // peek at the left, then a long settle at the right) with almost all the
+  // actual motion crammed into a fast wipe through the middle.
+  const waveStartDelay = 0.4;
+  const waveRevealDuration = 2;
+  const waveEase: [number, number, number, number] = [0.9, 0.05, 0.1, 0.95];
+
   return (
-    <div className={compact ? "grid grid-cols-5 gap-3" : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8"}>
+    <div ref={containerRef} className={compact ? "relative grid grid-cols-5 gap-3" : "relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8"}>
       {interactive && tooltip.Tooltip}
+      {geometry && (
+        <svg className="absolute inset-0 w-full h-full pointer-events-none -z-10" aria-hidden="true">
+          <clipPath id={waveClipId}>
+            <motion.rect
+              x={0}
+              y={0}
+              height={geometry.height}
+              initial={{ width: 0 }}
+              animate={{ width: geometry.width }}
+              transition={{ duration: waveRevealDuration, delay: waveStartDelay, ease: waveEase }}
+            />
+          </clipPath>
+          <g clipPath={`url(#${waveClipId})`}>
+            {WAVE_STEPS.map(t => {
+              const points: [number, number][] = VACRS_DIMENSIONS.map((dim, i) => {
+                const localY = (1 - waveValueAt(dim, t)) * chartHeight + offset;
+                return [geometry.centers[i], geometry.top + localY];
+              });
+              const path = d3.line().curve(d3.curveCatmullRom.alpha(0.5))(points);
+              if (!path) return null;
+              // Geometric falloff: each step away from center halves the
+              // opacity (100%, 50%, 25%, 12.5%, ...), so the center line
+              // reads solid and the fan fades out fast toward min/max.
+              const stepsFromCenter = Math.abs(t) / WAVE_STEP_SIZE;
+              const opacity = Math.pow(0.5, stepsFromCenter);
+              return (
+                <path
+                  key={t}
+                  d={path}
+                  fill="none"
+                  stroke={WAVE_COLOR}
+                  strokeWidth={1}
+                  strokeLinecap="round"
+                  opacity={opacity}
+                />
+              );
+            })}
+          </g>
+        </svg>
+      )}
       {VACRS_DIMENSIONS.map((dim, i) => {
         // Get weighted score for this dimension
         const weightedDimScore = weightedScore[dim];
@@ -80,6 +193,7 @@ export function SpectrumDimensionBars({ genreStats, interactive = true, compact 
             )}
             {/* Vertical scatter plot, no background box */}
             <div
+              ref={el => { boxRefs.current[i] = el; }}
               className={compact ? "relative w-14 flex flex-col items-center justify-between" : "relative w-32 h-48 flex flex-col items-center justify-between"}
               style={compact ? { height: chartHeight + offset * 2 } : undefined}
             >

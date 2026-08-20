@@ -37,7 +37,7 @@ export const VibeMatchItem = ({
       }}
       transition={{
         duration: 0.6,
-        ease: [0.22, 1, 0.36, 1],
+        ease: [0.16, 1, 0.3, 1],
         delay: index * 0.03
       }}
       className={cn(
@@ -106,7 +106,7 @@ export const VibeMatchItem = ({
                 animate={{ strokeDashoffset: 100 - matchPercentage }}
                 transition={{
                   duration: 1.2,
-                  ease: [0.22, 1, 0.36, 1],
+                  ease: [0.16, 1, 0.3, 1],
                   delay: 0.1
                 }}
               />
