@@ -243,6 +243,9 @@ export const VibeMatchList = ({
   };
   return (
     <div className="mt-4">
+      <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+        Based on your genres
+      </p>
       <GenreFilter
         genreStats={genreStats}
         selectedGenres={selectedGenres}

@@ -164,22 +164,26 @@ const VibeBadge = ({
           <div
             className={cn(
               'absolute -bottom-1 left-1/2 -translate-x-1/2',
-              'px-3 py-1 rounded-full',
               'flex items-center justify-center',
               'backdrop-blur-md border',
               'transition-all duration-300',
-              isCurrent ? 'scale-110' : 'scale-100 group-hover:scale-110',
-              'min-w-[3rem]',
-              'font-bold',
-              textSize
+              isCurrent
+                ? 'scale-110 px-3 py-1 min-w-[3rem] font-bold rounded-full'
+                : 'scale-100 group-hover:scale-105 px-1.5 py-0.5 min-w-[2rem] font-medium rounded-full text-[10px]',
+              isCurrent && textSize
             )}
             style={{
-              backgroundColor: `${vibe.color.dark}80`,
-              borderColor: `${vibe.color.light}30`,
-              color: 'white',
-              textShadow: `0 1px 2px rgba(0,0,0,0.3)`,
-              boxShadow: `0 2px 12px ${vibe.color.light}20, 
-                         inset 0 1px 1px ${vibe.color.light}30`,
+              background: isCurrent
+                ? `linear-gradient(135deg, ${vibe.color.dark}e6, ${vibe.color.dark}99)`
+                : `${vibe.color.dark}80`,
+              borderColor: `${vibe.color.light}${isCurrent ? '50' : '1a'}`,
+              color: isCurrent ? vibe.color.light : `${vibe.color.light}cc`,
+              textShadow: isCurrent
+                ? `0 0 10px ${vibe.color.light}90, 0 1px 2px rgba(0,0,0,0.5)`
+                : undefined,
+              boxShadow: isCurrent
+                ? `0 2px 16px ${vibe.color.light}35, inset 0 1px 1px ${vibe.color.light}40`
+                : undefined,
             }}
           >
             {percentage}%
@@ -193,10 +197,10 @@ const VibeBadge = ({
           className={cn(
             'font-bold',
             size === 'sm' ? 'text-xs' : size === 'md' ? 'text-sm' : 'text-base',
-            'transition-colors duration-300',
-            isCurrent ? 'text-white' : 'text-gray-300 group-hover:text-white'
+            'transition-opacity duration-300',
+            isCurrent ? 'opacity-100' : 'opacity-80 group-hover:opacity-100'
           )}
-          style={{ color: isCurrent ? vibe.color.light : 'inherit' }}
+          style={{ color: vibe.color.light }}
         >
           {vibe.name}
         </h3>
