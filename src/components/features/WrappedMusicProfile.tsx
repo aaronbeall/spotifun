@@ -10,6 +10,7 @@ import { PopularityHistogram } from "./PopularityHistogram";
 import { PersonaCard } from "./PersonaCard";
 import { FlowCardD3, CHART_MODE_TITLES, CHART_MODE_DESCRIPTIONS } from "./FlowCardD3";
 import { FlowStreamChart, FlowChartMode, FlowTrack } from "./FlowStreamChart";
+import { FlowLegend } from "./FlowLegend";
 import { ShareModal } from "../ShareModal";
 import { ShareContent } from "../ShareCardTemplate";
 import { GenerativeArt } from "../GenerativeArt";
@@ -65,7 +66,8 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
     playedAt: t.played_at,
     genres: recentlyPlayedGenres[i] || [],
     track: t.track.name,
-    artist: t.track.artists?.[0]?.name || ""
+    artist: t.track.artists?.[0]?.name || "",
+    image: t.track.album?.images?.[0]?.url,
   })), [stats, recentlyPlayedGenres]);
 
   const genreImages = useMemo(() => {
@@ -158,7 +160,12 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
           title: CHART_MODE_TITLES[flowChartMode],
           description: CHART_MODE_DESCRIPTIONS[flowChartMode],
           color: CARD_THEMES.flow,
-          visual: <FlowStreamChart tracks={flowTracks} chartMode={flowChartMode} width={480} height={260} />,
+          visual: (
+            <div className="flex flex-col items-center gap-4">
+              <FlowStreamChart tracks={flowTracks} chartMode={flowChartMode} width={480} height={260} />
+              <FlowLegend tracks={flowTracks} chartMode={flowChartMode} />
+            </div>
+          ),
         };
       }
       case 3: {

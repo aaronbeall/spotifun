@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { motion } from 'framer-motion';
-import { Activity, Sparkles, Share2, ArrowRight, Tags, SlidersHorizontal } from 'lucide-react';
+import { Activity, Sparkles, Share2, Tags, SlidersHorizontal } from 'lucide-react';
 import { VACRSScore } from '@/types';
 import { calculateGenreVACRSScore } from '@/utils/musicClassification';
-import { VACRS_DIMENSIONS, VACRS_COLORS, VACRS_RANGE_LABELS } from '@/utils/vacrs';
-import { getGenreColor } from '@/utils/format';
+import { VACRS_DIMENSIONS, VACRS_COLORS } from '@/utils/vacrs';
+import { getGenreColor, formatRelativeTime } from '@/utils/format';
 import { MUSIC_VIBES } from '@/utils/musicVibes';
 import { FlowStreamChart, FlowChartMode, FlowTrack, getFlowData, getFlowDimensionsAndColors, getTopGenres } from './FlowStreamChart';
+import { FlowLegend } from './FlowLegend';
 
 const CHART_MODES = ['genres', 'traits', 'vibes'] as const;
 
@@ -62,9 +63,8 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
 
   if (!tracks?.length) return null;
   const flowData = getFlowData(tracks, chartMode);
-  const dateOptions = { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' } as const;
-  const firstDate = new Date(flowData[0].playedAt).toLocaleString('en-US', dateOptions);
-  const lastDate = new Date(flowData[flowData.length - 1].playedAt).toLocaleString('en-US', dateOptions);
+  const firstDate = formatRelativeTime(flowData[0].playedAt);
+  const lastDate = formatRelativeTime(flowData[flowData.length - 1].playedAt);
 
   return (
     <div className="bg-linear-to-br from-gray-900 to-gray-800/80 backdrop-blur-sm rounded-3xl p-6 border border-white/5 shadow-2xl overflow-hidden">
@@ -140,14 +140,25 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
               zIndex: 10,
             }}
           >
-            <div style={{ fontSize: 11, color: '#cbd5e1', marginBottom: 4, fontWeight: 400, opacity: 0.6 }}>
-              {new Date(flowData[tooltip.idx].playedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-            </div>
-            <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 2, lineHeight: 1.2 }}>
-              {flowData[tooltip.idx].track}
-            </div>
-            <div style={{ fontWeight: 400, fontSize: 12, marginBottom: 8, color: '#a3a3a3', lineHeight: 1.2, opacity: 0.7 }}>
-              {flowData[tooltip.idx].artist}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              {flowData[tooltip.idx].image && (
+                <img
+                  src={flowData[tooltip.idx].image}
+                  alt=""
+                  style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }}
+                />
+              )}
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 11, color: '#cbd5e1', marginBottom: 2, fontWeight: 400, opacity: 0.6 }}>
+                  {new Date(flowData[tooltip.idx].playedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                </div>
+                <div style={{ fontWeight: 600, fontSize: 15, lineHeight: 1.2 }}>
+                  {flowData[tooltip.idx].track}
+                </div>
+                <div style={{ fontWeight: 400, fontSize: 12, color: '#a3a3a3', lineHeight: 1.2, opacity: 0.7 }}>
+                  {flowData[tooltip.idx].artist}
+                </div>
+              </div>
             </div>
             <div className="mb-2">
               {(() => {
@@ -248,7 +259,7 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
               ) : (
                 // Traits mode: show original VACRS value
                 VACRS_DIMENSIONS.map((dim) => {
-                  const originalRow = tracks[tooltip.idx];
+                  const originalRow = flowData[tooltip.idx];
                   if (!originalRow.genres || originalRow.genres.length === 0) {
                     return null;
                   }
@@ -278,72 +289,14 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
           </div>
         )}
       </div>
-      <div className="text-center mt-6 mb-2">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center mt-1 text-xs text-white/60">
+        <span className="justify-self-start">{firstDate}</span>
+        <FlowLegend tracks={tracks} chartMode={chartMode} />
+        <span className="justify-self-end">{lastDate}</span>
+      </div>
+      <div className="text-center mt-6">
         <h3 className="text-xl font-bold text-pink-400">{CHART_MODE_TITLES[chartMode]}</h3>
         <p className="text-sm text-gray-400 mt-1 max-w-md mx-auto">{CHART_MODE_DESCRIPTIONS[chartMode]}</p>
-      </div>
-      <div className="flex justify-between mt-2 text-xs text-white/60">
-        <span>{firstDate}</span>
-        <span>{lastDate}</span>
-      </div>
-      <div className="flex gap-3 mt-4 justify-center flex-wrap">
-        {chartMode === 'vibes' ? (
-          (() => {
-            // Get unique vibe indices that appear in top 3 across all data
-            const appearedVibeIndices = new Set<number>();
-            flowData.forEach(row => {
-              const rowData = row as unknown as { matchedVibes?: Array<{ vibeId: string; match: number; vibeIndex: number }> };
-              const matchedVibes = rowData.matchedVibes || [];
-              const topVibes = [...matchedVibes].sort((a, b) => b.match - a.match).slice(0, 3);
-              topVibes.forEach(vm => appearedVibeIndices.add(vm.vibeIndex));
-            });
-
-            // Show only vibes that appeared
-            return MUSIC_VIBES.map((vibe, i) => {
-              if (!appearedVibeIndices.has(i)) return null;
-              return (
-                <span key={vibe.id} className="flex items-center gap-1.5 text-xs" style={{ color: colors[i] }}>
-                  <span
-                    className="inline-block w-4 h-4 rounded-full overflow-hidden ring-1 ring-white/20 shrink-0"
-                    style={{ boxShadow: `0 0 4px ${colors[i]}80` }}
-                  >
-                    {vibe.image ? (
-                      <img src={vibe.image} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="block w-full h-full" style={{ background: colors[i] }} />
-                    )}
-                  </span>
-                  {vibe.name}
-                </span>
-              );
-            }).filter(Boolean);
-          })()
-        ) : chartMode === 'genres' ? (
-          topGenres.map((genre, i) => (
-            <span key={genre} className="flex items-center gap-1.5 text-xs" style={{ color: colors[i] }}>
-              <span className="inline-block w-2 h-2 rounded-full" style={{ background: colors[i] }}></span>
-              {genre}
-            </span>
-          ))
-        ) : (
-          VACRS_DIMENSIONS.map((dim, i) => {
-            const baseColorIndex = i * 2;
-            const lightColor = colors[baseColorIndex];
-            const darkColor = colors[baseColorIndex + 1];
-            const [lowLabel, highLabel] = VACRS_RANGE_LABELS[dim];
-            return (
-              <span key={dim} className="flex items-center gap-1.5 text-xs">
-                <span className="inline-flex gap-0.5">
-                  <span className="inline-block w-2 h-2 rounded-full" style={{ background: lightColor }}></span>
-                  <span className="inline-block w-2 h-2 rounded-full" style={{ background: darkColor }}></span>
-                </span>
-                <span style={{ color: lightColor }}>{highLabel}</span>
-                <ArrowRight className="w-3 h-3 text-white/25" />
-                <span style={{ color: darkColor }}>{lowLabel}</span>
-              </span>
-            );
-          })
-        )}
       </div>
     </div>
   );

@@ -31,10 +31,15 @@ export function ShareCardTemplate({ content }: ShareCardTemplateProps) {
       />
 
       {/* Brand header */}
-      <div className="flex items-center gap-2.5 px-10 pt-8">
-        <img src="/logo.png" alt="" className="w-8 h-8 object-contain" />
-        <span className="text-xl font-black italic lowercase tracking-tight text-violet-400">
-          spotifun
+      <div className="flex items-center justify-between px-10 pt-8">
+        <div className="flex items-center gap-2.5">
+          <img src="/logo.png" alt="" className="w-8 h-8 object-contain" />
+          <span className="text-xl font-black italic lowercase tracking-tight text-violet-400">
+            spotifun
+          </span>
+        </div>
+        <span className="text-xs font-medium text-white/30">
+          {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
         </span>
       </div>
 

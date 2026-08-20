@@ -17,6 +17,7 @@ export interface FlowTrack {
   genres: string[];
   track?: string;
   artist?: string;
+  image?: string;
 }
 
 // The N most frequently-tagged genres across the given plays, most common first.
@@ -42,6 +43,7 @@ export function getFlowData(tracks: FlowTrack[], mode: FlowChartMode = 'traits')
         genres: [],
         track: track.track,
         artist: track.artist,
+        image: track.image,
         valence: 0,
         arousal: 0,
         complexity: 0,
@@ -57,6 +59,7 @@ export function getFlowData(tracks: FlowTrack[], mode: FlowChartMode = 'traits')
       genres: track.genres,
       track: track.track,
       artist: track.artist,
+      image: track.image,
       valence: avg('valence'),
       arousal: avg('arousal'),
       complexity: avg('complexity'),
@@ -69,6 +72,8 @@ export function getFlowData(tracks: FlowTrack[], mode: FlowChartMode = 'traits')
     const topGenres = getTopGenres(sortedTracks);
     const runningPresence = topGenres.map(() => 0);
 
+    // Smoothing runs oldest-to-newest (correct trend direction), then the
+    // finished rows are reversed so the chart reads most-recent-first, left to right.
     return rawData.map((row, idx) => {
       const trackGenres = sortedTracks[idx].genres || [];
       const result = { ...row } as typeof row & Record<string, number>;
@@ -79,7 +84,7 @@ export function getFlowData(tracks: FlowTrack[], mode: FlowChartMode = 'traits')
         result[`genre_${i}`] = runningPresence[i];
       });
       return result;
-    });
+    }).reverse();
   }
 
   if (mode === 'vibes') {
@@ -175,7 +180,9 @@ export function getFlowData(tracks: FlowTrack[], mode: FlowChartMode = 'traits')
 
       vibesData.push(result);
     });
-    return vibesData;
+    // Smoothing runs oldest-to-newest (correct trend direction), then the
+    // finished rows are reversed so the chart reads most-recent-first, left to right.
+    return vibesData.reverse();
   }
 
   // traits: streams vary independently based on distance from 0.5
@@ -200,7 +207,7 @@ export function getFlowData(tracks: FlowTrack[], mode: FlowChartMode = 'traits')
       }
     });
     return result;
-  });
+  }).reverse();
 }
 
 export function getFlowDimensionsAndColors(chartMode: FlowChartMode, tracks: FlowTrack[] = []) {

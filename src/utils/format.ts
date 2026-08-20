@@ -9,6 +9,24 @@ export const formatDuration = (ms: number): string => {
   return `${minutes}m`;
 };
 
+// Format a past timestamp as a short relative string (e.g., "23m ago", "2h ago", "3d ago")
+export const formatRelativeTime = (input: string | number | Date): string => {
+  const date = input instanceof Date ? input : new Date(input);
+  const diffSec = Math.max(0, Math.round((Date.now() - date.getTime()) / 1000));
+
+  if (diffSec < 60) return 'just now';
+  const diffMin = Math.round(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.round(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  const diffDay = Math.round(diffHr / 24);
+  if (diffDay < 30) return `${diffDay}d ago`;
+  const diffMonth = Math.round(diffDay / 30);
+  if (diffMonth < 12) return `${diffMonth}mo ago`;
+  const diffYear = Math.round(diffMonth / 12);
+  return `${diffYear}y ago`;
+};
+
 // Format large numbers with appropriate suffixes (e.g., 1.5M, 2.3K)
 export const formatNumber = (num: number): string => {
   if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
