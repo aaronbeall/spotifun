@@ -11,12 +11,6 @@ export type FlowChartMode = 'genres' | 'traits' | 'vibes';
 
 export const GENRE_TRACK_COUNT = 5;
 
-// Light-fraction range for the Vibes rank-based light/dark split: the
-// dominant vibe at a given moment gets close to VIBE_LIGHT_MAX, the most
-// recessive gets close to VIBE_LIGHT_MIN, with others interpolated between.
-const VIBE_LIGHT_MAX = 0.9;
-const VIBE_LIGHT_MIN = 0.2;
-
 export interface FlowTrack {
   playedAt: string;
   genres: string[];
@@ -166,23 +160,16 @@ export function getFlowData(tracks: FlowTrack[], mode: FlowChartMode = 'traits')
 
       // Initialize all vibe dimensions to 0
       MUSIC_VIBES.forEach((vibe, i) => {
-        (result as Record<string, unknown>)[`vibe_${i}_light`] = 0;
-        (result as Record<string, unknown>)[`vibe_${i}_dark`] = 0;
+        const key = `vibe_${i}`;
+        (result as Record<string, unknown>)[key] = 0;
       });
 
-      // Set only top 3 vibes with normalized values, split into a light and
-      // dark portion based on each vibe's rank at this moment: the dominant
-      // (top) vibe reads as mostly light, the most recessive (bottom of the
-      // top 3) reads as mostly dark, with the middle one in between.
-      top3.forEach((vibeMatch, rank) => {
-        const lightFraction = top3.length > 1
-          ? VIBE_LIGHT_MAX - (rank / (top3.length - 1)) * (VIBE_LIGHT_MAX - VIBE_LIGHT_MIN)
-          : VIBE_LIGHT_MAX;
+      // Set only top 3 vibes with normalized values
+      top3.forEach(vibeMatch => {
+        const key = `vibe_${vibeMatch.vibeIndex}`;
         // Normalize: (value - min) / range
         const normalizedValue = matchRange > 0 ? (vibeMatch.match - minMatch) / matchRange : 0;
-        const key = `vibe_${vibeMatch.vibeIndex}`;
-        (result as Record<string, unknown>)[`${key}_light`] = normalizedValue * lightFraction;
-        (result as Record<string, unknown>)[`${key}_dark`] = normalizedValue * (1 - lightFraction);
+        (result as Record<string, unknown>)[key] = normalizedValue;
       });
 
       vibesData.push(result);
@@ -227,9 +214,9 @@ export function getFlowDimensionsAndColors(chartMode: FlowChartMode, tracks: Flo
 
   if (chartMode === 'vibes') {
     return {
-      dimensions: MUSIC_VIBES.flatMap((_, i) => [`vibe_${i}_light`, `vibe_${i}_dark`]),
-      // Use each vibe's own light/dark theme colors (the same pair used on vibe badges elsewhere)
-      colors: MUSIC_VIBES.flatMap(vibe => [vibe.color.light, vibe.color.dark]),
+      dimensions: MUSIC_VIBES.map((_, i) => `vibe_${i}`),
+      // Use each vibe's own theme color (the same swatch used on vibe badges elsewhere)
+      colors: MUSIC_VIBES.map(vibe => vibe.color.light),
     };
   }
 

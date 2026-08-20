@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { motion } from 'framer-motion';
-import { Sparkles, Share2, ArrowRight } from 'lucide-react';
+import { Activity, Sparkles, Share2, ArrowRight, Tags, SlidersHorizontal } from 'lucide-react';
 import { VACRSScore } from '@/types';
 import { calculateGenreVACRSScore } from '@/utils/musicClassification';
 import { VACRS_DIMENSIONS, VACRS_COLORS, VACRS_RANGE_LABELS } from '@/utils/vacrs';
 import { getGenreColor } from '@/utils/format';
 import { MUSIC_VIBES } from '@/utils/musicVibes';
-import { useTooltip } from '@/hooks/useTooltip';
 import { FlowStreamChart, FlowChartMode, FlowTrack, getFlowData, getFlowDimensionsAndColors, getTopGenres } from './FlowStreamChart';
 
 const CHART_MODES = ['genres', 'traits', 'vibes'] as const;
@@ -18,11 +17,17 @@ export const CHART_MODE_LABELS: Record<FlowChartMode, string> = {
   vibes: 'Vibes',
 };
 
+const CHART_MODE_ICONS: Record<FlowChartMode, React.ComponentType<{ className?: string }>> = {
+  genres: Tags,
+  traits: SlidersHorizontal,
+  vibes: Sparkles,
+};
+
 // Full titles shown below the chart and on the share card
 export const CHART_MODE_TITLES: Record<FlowChartMode, string> = {
-  genres: 'Genre Spectrum',
-  traits: 'Trait Spectrum',
-  vibes: 'Vibes Spectrum',
+  genres: 'Genre Flow',
+  traits: 'Trait Flow',
+  vibes: 'Vibes Flow',
 };
 
 export const CHART_MODE_DESCRIPTIONS: Record<FlowChartMode, string> = {
@@ -44,7 +49,6 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
   useEffect(() => {
     onChartModeChange?.(chartMode);
   }, [chartMode, onChartModeChange]);
-  const modeTooltip = useTooltip();
   const [tooltip, setTooltip] = React.useState<{
     x: number;
     y: number;
@@ -67,7 +71,7 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
         <div className="mb-4 md:mb-0">
           <div className="flex items-center gap-3">
-            <Sparkles className="w-6 h-6 text-pink-400" />
+            <Activity className="w-6 h-6 text-pink-400" />
             <h2 className="text-2xl font-bold text-white">Listening Flow</h2>
           </div>
           <p className="text-gray-400 text-sm mt-1">
@@ -84,19 +88,16 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
           </button>
         )}
       </div>
-      {modeTooltip.Tooltip}
       <div className="flex justify-center mb-6">
         <div className="relative inline-flex items-center gap-1 bg-gray-900/60 border border-gray-700/60 rounded-full p-1">
           {CHART_MODES.map((mode) => {
             const isActive = chartMode === mode;
+            const Icon = CHART_MODE_ICONS[mode];
             return (
               <button
                 key={mode}
                 onClick={() => setChartMode(mode)}
-                onMouseEnter={e => modeTooltip.show(CHART_MODE_DESCRIPTIONS[mode], e)}
-                onMouseMove={modeTooltip.move}
-                onMouseLeave={modeTooltip.hide}
-                className={`relative px-4 py-1.5 rounded-full text-xs font-medium transition-colors focus:outline-none ${
+                className={`relative flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-colors focus:outline-none ${
                   isActive ? 'text-white' : 'text-gray-400 hover:text-gray-200'
                 }`}
                 aria-current={isActive ? 'true' : undefined}
@@ -108,6 +109,7 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                   />
                 )}
+                <Icon className="w-3.5 h-3.5" />
                 {CHART_MODE_LABELS[mode]}
               </button>
             );
@@ -186,12 +188,24 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
                   return topVibes.map((vibeMatch) => {
                     const vibe = MUSIC_VIBES.find(v => v.id === vibeMatch.vibeId);
                     if (!vibe) return null;
-                    const VibeIcon = vibe.icon;
 
                     return (
                       <div key={vibe.id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <div style={{ color: vibe.color.light, width: 16, height: 16 }}>
-                          <VibeIcon className="w-4 h-4" />
+                        <div
+                          style={{
+                            width: 16,
+                            height: 16,
+                            borderRadius: '50%',
+                            overflow: 'hidden',
+                            flexShrink: 0,
+                            boxShadow: `0 0 4px ${vibe.color.light}80`,
+                          }}
+                        >
+                          {vibe.image ? (
+                            <img src={vibe.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{ width: '100%', height: '100%', background: vibe.color.light }} />
+                          )}
                         </div>
                         <span style={{ color: vibe.color.light, fontWeight: 500, fontSize: 12, minWidth: 120 }}>{vibe.name}</span>
                         <div style={{ background: '#1e293b', borderRadius: 3, height: 6, width: 48, margin: '0 6px' }}>
@@ -287,17 +301,16 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
             // Show only vibes that appeared
             return MUSIC_VIBES.map((vibe, i) => {
               if (!appearedVibeIndices.has(i)) return null;
-              const lightColor = colors[i * 2];
               return (
-                <span key={vibe.id} className="flex items-center gap-1.5 text-xs" style={{ color: lightColor }}>
+                <span key={vibe.id} className="flex items-center gap-1.5 text-xs" style={{ color: colors[i] }}>
                   <span
                     className="inline-block w-4 h-4 rounded-full overflow-hidden ring-1 ring-white/20 shrink-0"
-                    style={{ boxShadow: `0 0 4px ${lightColor}80` }}
+                    style={{ boxShadow: `0 0 4px ${colors[i]}80` }}
                   >
                     {vibe.image ? (
                       <img src={vibe.image} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="block w-full h-full" style={{ background: lightColor }} />
+                      <span className="block w-full h-full" style={{ background: colors[i] }} />
                     )}
                   </span>
                   {vibe.name}
