@@ -10,10 +10,9 @@ import TimeRangeToggle from '@/components/TimeRangeToggle';
 import Achievements from '@/components/features/Achievements';
 import Rankings from '@/components/features/Rankings';
 import MusicProfile from '@/components/features/MusicProfile';
+import { SpotifyPlayOverlay } from '@/components/SpotifyPlayOverlay';
 
 import { UserProfile, Stats, TimeRange } from '@/types';
-
-
 
 export default function Dashboard() {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -80,6 +79,19 @@ export default function Dashboard() {
   };
 
   // Format number and duration functions are now imported from @/utils
+
+  // Representative image per genre, pulled from a top artist tagged with that genre
+  const genreImages = useMemo(() => {
+    const map = new Map<string, string>();
+    stats?.artists.forEach(({ artist }) => {
+      const imageUrl = artist.images?.[0]?.url;
+      if (!imageUrl) return;
+      artist.genres?.forEach(genre => {
+        if (!map.has(genre)) map.set(genre, imageUrl);
+      });
+    });
+    return map;
+  }, [stats]);
 
   if (isInitialLoading) {
     return (
@@ -148,28 +160,39 @@ export default function Dashboard() {
       <div className="bg-gray-800 shadow-lg border-b border-gray-700 sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              {user.images?.[0]?.url ? (
-                <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-green-500">
-                  <Image
-                    src={user.images[0].url}
-                    alt={user.display_name || 'Profile'}
-                    fill
-                    className="object-cover"
-                    sizes="40px"
-                  />
-                </div>
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-green-900/30 border-2 border-green-500 flex items-center justify-center">
-                  <User className="w-5 h-5 text-green-400" />
-                </div>
-              )}
-              <div>
-                <h1 className="text-2xl font-bold text-white">Spotifun</h1>
-                <p className="text-gray-300">Welcome back, {user.display_name}!</p>
+            <div className="flex items-center gap-3">
+              <div className="relative w-10 h-10">
+                <Image
+                  src="/logo.png"
+                  alt="Spotifun logo"
+                  fill
+                  className="object-contain"
+                  sizes="40px"
+                />
               </div>
+              <h1 className="text-2xl font-black italic lowercase tracking-tight text-violet-400">
+                Spotifun
+              </h1>
             </div>
             <div className="flex items-center gap-6">
+              <div className="flex items-center gap-3">
+                {user.images?.[0]?.url ? (
+                  <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-green-500">
+                    <Image
+                      src={user.images[0].url}
+                      alt={user.display_name || 'Profile'}
+                      fill
+                      className="object-cover"
+                      sizes="40px"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-green-900/30 border-2 border-green-500 flex items-center justify-center">
+                    <User className="w-5 h-5 text-green-400" />
+                  </div>
+                )}
+                <p className="text-gray-300 hidden sm:block">Welcome back, {user.display_name}!</p>
+              </div>
 
               <div className="h-6 w-px bg-gray-600"></div>
 
@@ -239,9 +262,13 @@ export default function Dashboard() {
               const imageUrl = artist.images?.[0]?.url;
 
               return (
-                <div
+                <a
                   key={artist.id}
-                  className="group relative h-48 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                  href={artist.external_urls?.spotify}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Open ${artist.name} on Spotify`}
+                  className="group relative block h-48 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                 >
                   {imageUrl ? (
                     <img
@@ -254,6 +281,7 @@ export default function Dashboard() {
                       <Music className="w-12 h-12 text-white opacity-70" />
                     </div>
                   )}
+                  <SpotifyPlayOverlay />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-4">
                     <div className="flex items-center justify-between">
                       <div>
@@ -267,7 +295,7 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </a>
               );
             })}
           </div>
@@ -304,12 +332,16 @@ export default function Dashboard() {
               const albumImage = track.album?.images?.[0]?.url;
 
               return (
-                <div
+                <a
                   key={track.id}
-                  className="group relative h-32 rounded-xl overflow-hidden bg-gray-700/50 hover:bg-gray-700 transition-all duration-300"
+                  href={track.external_urls?.spotify}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Open ${track.name} on Spotify`}
+                  className="group relative block h-32 rounded-xl overflow-hidden bg-gray-700/50 hover:bg-gray-700 transition-all duration-300"
                 >
                   <div className="absolute inset-0 flex items-center p-4 gap-4">
-                    <div className="w-16 h-16 rounded-lg bg-gray-600 flex items-center justify-center">
+                    <div className="relative w-16 h-16 rounded-lg bg-gray-600 flex items-center justify-center overflow-hidden shrink-0">
                       {albumImage ? (
                         <img
                           src={albumImage}
@@ -319,6 +351,7 @@ export default function Dashboard() {
                       ) : (
                         <Music className="w-6 h-6 text-gray-400" />
                       )}
+                      <SpotifyPlayOverlay size="sm" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-white truncate">{track.name}</h3>
@@ -342,7 +375,7 @@ export default function Dashboard() {
                       {index + 1}
                     </div>
                   </div>
-                </div>
+                </a>
               );
             })}
           </div>
@@ -377,19 +410,38 @@ export default function Dashboard() {
             {stats.topGenres.slice(0, showAllGenres ? stats.topGenres.length : GENRES_TO_SHOW).map(({ genre, count }) => {
               const colorClass = getGenreColorClass(genre, 'bg');
               const percentage = Math.round((count / stats.topGenres[0]?.count) * 100);
+              const imageUrl = genreImages.get(genre);
 
               return (
-                <div
+                <a
                   key={genre}
-                  className="bg-gray-800/40 hover:bg-gray-800/80 border border-gray-700/50 rounded-lg p-4 transition-colors group"
+                  href={`https://open.spotify.com/search/${encodeURIComponent(genre)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Open ${genre} on Spotify`}
+                  className="bg-gray-800/40 hover:bg-gray-800/80 border border-gray-700/50 rounded-lg p-4 transition-colors group block"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-medium text-white capitalize">
-                      {genre}
-                    </h3>
-                    <span className="text-sm text-gray-300">
-                      {count} {count === 1 ? 'artist' : 'artists'}
-                    </span>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="relative w-10 h-10 rounded-lg bg-gray-700 flex items-center justify-center overflow-hidden shrink-0">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={genre}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Music className="w-4 h-4 text-gray-400" />
+                      )}
+                      <SpotifyPlayOverlay size="sm" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-white capitalize truncate">
+                        {genre}
+                      </h3>
+                      <span className="text-xs text-gray-300">
+                        {count} {count === 1 ? 'artist' : 'artists'}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="w-full bg-gray-700/50 rounded-full h-1.5 overflow-hidden">
@@ -398,7 +450,7 @@ export default function Dashboard() {
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
-                </div>
+                </a>
               );
             })}
           </div>

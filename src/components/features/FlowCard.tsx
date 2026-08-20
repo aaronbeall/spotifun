@@ -97,7 +97,7 @@ export const FlowCard: React.FC<FlowCardProps> = ({ tracks }) => {
             <h2 className="text-2xl font-bold text-white">Listening Flow</h2>
           </div>
           <p className="text-gray-400 text-sm mt-1">
-            Recent plays mapped by VACRS dimensions over time
+            Recent plays mapped by vibe dimensions over time
           </p>
         </div>
       </div>

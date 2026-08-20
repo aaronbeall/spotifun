@@ -51,7 +51,7 @@ export const SpectrumCard: React.FC<SpectrumCardProps> = ({ genreStats }) => {
             <h2 className="text-2xl font-bold text-white">Genre Spectrum</h2>
           </div>
           <p className="text-gray-400 text-sm mt-1">
-            Diversity of your listening mapped by VACRS dimensions
+            Diversity of your listening mapped by vibe dimensions
           </p>
         </div>
         {/* Diversity Score Badge */}

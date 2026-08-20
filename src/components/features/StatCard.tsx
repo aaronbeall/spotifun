@@ -1,6 +1,7 @@
-import { Star } from 'lucide-react';
+import { Star, Music } from 'lucide-react';
 import { useState, useMemo, HTMLProps } from "react";
 import { motion } from "framer-motion";
+import { SpotifyPlayOverlay } from "@/components/SpotifyPlayOverlay";
 
 interface StatCardProps {
   icon: React.ComponentType<HTMLProps<unknown>>;
@@ -24,7 +25,7 @@ interface StatCardProps {
   };
   score?: number;
   scoreLabel?: string;
-  mostPlayed?: Array<{ name: string; count: number }>;
+  mostPlayed?: Array<{ name: string; count: number; image?: string; url?: string }>;
   children?: React.ReactNode;
 }
 
@@ -215,34 +216,46 @@ export const StatCard = ({
               {title === 'Popularity' ? 'Most Popular' : 'Most Played'}
             </p>
             <div className="flex flex-wrap gap-2">
-              {displayedPills.map((item, i) => (
-                <motion.div
-                  key={i}
-                  className="px-2.5 py-1.5 text-xs font-medium rounded-lg backdrop-blur-sm flex items-center gap-1.5 max-w-full transition-all duration-200 hover:scale-[1.03]"
-                  style={{
-                    backgroundColor: `${iconColor}0f`,
-                    color: 'white',
-                    border: `1px solid ${iconColor}30`,
-                    boxShadow: `0 2px 8px -1px ${iconColor}10`
-                  }}
-                  whileHover={{
-                    backgroundColor: `${iconColor}20`,
-                    borderColor: `${iconColor}50`,
-                    boxShadow: `0 4px 12px -1px ${iconColor}20`
-                  }}
-                  title={`${item.name} • ${
-                    title === 'Popularity' ? `${item.count}%` : `${item.count} plays`
-                  }`}
-                >
-                  <span className="truncate max-w-[100px] font-medium">{item.name}</span>
-                  <span
-                    className="flex-shrink-0 font-semibold"
-                    style={{ color: iconColor }}
+              {displayedPills.map((item, i) => {
+                const PillTag = item.url ? motion.a : motion.div;
+                return (
+                  <PillTag
+                    key={i}
+                    {...(item.url ? { href: item.url, target: '_blank', rel: 'noopener noreferrer' } : {})}
+                    className="group px-2.5 py-1.5 text-xs font-medium rounded-lg backdrop-blur-sm flex items-center gap-1.5 max-w-full transition-all duration-200 hover:scale-[1.03]"
+                    style={{
+                      backgroundColor: `${iconColor}0f`,
+                      color: 'white',
+                      border: `1px solid ${iconColor}30`,
+                      boxShadow: `0 2px 8px -1px ${iconColor}10`
+                    }}
+                    whileHover={{
+                      backgroundColor: `${iconColor}20`,
+                      borderColor: `${iconColor}50`,
+                      boxShadow: `0 4px 12px -1px ${iconColor}20`
+                    }}
+                    title={`${item.name} • ${
+                      title === 'Popularity' ? `${item.count}%` : `${item.count} plays`
+                    }`}
                   >
-                    {title === 'Popularity' ? `${item.count}%` : item.count}
-                  </span>
-                </motion.div>
-              ))}
+                    <div className="relative w-5 h-5 rounded-full overflow-hidden shrink-0 bg-black/20">
+                      {item.image ? (
+                        <img src={item.image} alt="" className="w-full h-full object-cover" loading="lazy" />
+                      ) : (
+                        <Music className="w-3 h-3 m-auto text-white/50" />
+                      )}
+                      {item.url && <SpotifyPlayOverlay size="xs" />}
+                    </div>
+                    <span className="truncate max-w-[100px] font-medium">{item.name}</span>
+                    <span
+                      className="flex-shrink-0 font-semibold"
+                      style={{ color: iconColor }}
+                    >
+                      {title === 'Popularity' ? `${item.count}%` : item.count}
+                    </span>
+                  </PillTag>
+                );
+              })}
               {hasMorePills && (
                 <motion.button
                   onClick={(e) => {

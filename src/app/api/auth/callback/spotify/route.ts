@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { spotifyApi } from '@/lib/spotify';
+import { setAuthCookies } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,22 +27,12 @@ export async function GET(request: NextRequest) {
 
     // Store tokens in cookies (in production, use secure session storage)
     const response = NextResponse.redirect(`${process.env.NEXTAUTH_URL}/dashboard`);
-    
-    response.cookies.set('spotify_access_token', access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: expires_in * 1000,
-      sameSite: 'lax'
-    });
 
-    if (refresh_token) {
-      response.cookies.set('spotify_refresh_token', refresh_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        sameSite: 'lax'
-      });
-    }
+    setAuthCookies(response, {
+      accessToken: access_token,
+      refreshToken: refresh_token,
+      expiresIn: expires_in,
+    });
 
     response.cookies.set('spotify_user', JSON.stringify(user.body), {
       httpOnly: false,

@@ -1,4 +1,5 @@
 import { Headphones, Users, Music, Clock, Sparkles, Palette, Disc, Disc3, Disc2, TrendingUp, Star } from 'lucide-react';
+import { useMemo } from 'react';
 import { Stats } from '@/types';
 import { formatNumber, formatDuration, getGenreColorClass } from "@/utils";
 import { analyzePopularity } from "@/utils/popularity";
@@ -18,6 +19,19 @@ export default function MusicProfile({ stats, isLoadingTimeRange, playLimit, onP
   const avgPlaysPerDay = Math.round(stats.overview.totalPlays / 30);
 
   const popularity = analyzePopularity(stats.tracks.map(track => track.track));
+
+  // Representative image per genre, pulled from a top artist tagged with that genre
+  const genreImages = useMemo(() => {
+    const map = new Map<string, string>();
+    stats.artists.forEach(({ artist }) => {
+      const imageUrl = artist.images?.[0]?.url;
+      if (!imageUrl) return;
+      artist.genres?.forEach(genre => {
+        if (!map.has(genre)) map.set(genre, imageUrl);
+      });
+    });
+    return map;
+  }, [stats.artists]);
 
   return (
     <div className="space-y-6">
@@ -104,7 +118,9 @@ export default function MusicProfile({ stats, isLoadingTimeRange, playLimit, onP
               .sort((a, b) => b.playCount - a.playCount)
               .map(artist => ({
                 name: artist.artist.name,
-                count: artist.playCount
+                count: artist.playCount,
+                image: artist.artist.images?.[0]?.url,
+                url: artist.artist.external_urls?.spotify
               }))}
           />
 
@@ -129,7 +145,9 @@ export default function MusicProfile({ stats, isLoadingTimeRange, playLimit, onP
               .sort((a, b) => b.playCount - a.playCount)
               .map(track => ({
                 name: track.track.name,
-                count: track.playCount
+                count: track.playCount,
+                image: track.track.album?.images?.[0]?.url,
+                url: track.track.external_urls?.spotify
               }))}
           />
 
@@ -157,7 +175,9 @@ export default function MusicProfile({ stats, isLoadingTimeRange, playLimit, onP
             mostPlayed={stats.genres
               .map(genre => ({
                 name: genre.genre,
-                count: genre.playCount
+                count: genre.playCount,
+                image: genreImages.get(genre.genre),
+                url: `https://open.spotify.com/search/${encodeURIComponent(genre.genre)}`
               }))}
           />
 
@@ -182,7 +202,8 @@ export default function MusicProfile({ stats, isLoadingTimeRange, playLimit, onP
               .map(track => ({
                 name: track.name,
                 count: track.popularity || 0,
-                label: `${track.popularity}%`
+                image: track.album?.images?.[0]?.url,
+                url: track.external_urls?.spotify
               }))}
           />
         </div>

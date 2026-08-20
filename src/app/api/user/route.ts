@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { spotifyApi } from '@/lib/spotify';
+import { setAuthCookies, UnauthenticatedError, withSpotifyAccessToken } from '@/lib/auth';
 import { UserProfile } from '@/types';
 
 export async function GET(request: NextRequest): Promise<NextResponse<UserProfile | { error: string }>> {
   try {
-    const accessToken = request.cookies.get('spotify_access_token')?.value;
-    if (!accessToken) {
-      return NextResponse.json({ error: 'No access token' }, { status: 401 });
-    }
-
-    spotifyApi.setAccessToken(accessToken);
-    const { body } = await spotifyApi.getMe();
+    const { result: body, refreshedTokens } = await withSpotifyAccessToken(request, async () => {
+      const { body } = await spotifyApi.getMe();
+      return body;
+    });
 
     const userResponse: UserProfile = {
       id: body.id,
@@ -21,8 +19,13 @@ export async function GET(request: NextRequest): Promise<NextResponse<UserProfil
       followers: body.followers ? { total: body.followers.total } : undefined
     };
 
-    return NextResponse.json(userResponse);
+    const response = NextResponse.json(userResponse);
+    if (refreshedTokens) setAuthCookies(response, refreshedTokens);
+    return response;
   } catch (error) {
+    if (error instanceof UnauthenticatedError) {
+      return NextResponse.json({ error: 'No access token' }, { status: 401 });
+    }
     console.error('Error fetching user data:', error);
     return NextResponse.json(
       { error: 'Failed to fetch user data' },

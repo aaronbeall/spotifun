@@ -33,6 +33,7 @@ const config: Config = {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
         'bounce-slow': 'bounce 2s infinite',
+        'progress-fill': 'progressFill 4s linear forwards',
       },
       keyframes: {
         fadeIn: {
@@ -42,6 +43,10 @@ const config: Config = {
         slideUp: {
           '0%': { transform: 'translateY(10px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        progressFill: {
+          '0%': { width: '0%' },
+          '100%': { width: '100%' },
         },
       },
     },
