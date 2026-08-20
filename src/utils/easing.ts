@@ -44,7 +44,7 @@ export function signatureEaseFn() {
 // A more extreme "long dwell near the ends, fast wipe through the middle"
 // curve, used for slower wipe/reveal effects — e.g. the Genre Spectrum
 // wave-fan reveal and the Flow streamgraph reveal.
-export const WAVE_REVEAL_EASE: [number, number, number, number] = [0.9, 0.05, 0.1, 0.95];
+export const WAVE_REVEAL_EASE: [number, number, number, number] = [0.83, 0.12, 0.17, 0.88];
 
 // D3-ready ease function for the wave-reveal curve.
 export function waveRevealEaseFn() {

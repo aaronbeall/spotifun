@@ -287,10 +287,14 @@ export function FlowStreamChart({ tracks, chartMode = 'traits', width = 420, hei
 
     // Staggered left-to-right reveal of each stream individually, using the
     // same wave-reveal easing/duration as the Genre Spectrum wave-fan reveal.
+    // The per-stream delay is derived from a fixed overall stagger range so
+    // it shrinks automatically as more streams are shown (e.g. Vibes mode
+    // with many layers) rather than dragging the whole reveal out further.
     const defs = svg.append("defs");
     const clipBaseId = clipIdRef.current;
     const revealEase = waveRevealEaseFn();
-    const revealStaggerMs = 30;
+    const revealStaggerRangeMs = 500;
+    const revealStaggerMs = stacked.length > 1 ? revealStaggerRangeMs / (stacked.length - 1) : 0;
     const revealDurationMs = 2000;
 
     stacked.forEach((layer, i) => {
