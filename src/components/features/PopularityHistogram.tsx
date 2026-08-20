@@ -1,5 +1,10 @@
 import { useMemo } from "react";
+import { motion } from 'framer-motion';
 import { useTooltip } from '@/hooks/useTooltip';
+import { SIGNATURE_EASE } from '@/utils/easing';
+
+const BAR_STAGGER = 0.04;
+const BAR_DURATION = 0.5;
 
 export function getHistogramData(tracks: SpotifyApi.TrackObjectFull[]) {
   // Bin track popularity into 10 buckets (0-10, 11-20, ..., 91-100)
@@ -52,14 +57,15 @@ export function PopularityHistogram({ tracks, large, interactive = true }: Popul
           const barHeight = count > 0 ? Math.max(stubHeight, (count / maxBin) * barMaxHeight) : stubHeight;
           return (
           <g key={i}>
-            <rect
+            <motion.rect
               x={i * (chartWidth / 10) + 12}
-              y={chartHeight - barHeight - 24}
               width={24}
-              height={barHeight}
               fill={chartColors[i]}
               opacity={count > 0 ? 0.85 : 0.25}
               rx={6}
+              initial={{ height: 0, y: chartHeight - 24 }}
+              animate={{ height: barHeight, y: chartHeight - barHeight - 24 }}
+              transition={{ duration: BAR_DURATION, ease: SIGNATURE_EASE, delay: i * BAR_STAGGER }}
               onMouseEnter={interactive ? e => {
                 const tracksInBin = getTracksInBin(tracks, i);
                 const minPop = i * 10;

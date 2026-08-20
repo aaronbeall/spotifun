@@ -1,13 +1,20 @@
 import React, { useMemo } from "react";
+import { motion } from 'framer-motion';
 import { Star, Gem, Share2 } from 'lucide-react';
 import { analyzePopularity, getPopularityExtremes } from '@/utils/popularity';
 import { ImageBadge } from "../ImageBadge";
 import { PopularityHistogram } from './PopularityHistogram';
+import { SIGNATURE_EASE } from '@/utils/easing';
 
 interface PopularityCardProps {
   tracks: SpotifyApi.TrackObjectFull[];
   onShare?: () => void;
 }
+
+// Matches the flanking top-artist/top-genre badge delays on the Vibes card
+// (MusicVibes.tsx), so both cards' flanking elements reveal in sync.
+const BADGES_BASE_DELAY = 0.15;
+const BADGES_STAGGER = 0.15;
 
 export const PopularityCard: React.FC<PopularityCardProps> = ({ tracks, onShare }) => {
   const analysis = useMemo(() => analyzePopularity(tracks), [tracks]);
@@ -47,7 +54,12 @@ export const PopularityCard: React.FC<PopularityCardProps> = ({ tracks, onShare 
       <div className="w-full flex justify-center">
         <div className="flex items-center">
           {/* Most Niche Badge (left, matches "Niche" side of scale) */}
-          <div className="shrink-0">
+          <motion.div
+            className="shrink-0"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: SIGNATURE_EASE, delay: BADGES_BASE_DELAY }}
+          >
             <ImageBadge
               title="Most Niche"
               name={leastPopularTrack.name}
@@ -59,7 +71,7 @@ export const PopularityCard: React.FC<PopularityCardProps> = ({ tracks, onShare 
               className="scale-90"
               percent={Math.round(leastPopularTrack.popularity || 0)}
             />
-          </div>
+          </motion.div>
           {/* Histogram Chart */}
           <div className="grow px-0 mx-8 flex flex-col items-center">
             <PopularityHistogram tracks={tracks} large />
@@ -69,7 +81,12 @@ export const PopularityCard: React.FC<PopularityCardProps> = ({ tracks, onShare 
             </div>
           </div>
           {/* Most Popular Badge (right, matches "Popular" side of scale) */}
-          <div className="shrink-0 flex flex-col items-center">
+          <motion.div
+            className="shrink-0 flex flex-col items-center"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: SIGNATURE_EASE, delay: BADGES_BASE_DELAY + BADGES_STAGGER }}
+          >
             <ImageBadge
               title="Most Popular"
               name={mostPopularTrack.name}
@@ -81,7 +98,7 @@ export const PopularityCard: React.FC<PopularityCardProps> = ({ tracks, onShare 
               className="scale-90"
               percent={Math.round(mostPopularTrack.popularity || 0)}
             />
-          </div>
+          </motion.div>
         </div>
       </div>
 
