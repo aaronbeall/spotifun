@@ -1,12 +1,10 @@
-import { HTMLProps } from 'react';
-
 interface ImageBadgeProps {
   title: string;
   name: string;
   image?: string;
   count: number;
   color: string;
-  icon: React.ComponentType<HTMLProps<'svg'>>;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   className?: string;
   percent?: number;
 }

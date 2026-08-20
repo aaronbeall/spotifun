@@ -1,5 +1,6 @@
 import { Stats } from '@/types';
 import { calculateWeightedVACRSScore } from './musicClassification';
+import type { ArtProfile } from './generativeArt';
 
 export type Level = 'high' | 'low';
 export type Era = 'new' | 'old';
@@ -161,4 +162,16 @@ export function classifyPersona(input: PersonaInput): Persona {
 
 export function getUserPersona(stats: Stats): Persona {
   return classifyPersona(computePersonaInput(stats));
+}
+
+// Maps a persona's dimensions onto the generative-art profile shape, so the
+// same persona always renders the same abstract artwork.
+export function personaToArtProfile(persona: Persona): ArtProfile {
+  return {
+    valence: persona.dimensions.valence === 'positive' ? 0.85 : 0.15,
+    arousal: persona.dimensions.arousal === 'energetic' ? 0.85 : 0.15,
+    complexity: persona.dimensions.genreDiversity === 'high' ? 0.85 : 0.15,
+    rawness: persona.dimensions.trackPopularity === 'low' ? 0.85 : 0.15,
+    socialPresence: persona.dimensions.artistConsistency === 'low' ? 0.85 : 0.15,
+  };
 }

@@ -85,6 +85,16 @@ export function analyzePopularity(tracks: SpotifyApi.TrackObjectFull[]): Popular
   };
 }
 
+export function getPopularityExtremes(tracks: SpotifyApi.TrackObjectFull[]) {
+  const mostPopularTrack = tracks.reduce((max, t) => (t.popularity || 0) > (max.popularity || -1) ? t : max, tracks[0]);
+  const leastPopularTrack = tracks.reduce((min, t) => (t.popularity || 0) < (min.popularity || 101) ? t : min, tracks[0]);
+  const maxPopularity = Math.max(...tracks.map(t => t.popularity || 0));
+  const minPopularity = Math.min(...tracks.map(t => t.popularity || 0));
+  const mostPopularCount = tracks.filter(t => (t.popularity || 0) === maxPopularity).length;
+  const leastPopularCount = tracks.filter(t => (t.popularity || 0) === minPopularity).length;
+  return { mostPopularTrack, leastPopularTrack, mostPopularCount, leastPopularCount };
+}
+
 function getPercentile(arr: number[], p: number): number {
   if (arr.length === 0) return 0;
   if (p <= 0) return arr[0];

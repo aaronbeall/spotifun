@@ -1,6 +1,6 @@
 import { useState, useMemo, HTMLProps } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Award, Trophy, Zap, ChevronDown, ChevronUp, Palette, Users } from 'lucide-react';
+import { Award, Trophy, ChevronDown, ChevronUp, Palette, Users, Share2 } from 'lucide-react';
 import { findBestMatchingVibe, getAllMusicVibes } from '@/utils/musicVibesAnalyzer';
 import { calculateWeightedVACRSScore, calculateVACRSScoreMatch } from '@/utils/musicClassification';
 import { GenreStats, MusicVibe } from '@/types';
@@ -195,8 +195,7 @@ const VibeBadge = ({
       <div className="mt-4 text-center">
         <h3
           className={cn(
-            'font-bold',
-            size === 'sm' ? 'text-xs' : size === 'md' ? 'text-sm' : 'text-base',
+            size === 'sm' ? 'font-bold text-xs' : size === 'md' ? 'font-bold text-sm' : 'font-black text-4xl sm:text-5xl',
             'transition-opacity duration-300',
             isCurrent ? 'opacity-100' : 'opacity-80 group-hover:opacity-100'
           )}
@@ -225,13 +224,15 @@ interface MusicVibesProps {
   topArtist?: { name: string; image?: string; count: number };
   topGenre?: { name: string; image?: string; count: number };
   className?: string;
+  onShare?: () => void;
 }
 
 export function MusicVibes({
   genreStats,
   topArtist,
   topGenre,
-  className = ''
+  className = '',
+  onShare
 }: MusicVibesProps) {
   const [showAllVibes, setShowAllVibes] = useState(false);
   const { vibe, matchPercentage } = useMemo(
@@ -273,12 +274,15 @@ export function MusicVibes({
             </p>
           </div>
 
-          <div className="flex items-center gap-2 bg-white/5 rounded-full px-4 py-2 border border-white/5">
-            <Zap className="w-4 h-4 text-yellow-400" />
-            <span className="text-sm font-medium">
-              {Math.round(matchPercentage)}% Match
-            </span>
-          </div>
+          {onShare && (
+            <button
+              onClick={onShare}
+              aria-label="Share"
+              className="p-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 text-gray-300 hover:text-white transition-colors shrink-0 self-start"
+            >
+              <Share2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         {/* Main Badge with Side Badges */}

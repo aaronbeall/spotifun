@@ -1,32 +1,37 @@
 import React, { useMemo } from "react";
+import { Share2 } from 'lucide-react';
 import { Stats } from "@/types";
-import { getUserPersona } from "@/utils/musicPersonas";
+import { getUserPersona, personaToArtProfile } from "@/utils/musicPersonas";
 import { darkenHex } from "@/utils/color";
 import { GenerativeArt } from "../GenerativeArt";
 
 interface PersonaCardProps {
   stats: Stats;
+  onShare?: () => void;
 }
 
-export const PersonaCard: React.FC<PersonaCardProps> = ({ stats }) => {
+export const PersonaCard: React.FC<PersonaCardProps> = ({ stats, onShare }) => {
   const persona = useMemo(() => getUserPersona(stats), [stats]);
   const colors = useMemo(() => ({ light: persona.color, dark: darkenHex(persona.color, 0.6) }), [persona.color]);
-  const artProfile = useMemo(() => ({
-    valence: persona.dimensions.valence === 'positive' ? 0.85 : 0.15,
-    arousal: persona.dimensions.arousal === 'energetic' ? 0.85 : 0.15,
-    complexity: persona.dimensions.genreDiversity === 'high' ? 0.85 : 0.15,
-    rawness: persona.dimensions.trackPopularity === 'low' ? 0.85 : 0.15,
-    socialPresence: persona.dimensions.artistConsistency === 'low' ? 0.85 : 0.15,
-  }), [persona.dimensions]);
+  const artProfile = useMemo(() => personaToArtProfile(persona), [persona]);
 
   return (
     <div
-      className="rounded-xl p-8 shadow-xl border flex flex-col items-center justify-center"
+      className="relative rounded-3xl p-6 shadow-2xl border flex flex-col items-center justify-center overflow-hidden"
       style={{
         background: `linear-gradient(135deg, ${colors.dark}, #111827)`,
         borderColor: `${colors.light}30`,
       }}
     >
+      {onShare && (
+        <button
+          onClick={onShare}
+          aria-label="Share"
+          className="absolute top-6 right-6 p-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 text-gray-300 hover:text-white transition-colors shrink-0"
+        >
+          <Share2 className="w-4 h-4" />
+        </button>
+      )}
       <div className="relative w-32 h-32 mb-6 rounded-full overflow-hidden border-4 border-white/10 shadow-2xl">
         <GenerativeArt seed={persona.id} colors={colors} profile={artProfile} className="w-full h-full" />
       </div>
