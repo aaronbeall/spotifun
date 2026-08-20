@@ -6,6 +6,7 @@ import { MusicVibe} from '@/types';
 export const MUSIC_VIBES: MusicVibe[] = [
   {
     id: 'tranquility',
+    image: '/vibes/tranquility.jpg',
     name: 'Tranquil Serenity',
     description: 'A peaceful state of calm and inner stillness',
     icon: Moon,
@@ -23,6 +24,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
   },
   {
     id: 'euphoria',
+    image: '/vibes/euphoria.jpg',
     name: 'Pure Euphoria',
     description: 'Overflowing with joy and elation',
     icon: Sun,
@@ -40,6 +42,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
   },
   {
     id: 'melancholy',
+    image: '/vibes/melancholy.jpg',
     name: 'Melancholic Reflection',
     description: 'A bittersweet embrace of deep emotions',
     icon: Droplets,
@@ -57,6 +60,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
   },
   {
     id: 'intensity',
+    image: '/vibes/intensity.jpg',
     name: 'Raw Intensity',
     description: 'Unfiltered emotional power and passion',
     icon: Flame,
@@ -74,6 +78,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
   },
   {
     id: 'wonder',
+    image: '/vibes/wonder.jpg',
     name: 'Childlike Wonder',
     description: 'A sense of awe and innocent curiosity',
     icon: Sparkles,
@@ -91,6 +96,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
   },
   {
     id: 'vulnerability',
+    image: '/vibes/vulnerability.jpg',
     name: 'Naked Vulnerability',
     description: 'Stripped-down emotional honesty and exposure',
     icon: Heart,
@@ -108,6 +114,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
   },
   {
     id: 'nostalgia',
+    image: '/vibes/nostalgia.jpg',
     name: 'Wistful Nostalgia',
     description: 'Bittersweet longing for the past',
     icon: Star,
@@ -125,6 +132,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
   },
   {
     id: 'triumph',
+    image: '/vibes/triumph.jpg',
     name: 'Triumphant Resolve',
     description: 'Empowered determination and victory',
     icon: Flame,
@@ -142,6 +150,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
   },
   {
     id: 'solitude',
+    image: '/vibes/solitude.jpg',
     name: 'Peaceful Solitude',
     description: 'Comfortable aloneness and self-reflection',
     icon: Moon,
@@ -159,6 +168,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
   },
   {
     id: 'ecstasy',
+    image: '/vibes/ecstasy.jpg',
     name: 'Ecstatic Release',
     description: 'Overwhelming joy and liberation',
     icon: Sparkles,
@@ -176,6 +186,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
   },
   {
     id: 'mystical-reverie',
+    image: '/vibes/mystical-reverie.jpg',
     name: 'Mystical Reverie',
     description: 'Dreamy, otherworldly, and ethereal atmosphere',
     icon: Sparkles,
@@ -193,6 +204,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
   },
   {
     id: 'fierce-determination',
+    image: '/vibes/fierce-determination.jpg',
     name: 'Fierce Determination',
     description: 'Focused intensity and relentless drive',
     icon: Flame,
@@ -210,6 +222,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
   },
   {
     id: 'playful-whimsy',
+    image: '/vibes/playful-whimsy.jpg',
     name: 'Playful Whimsy',
     description: 'Lighthearted, fun, and carefree spirit',
     icon: Sparkles,
@@ -227,6 +240,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
   },
   {
     id: 'solemn-majesty',
+    image: '/vibes/solemn-majesty.jpg',
     name: 'Solemn Majesty',
     description: 'Grand, awe-inspiring, and reverent',
     icon: Star,
@@ -244,6 +258,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
   },
   {
     id: 'rebellious-defiance',
+    image: '/vibes/rebellious-defiance.jpg',
     name: 'Rebellious Defiance',
     description: 'Defiant energy and anti-establishment spirit',
     icon: Flame,

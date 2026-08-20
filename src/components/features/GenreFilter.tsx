@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion';
+import { Check, Plus } from 'lucide-react';
 import { cn } from '@/utils';
+import { getGenreColor } from '@/utils/format';
 import { GenreStats } from '@/types';
 
 interface GenreFilterProps {
@@ -26,19 +28,28 @@ export function GenreFilter({
     >
       {genreStats.map(({ genre, playCount }) => {
         const isSelected = selectedGenres.includes(genre);
+        const { color } = getGenreColor(genre);
         return (
           <motion.button
             key={genre}
             className={cn(
               "px-3 py-1.5 text-xs font-medium rounded-full border transition-all duration-200 flex items-center gap-1.5",
-              isSelected 
-                ? 'bg-white/10 border-white/20 text-white' 
-                : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10 hover:border-white/10 hover:text-white'
+              !isSelected && 'bg-transparent border-white/10 text-gray-500'
             )}
+            style={isSelected ? {
+              backgroundColor: `${color}22`,
+              borderColor: `${color}90`,
+              color,
+            } : undefined}
             onClick={() => onGenreToggle(genre)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
+            {isSelected ? (
+              <Check className="w-3 h-3 shrink-0" style={{ color }} />
+            ) : (
+              <Plus className="w-3 h-3 text-gray-600 shrink-0" />
+            )}
             <span>{genre}</span>
             <span className="text-xs opacity-60">{playCount}</span>
           </motion.button>

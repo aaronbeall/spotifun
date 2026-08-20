@@ -124,6 +124,7 @@ export interface MusicVibe {
   name: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
+  image?: string;
   color: {
     light: string;
     dark: string;

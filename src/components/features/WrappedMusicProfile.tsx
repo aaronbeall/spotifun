@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { Award, BarChart, Activity, Star, User } from "lucide-react";
 import { SequenceNavigator } from "./SequenceNavigator";
 import { MusicVibes } from "./MusicVibes";
@@ -8,6 +8,7 @@ import { Stats } from "@/types";
 import { PopularityCard } from "./PopularityCard";
 import { PersonaCard } from "./PersonaCard";
 import { FlowCardD3 } from "./FlowCardD3";
+import { ShareCardButton } from "../ShareCardButton";
 
 interface WrappedMusicProfileProps {
   stats: Stats;
@@ -26,6 +27,8 @@ const CARD_ITEMS = [
 
 export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPlayLimitChange }: WrappedMusicProfileProps) {
   const [currentCard, setCurrentCard] = useState(0);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const currentLabel = CARD_ITEMS[currentCard].label;
 
   const recentlyPlayedGenres = useMemo(() => stats.recentlyPlayed.map(t => {
     const fullArtist = stats.artists.find(a => a.artist.id === t.track.artists[0].id);
@@ -56,9 +59,17 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
         current={currentCard}
         setCurrent={setCurrentCard}
         items={CARD_ITEMS}
-        className="mb-6"
+        className="mb-2"
       />
-      <div>
+      <div className="flex justify-end">
+        <ShareCardButton
+          targetRef={cardRef}
+          filename={`spotifun-${currentLabel.toLowerCase()}`}
+          title={`My ${currentLabel} — Spotifun`}
+          text={`Check out my ${currentLabel} on Spotifun!`}
+        />
+      </div>
+      <div ref={cardRef}>
         {currentCard === 0 && (
           <MusicVibes
             genreStats={stats.genres}
@@ -91,7 +102,7 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
           <PopularityCard tracks={stats.tracks.map(t => t.track)} />
         )}
         {currentCard === 4 && (
-          <PersonaCard />
+          <PersonaCard stats={stats} />
         )}
       </div>
     </div>

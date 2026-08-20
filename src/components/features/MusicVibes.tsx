@@ -29,10 +29,10 @@ const VibeBadge = ({
     lg: 'w-52 h-52',
   };
 
-  const iconSize = {
-    sm: 28,
-    md: 36,
-    lg: 44,
+  const artSizeClasses = {
+    sm: 'w-12 h-12',
+    md: 'w-16 h-16',
+    lg: 'w-32 h-32',
   }[size];
 
   const textSize = {
@@ -41,7 +41,6 @@ const VibeBadge = ({
     lg: 'text-base',
   }[size];
 
-  const Icon = vibe.icon;
   const viewBox = '0 0 100 100';
   const radius = 40; // Reduced to prevent clipping
   const circumference = 2 * Math.PI * radius;
@@ -140,29 +139,25 @@ const VibeBadge = ({
             />
           </svg>
 
-          {/* Icon container */}
+          {/* Vibe emblem */}
           <div
             className={cn(
-              'relative flex items-center justify-center',
-              'rounded-full',
-              'transition-all duration-500',
-              'transform',
+              'relative flex items-center justify-center rounded-full overflow-hidden',
+              'transition-all duration-500 transform',
               isCurrent ? 'opacity-100 scale-100' : 'opacity-90 group-hover:opacity-100 group-hover:scale-105',
-              size === 'sm' ? 'p-3' : size === 'md' ? 'p-4' : 'p-5'
+              artSizeClasses
             )}
             style={{
-              background: `radial-gradient(circle at center, ${vibe.color.light}08 0%, transparent 70%)`,
-              backdropFilter: 'blur(4px)'
+              filter: `drop-shadow(0 0 8px ${vibe.color.light}40)`,
             }}
           >
-            <Icon
-              size={iconSize}
-              className="transition-transform duration-300 group-hover:scale-110"
-              style={{
-                color: vibe.color.light,
-                filter: `drop-shadow(0 0 8px ${vibe.color.light}40)`,
-              }}
-            />
+            {vibe.image && (
+              <img
+                src={vibe.image}
+                alt={vibe.name}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+              />
+            )}
           </div>
 
           {/* Percentage badge */}
@@ -206,7 +201,12 @@ const VibeBadge = ({
           {vibe.name}
         </h3>
         {isCurrent && (
-          <div className="mt-1 px-2 py-0.5 bg-white/5 rounded-full text-xs text-white/80">
+          <p className="mt-0.5 text-xs text-gray-400/80 max-w-[220px] mx-auto leading-snug">
+            {vibe.description}
+          </p>
+        )}
+        {isCurrent && (
+          <div className="mt-2 px-2 py-0.5 bg-white/5 rounded-full text-xs text-white/80 inline-block">
             Current Vibe
           </div>
         )}

@@ -25,34 +25,41 @@ export const VibeMatchItem = ({
   isCurrentVibe,
   index
 }: VibeMatchItemProps) => {
-  const Icon = vibe.icon;
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
+      whileHover={{
+        y: -6,
+        scale: 1.02,
+        borderColor: `${vibe.color.light}70`,
+        boxShadow: `0 16px 40px -12px ${vibe.color.light}50, 0 0 0 1px ${vibe.color.light}50`,
+      }}
       transition={{
         duration: 0.6,
         ease: [0.22, 1, 0.36, 1],
         delay: index * 0.03
       }}
       className={cn(
-        'h-full p-4 rounded-xl border transition-all duration-200 group flex flex-col',
-        isCurrentVibe
-          ? 'border-opacity-50 shadow-lg'
-          : 'border-white/5 hover:border-white/10',
+        'relative h-full p-4 rounded-xl border group flex flex-col overflow-hidden',
         'bg-gradient-to-br from-white/[0.01] to-white/[0.03]',
-        'hover:shadow-md hover:shadow-black/10',
-        'backdrop-blur-sm',
-        'flex flex-col'
+        'backdrop-blur-sm'
       )}
       style={{
-        borderColor: isCurrentVibe ? `${vibe.color.light}40` : undefined,
+        borderColor: isCurrentVibe ? `${vibe.color.light}40` : 'rgba(255,255,255,0.05)',
         boxShadow: isCurrentVibe ? `0 0 0 1px ${vibe.color.light}40` : 'none',
       }}
     >
+      {/* Ambient hover glow */}
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle at 20% 15%, ${vibe.color.light}25, transparent 60%)`,
+        }}
+      />
+
       {/* Percentage Badge - Top Right */}
-      <div className="absolute top-3 right-3">
+      <div className="absolute top-3 right-3 z-10">
         <span
           className="text-xs font-bold px-2 py-1 rounded-md flex items-center justify-center"
           style={{
@@ -66,9 +73,15 @@ export const VibeMatchItem = ({
         </span>
       </div>
 
-      <div className="flex items-start gap-4 pr-10">
+      <div className="relative z-10 flex items-start gap-4 pr-10">
         <div className="flex items-start space-x-4">
-          <div className="relative flex-shrink-0">
+          <div
+            className="relative flex-shrink-0 transition-transform duration-500 ease-out group-hover:scale-[1.7]"
+            style={{
+              transformOrigin: 'center',
+              ['--vibe-glow' as string]: vibe.color.light,
+            }}
+          >
             {/* Progress circle */}
             <svg className="w-10 h-10 -rotate-90">
               <circle
@@ -98,13 +111,12 @@ export const VibeMatchItem = ({
                 }}
               />
             </svg>
-            {/* Icon */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Icon
-                className="w-4 h-4"
-                style={{ color: vibe.color.light }}
-              />
-            </div>
+            {/* Vibe emblem */}
+            {vibe.image && (
+              <div className="absolute inset-2 rounded-full overflow-hidden transition-[filter] duration-500 group-hover:[filter:drop-shadow(0_0_10px_var(--vibe-glow))]">
+                <img src={vibe.image} alt={vibe.name} className="w-full h-full object-cover" />
+              </div>
+            )}
           </div>
 
           <div className="space-y-1 pt-0.5">
@@ -241,7 +253,7 @@ export const VibeMatchList = ({
         {filteredGenreStats.length > 0 ? (
           <motion.div
             key="vibes"
-            className="max-h-[calc(100vh-400px)] overflow-y-auto pr-2"
+            className="pr-2"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
