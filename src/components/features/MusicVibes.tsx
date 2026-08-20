@@ -1,4 +1,4 @@
-import { useState, useMemo, HTMLProps } from 'react';
+import { useState, useMemo, useRef, useEffect, HTMLProps } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Award, Trophy, ChevronDown, ChevronUp, Palette, Users, Share2 } from 'lucide-react';
 import { findBestMatchingVibe, getAllMusicVibes } from '@/utils/musicVibesAnalyzer';
@@ -244,6 +244,15 @@ export function MusicVibes({
     [genreStats]
   );
 
+  // The Other Vibe Matches grid re-mounts every time showAllVibes toggles
+  // back to false, but we only want its entrance delay on the very first
+  // reveal (page/card load) — not every time the user presses "Show Less".
+  const hasRevealedOtherVibes = useRef(false);
+  useEffect(() => {
+    hasRevealedOtherVibes.current = true;
+  }, []);
+  const otherVibesDelay = hasRevealedOtherVibes.current ? 0 : OTHER_VIBES_BASE_DELAY;
+
   // Get all music vibes with calculated match percentages
   const allVibes = useMemo(() => {
     if (!genreStats?.length) return [];
@@ -347,7 +356,7 @@ export function MusicVibes({
             className="flex items-center justify-between mb-6"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: OTHER_VIBES_BASE_DELAY }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: otherVibesDelay }}
           >
             <h3 className="text-lg font-medium text-white flex items-center gap-2">
               <Trophy className="w-5 h-5 text-amber-400" />
@@ -384,7 +393,7 @@ export function MusicVibes({
                     className="group"
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1], delay: OTHER_VIBES_BASE_DELAY + i * 0.04 }}
+                    transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1], delay: otherVibesDelay + i * 0.04 }}
                   >
                     <VibeBadge
                       vibe={v}

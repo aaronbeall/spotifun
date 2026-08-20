@@ -5,6 +5,7 @@ import { GenreStats } from '@/types';
 import { calculateGenreVACRSScore, calculateWeightedVACRSScore } from '@/utils/musicClassification';
 import { VACRS_COLORS, VACRS_DIMENSIONS, VACRS_NAMES, VACRS_RANGE_LABELS } from '@/utils/vacrs';
 import { useTooltip } from "@/hooks/useTooltip";
+import { WAVE_REVEAL_EASE } from '@/utils/easing';
 
 // Fan of wave steps from the min (-1) through the calculated value (0) to the
 // max (1), used to draw the left-to-right curves through each dimension.
@@ -123,7 +124,7 @@ export function SpectrumDimensionBars({ genreStats, interactive = true, compact 
   // actual motion crammed into a fast wipe through the middle.
   const waveStartDelay = 0.4;
   const waveRevealDuration = 2;
-  const waveEase: [number, number, number, number] = [0.9, 0.05, 0.1, 0.95];
+  const waveEase = WAVE_REVEAL_EASE;
 
   return (
     <div ref={containerRef} className={compact ? "relative grid grid-cols-5 gap-3" : "relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8"}>

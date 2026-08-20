@@ -6,6 +6,7 @@ import { VACRS_DIMENSIONS, VACRS_COLORS } from '@/utils/vacrs';
 import { MUSIC_VIBES } from '@/utils/musicVibes';
 import { getGenreColor } from '@/utils/format';
 import { darkenHex } from '@/utils/color';
+import { waveRevealEaseFn } from '@/utils/easing';
 
 export type FlowChartMode = 'genres' | 'traits' | 'vibes';
 
@@ -243,6 +244,9 @@ interface FlowStreamChartProps {
 export function FlowStreamChart({ tracks, chartMode = 'traits', width = 420, height = 340, onHover }: FlowStreamChartProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const verticalPadding = 72;
+  // Stable per-instance id so the reveal clip-path never collides when this
+  // component renders more than once on the page (e.g. live card + share modal).
+  const clipIdRef = useRef(`flow-reveal-${Math.random().toString(36).slice(2)}`);
 
   const { dimensions, colors } = useMemo(() => getFlowDimensionsAndColors(chartMode, tracks), [chartMode, tracks]);
 
@@ -279,7 +283,15 @@ export function FlowStreamChart({ tracks, chartMode = 'traits', width = 420, hei
 
     const svg = d3.select(svgRef.current);
     svg.selectAll("g").remove();
-    const g = svg.append("g");
+    svg.selectAll("defs").remove();
+
+    // Staggered left-to-right reveal of each stream individually, using the
+    // same wave-reveal easing/duration as the Genre Spectrum wave-fan reveal.
+    const defs = svg.append("defs");
+    const clipBaseId = clipIdRef.current;
+    const revealEase = waveRevealEaseFn();
+    const revealStaggerMs = 30;
+    const revealDurationMs = 2000;
 
     stacked.forEach((layer, i) => {
       const area = d3.area()
@@ -287,15 +299,36 @@ export function FlowStreamChart({ tracks, chartMode = 'traits', width = 420, hei
         .y0(d => y(d[0]))
         .y1(d => y(d[1]))
         .curve(d3.curveCatmullRom);
-      g.append("path")
+
+      const clipId = `${clipBaseId}-${i}`;
+      defs.append("clipPath")
+        .attr("id", clipId)
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", 0)
+        .attr("height", height)
+        .transition()
+        .delay(i * revealStaggerMs)
+        .duration(revealDurationMs)
+        .ease(revealEase)
+        .attr("width", width);
+
+      svg.append("g")
+        .attr("clip-path", `url(#${clipId})`)
+        .append("path")
         .datum(layer)
         .attr("d", area)
         .attr("fill", colors[i])
         .attr("fill-opacity", 1);
     });
 
+    // Hover hit-areas live in their own unclipped group so hovering works
+    // immediately and isn't gated by the reveal animation.
+    const hoverGroup = svg.append("g");
+
     if (onHoverRef.current) {
-      g.selectAll("rect.tooltip-area")
+      hoverGroup.selectAll("rect.tooltip-area")
         .data(flowData)
         .enter()
         .append("rect")
