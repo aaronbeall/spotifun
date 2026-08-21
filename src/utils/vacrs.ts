@@ -31,3 +31,15 @@ import { VACRSScore } from "@/types";
     'rawness',
     'socialPresence',
   ] as const satisfies readonly (keyof VACRSScore)[];
+
+// VACRS itself (the dimension/axis names, the 0-1 scale) is internal
+// machinery — user-facing content should talk about the trait a score leans
+// toward instead ("78% Pleasant", not "Valence: 0.78"). Every dimension's
+// score sits on a 0 (low-label) to 1 (high-label) scale with 0.5 as neutral;
+// this reframes it as "how far toward which trait".
+export function getDominantTrait(dim: keyof VACRSScore, score: number) {
+  const isHigh = score >= 0.5;
+  const percent = Math.round((isHigh ? score : 1 - score) * 100);
+  const label = VACRS_RANGE_LABELS[dim][isHigh ? 1 : 0];
+  return { label, percent, isHigh };
+}
