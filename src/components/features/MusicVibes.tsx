@@ -227,8 +227,8 @@ const VibeBadge = ({
 
 interface MusicVibesProps {
   genreStats: GenreStats[];
-  topArtist?: { name: string; image?: string; count: number };
-  topGenre?: { name: string; image?: string; count: number };
+  topArtist?: { name: string; image?: string; count: number; percentage?: number };
+  topGenre?: { name: string; image?: string; count: number; percentage?: number };
   className?: string;
   onShare?: () => void;
 }

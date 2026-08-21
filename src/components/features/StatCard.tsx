@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { SpotifyPlayOverlay } from "@/components/SpotifyPlayOverlay";
 
 interface StatCardProps {
-  icon: React.ComponentType<HTMLProps<unknown>>;
+  icon: React.ElementType;
   className?: string;
   title: string;
   value: string | number;

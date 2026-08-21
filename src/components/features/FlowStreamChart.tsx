@@ -275,10 +275,12 @@ export function FlowStreamChart({ tracks, chartMode = 'traits', width = 420, hei
       .range([0, width]);
     const stackData = flowData.map(row => {
       const rowData = row as unknown as Record<string, number>;
-      return dimensions.map(dim => rowData[dim] || 0);
+      return Object.fromEntries(
+        dimensions.map((dim, i) => [String(i), rowData[dim] || 0])
+      ) as Record<string, number>;
     });
     const stackGen = d3.stack()
-      .keys(d3.range(dimensions.length))
+      .keys(d3.range(dimensions.length).map(String))
       .offset(d3.stackOffsetSilhouette);
     const stacked = stackGen(stackData);
     const y = d3.scaleLinear()
@@ -329,7 +331,7 @@ export function FlowStreamChart({ tracks, chartMode = 'traits', width = 420, hei
         .attr("clip-path", `url(#${clipId})`)
         .append("path")
         .datum(layer)
-        .attr("d", area)
+        .attr("d", area(layer as unknown as [number, number][]))
         .attr("fill", colors[i])
         .attr("fill-opacity", 1);
     });

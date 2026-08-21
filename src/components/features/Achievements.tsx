@@ -173,7 +173,7 @@ export default function Achievements({ stats }: AchievementsProps) {
                 </span>
                 <span className={achievement.unlocked ? 'text-white/80' : 'text-gray-500'}>
                   {achievement.id === 'time_traveler'
-                    ? `${Math.round(achievement.progress / (60 * 60 * 1000))}h / ${Math.round(achievement.maxProgress / (60 * 60 * 1000))}h`
+                    ? `${Math.round((achievement.progress ?? 0) / (60 * 60 * 1000))}h / ${Math.round((achievement.maxProgress ?? 0) / (60 * 60 * 1000))}h`
                     : `${achievement.progress} / ${achievement.maxProgress}`
                   }
                 </span>
@@ -186,7 +186,7 @@ export default function Achievements({ stats }: AchievementsProps) {
                     achievement.unlocked ? 'bg-white' : 'bg-gray-500'
                   }`}
                   style={{
-                    width: `${(achievement.progress / achievement.maxProgress) * 100}%`,
+                    width: `${((achievement.progress ?? 0) / (achievement.maxProgress ?? 1)) * 100}%`,
                   }}
                 />
               </div>

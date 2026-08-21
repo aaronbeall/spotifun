@@ -2,6 +2,7 @@
 
 export interface TrackStats {
   track: SpotifyApi.TrackObjectFull;
+  artists: SpotifyApi.ArtistObjectFull[];
   playCount: number;
   firstPlayed: string;
   lastPlayed: string;
@@ -51,6 +52,8 @@ export interface Achievement {
   unlocked: boolean;
   progress?: number;
   totalRequired?: number;
+  maxProgress?: number;
+  color?: string;
 }
 
 export interface UserRanking {

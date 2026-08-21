@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import * as d3 from "d3";
 import { GenreStats } from '@/types';
 import { calculateGenreVACRSScore, calculateWeightedVACRSScore } from '@/utils/musicClassification';
-import { VACRS_COLORS, VACRS_DIMENSIONS, VACRS_NAMES, VACRS_RANGE_LABELS } from '@/utils/vacrs';
+import { VACRS_COLORS, VACRS_DIMENSIONS, VACRS_NAMES, VACRS_RANGE_LABELS, getDominantTrait } from '@/utils/vacrs';
 import { useTooltip } from "@/hooks/useTooltip";
 import { WAVE_REVEAL_EASE } from '@/utils/easing';
 
