@@ -3,8 +3,8 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { BarChart3, ChevronDown, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User, RefreshCw } from 'lucide-react';
-import { formatDuration, formatNumber, formatRelativeTime, getGenreColorMap, getGenreColorClass, cn } from '@/utils';
+import { BarChart3, ChevronDown, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User } from 'lucide-react';
+import { formatDuration, formatNumber, getGenreColorMap, getGenreColorClass } from '@/utils';
 import Image from 'next/image';
 import FunStats from '@/components/features/FunStats';
 import TimeRangeToggle from '@/components/TimeRangeToggle';
@@ -205,21 +205,7 @@ export default function Dashboard() {
               <NowPlayingWidget />
             </div>
 
-            <div className="flex items-center gap-1 bg-gray-900/60 border border-gray-700/50 rounded-full pl-3 pr-1.5 py-1.5 shrink-0">
-              <button
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                aria-label="Refresh data"
-                className="flex items-center gap-1.5 text-gray-400 hover:text-gray-200 transition-colors disabled:opacity-50"
-              >
-                <RefreshCw className={cn('w-3.5 h-3.5', isRefreshing && 'animate-spin')} />
-                <span className="text-xs hidden lg:inline">
-                  {lastFetched ? formatRelativeTime(lastFetched) : ''}
-                </span>
-              </button>
-
-              <div className="h-5 w-px bg-gray-700 mx-2"></div>
-
+            <div className="flex items-center bg-gray-900/60 border border-gray-700/50 rounded-full p-1.5 shrink-0">
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
                   <button
@@ -285,6 +271,9 @@ export default function Dashboard() {
             stats={stats}
             isLoadingTimeRange={isLoadingTimeRange}
             playLimit={playLimit}
+            lastFetched={lastFetched}
+            isRefreshing={isRefreshing}
+            onRefresh={handleRefresh}
             onPlayLimitChange={async (newLimit) => {
               setPlayLimit(newLimit);
               setIsLoadingTimeRange(true);

@@ -1,20 +1,48 @@
-import { Headphones, Users, Music, Clock, Sparkles, Palette, Disc, Disc3, Disc2, TrendingUp, Star } from 'lucide-react';
-import { useMemo } from 'react';
-import { Stats } from '@/types';
-import { formatNumber, formatDuration, getGenreColorClass } from "@/utils";
+import { Headphones, Users, Music, Clock, Sparkles, Palette, Disc, Disc3, Disc2, TrendingUp, Star, RefreshCw } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Stats, TimeRange } from '@/types';
+import { formatNumber, formatDuration, formatRelativeTime, getGenreColorClass, cn } from "@/utils";
 import { analyzePopularity } from "@/utils/popularity";
 import { WrappedMusicProfile } from "./WrappedMusicProfile";
 import { StatCard } from './StatCard';
 
+// Stubbed for now — switching data modes will require changes to the stats
+// input feeding this card (recent plays vs. top artists vs. top tracks), so
+// this only drives the tab's own selected state until that's wired up.
+const DATA_MODES = [
+  { id: 'recent', label: 'Recently Played', icon: Clock },
+  { id: 'topArtists', label: 'Top Artists', icon: Users },
+  { id: 'topTracks', label: 'Top Tracks', icon: Music },
+] as const;
+type DataMode = typeof DATA_MODES[number]['id'];
+
+const PLAY_LIMITS = [50, 25, 10, 5] as const;
+
+// "Top" modes come from Spotify's top-items endpoint, which is windowed by
+// time_range rather than a result count — so the "how many" control swaps to
+// these ranges instead of PLAY_LIMITS when a Top tab is selected. Stubbed
+// (see DATA_MODES above): not yet wired to an actual API call.
+const TOP_RANGES: { value: TimeRange; label: string }[] = [
+  { value: 'short_term', label: '4 Weeks' },
+  { value: 'medium_term', label: '6 Months' },
+  { value: 'long_term', label: 'All Time' },
+];
 
 interface MusicProfileProps {
   stats: Stats;
   isLoadingTimeRange: boolean;
   playLimit: number;
   onPlayLimitChange: (limit: number) => void;
+  lastFetched: Date | null;
+  isRefreshing: boolean;
+  onRefresh: () => void;
 }
 
-export default function MusicProfile({ stats, isLoadingTimeRange, playLimit, onPlayLimitChange }: MusicProfileProps) {
+export default function MusicProfile({ stats, isLoadingTimeRange, playLimit, onPlayLimitChange, lastFetched, isRefreshing, onRefresh }: MusicProfileProps) {
+  const [dataMode, setDataMode] = useState<DataMode>('recent');
+  const [topRange, setTopRange] = useState<TimeRange>('medium_term');
+  const isTopMode = dataMode !== 'recent';
+  const limitIndex = Math.max(0, PLAY_LIMITS.indexOf(playLimit as typeof PLAY_LIMITS[number]));
   // Calculate average plays per day (assuming 30 days for the time range)
   const avgPlaysPerDay = Math.round(stats.overview.totalPlays / 30);
 
@@ -41,46 +69,87 @@ export default function MusicProfile({ stats, isLoadingTimeRange, playLimit, onP
           <div className="absolute -top-6 -right-6 w-32 h-32 bg-pink-500/10 rounded-full filter blur-3xl"></div>
           <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-blue-500/10 rounded-full filter blur-3xl"></div>
 
-          <div className="relative z-10">
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm text-white/80">
-                  <h2 className="px-2 py-1 bg-white/5 rounded-md text-xs text-white/60 border border-white/10 w-fit">
-                    Recently Played
-                  </h2>
-                  <div className="flex items-center gap-2">
-                    {[50, 25, 10, 5].map((limit) => (
-                      <button
-                        key={limit}
-                        onClick={() => onPlayLimitChange(limit)}
-                        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                          playLimit === limit
-                            ? 'bg-pink-500 text-white'
-                            : 'bg-white/5 text-white/60 hover:bg-white/10'
-                        }`}
-                        disabled={isLoadingTimeRange}
-                      >
-                        {limit}
-                      </button>
-                    ))}
-                    <span className="px-2.5 py-1 bg-white/5 rounded-full backdrop-blur-sm flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-pink-400"></span>
-                      <span className="font-medium text-white">{stats.overview.totalPlays}</span> plays
-                    </span>
-                  </div>
-                  <span className="px-2.5 py-1 bg-white/5 rounded-full backdrop-blur-sm flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-blue-400"></span>
-                    <span className="font-medium text-white">{formatDuration(stats.overview.totalDuration)}</span>
-                  </span>
-                </div>
+          {/* Data nav — flush with the card's edges (negative margins cancel
+              the parent's p-6) so it reads as a distinct header strip rather
+              than an inset panel floating inside the card. */}
+          <div className="relative z-10 -mx-6 -mt-6 mb-6 bg-black/20 rounded-t-2xl border-b border-white/5 p-4 flex flex-wrap items-center gap-3">
+            <div className="relative inline-flex items-center gap-1 bg-white/5 border border-white/10 rounded-full p-1">
+              {DATA_MODES.map(({ id, label, icon: Icon }) => {
+                const isActive = dataMode === id;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => setDataMode(id)}
+                    className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors focus:outline-none ${
+                      isActive ? 'text-white' : 'text-white/50 hover:text-white/80'
+                    }`}
+                  >
+                    {isActive && (
+                      <span className="absolute inset-0 -z-10 rounded-full bg-pink-500 shadow-md" />
+                    )}
+                    <Icon className="w-3.5 h-3.5" />
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Deliberately quieter than the Recent/Top mode selector above
+                (no border, no bright active fill) — it's a secondary
+                refinement of that choice, not a peer of it. */}
+            {isTopMode ? (
+              <div className="inline-flex items-center gap-0.5 bg-white/[0.03] rounded-full p-0.5">
+                {TOP_RANGES.map(({ value, label }) => (
+                  <button
+                    key={value}
+                    onClick={() => setTopRange(value)}
+                    disabled={isLoadingTimeRange}
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors disabled:opacity-50 ${
+                      value === topRange ? 'bg-white/10 text-white/70' : 'text-white/35 hover:text-white/60'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
-              <div className="text-sm font-medium text-white/90 flex items-center gap-2">
-                <div className="px-3 py-1.5 bg-white/5 rounded-full backdrop-blur-sm">
-                  <span className="bg-gradient-to-r from-pink-400 to-blue-400 bg-clip-text text-transparent font-semibold">
-                    {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
-                  </span>
-                </div>
+            ) : (
+              <div className="inline-flex items-center gap-0.5 bg-white/[0.03] rounded-full p-0.5">
+                {PLAY_LIMITS.map((limit, i) => (
+                  <button
+                    key={limit}
+                    onClick={() => onPlayLimitChange(limit)}
+                    disabled={isLoadingTimeRange}
+                    className={`w-6 h-6 rounded-full text-[11px] font-medium transition-colors disabled:opacity-50 ${
+                      i === limitIndex ? 'bg-white/10 text-white/70' : 'text-white/35 hover:text-white/60'
+                    }`}
+                  >
+                    {limit}
+                  </button>
+                ))}
               </div>
+            )}
+
+            <span className="flex items-center gap-1.5 text-xs text-white/40 shrink-0">
+              <Clock className="w-3.5 h-3.5" />
+              {formatDuration(stats.overview.totalDuration)} total listening
+            </span>
+
+            <div className="flex items-center gap-3 ml-auto">
+              <button
+                onClick={onRefresh}
+                disabled={isRefreshing}
+                aria-label="Refresh data"
+                className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={cn('w-3.5 h-3.5', isRefreshing && 'animate-spin')} />
+                {lastFetched ? formatRelativeTime(lastFetched) : ''}
+              </button>
+
+              <div className="h-4 w-px bg-white/10" />
+
+              <span className="text-xs text-white/40">
+                {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+              </span>
             </div>
           </div>
         </div>
