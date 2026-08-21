@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { BarChart3, ChevronDown, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User } from 'lucide-react';
 import { formatDuration, formatNumber, getGenreColorMap, getGenreColorClass } from '@/utils';
@@ -159,7 +160,7 @@ export default function Dashboard() {
         <div className="text-center max-w-md">
           <h2 className="text-2xl font-bold text-white mb-4">Unable to load your data</h2>
           <p className="text-gray-300 mb-6">
-            We couldn't load your Spotify data. Please try refreshing the page or return to the home page to sign in again.
+            We couldn&apos;t load your Spotify data. Please try refreshing the page or return to the home page to sign in again.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
@@ -168,12 +169,12 @@ export default function Dashboard() {
             >
               Refresh Page
             </button>
-            <a
+            <Link
               href="/"
               className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors text-center"
             >
               Return Home
-            </a>
+            </Link>
           </div>
         </div>
       </div>
