@@ -19,6 +19,7 @@ import { findBestMatchingVibe } from "@/utils/musicVibesAnalyzer";
 import { analyzePopularity, getPopularityExtremes } from "@/utils/popularity";
 import { getUserPersona, personaToArtProfile } from "@/utils/musicPersonas";
 import { darkenHex } from "@/utils/color";
+import { CARD_THEMES } from "@/utils/cardThemes";
 
 interface WrappedMusicProfileProps {
   stats: Stats;
@@ -34,12 +35,6 @@ const CARD_ITEMS = [
   { label: "Popularity", icon: Star },
   { label: "Persona", icon: User },
 ];
-
-const CARD_THEMES = {
-  spectrum: { light: '#60a5fa', dark: '#1e3a8a' },
-  flow: { light: '#f472b6', dark: '#831843' },
-  popularity: { light: '#facc15', dark: '#713f12' },
-};
 
 function CircularVisual({ children, glow }: { children: React.ReactNode; glow: string }) {
   return (

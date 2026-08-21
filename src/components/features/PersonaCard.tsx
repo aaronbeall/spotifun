@@ -4,6 +4,7 @@ import { Stats } from "@/types";
 import { getUserPersona, personaToArtProfile } from "@/utils/musicPersonas";
 import { darkenHex } from "@/utils/color";
 import { GenerativeArt } from "../GenerativeArt";
+import { ThemedCardBackground } from "../ThemedCardBackground";
 
 interface PersonaCardProps {
   stats: Stats;
@@ -16,12 +17,10 @@ export const PersonaCard: React.FC<PersonaCardProps> = ({ stats, onShare }) => {
   const artProfile = useMemo(() => personaToArtProfile(persona), [persona]);
 
   return (
-    <div
-      className="relative rounded-3xl p-6 shadow-2xl border flex flex-col items-center justify-center overflow-hidden"
-      style={{
-        background: `linear-gradient(135deg, ${colors.dark}, #111827)`,
-        borderColor: `${colors.light}30`,
-      }}
+    <ThemedCardBackground
+      color={colors}
+      className="rounded-3xl p-6 shadow-2xl border flex flex-col items-center justify-center"
+      style={{ borderColor: `${colors.light}30` }}
     >
       {onShare && (
         <button
@@ -58,6 +57,6 @@ export const PersonaCard: React.FC<PersonaCardProps> = ({ stats, onShare }) => {
           </span>
         ))}
       </div>
-    </div>
+    </ThemedCardBackground>
   );
 };

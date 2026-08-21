@@ -7,6 +7,8 @@ import { GenreStats, MusicVibe } from '@/types';
 import { VibeMatchList } from './VibeMatchList';
 import { cn } from '@/utils';
 import { ImageBadge } from '../ImageBadge';
+import { ThemedCardBackground } from '../ThemedCardBackground';
+import { darkenHex } from '@/utils/color';
 
 // Lets the center badges (vibe + flanking top artist/genre) finish their own
 // reveal sequence before the Other Vibe Matches section starts fading in.
@@ -244,6 +246,14 @@ export function MusicVibes({
     [genreStats]
   );
 
+  // vibe.color.dark is tuned for the share card's full-bleed hero background
+  // (a vivid accent, not an actual dark tone) — darken it further for the
+  // live card so body text stays legible against it.
+  const cardBackgroundColor = useMemo(
+    () => ({ light: vibe.color.light, dark: darkenHex(vibe.color.dark, 0.55) }),
+    [vibe.color]
+  );
+
   // The Other Vibe Matches grid re-mounts every time showAllVibes toggles
   // back to false, but we only want its entrance delay on the very first
   // reveal (page/card load) — not every time the user presses "Show Less".
@@ -274,7 +284,7 @@ export function MusicVibes({
 
   return (
     <div className={cn('w-full', className)}>
-      <div className="bg-gradient-to-br from-gray-900 to-gray-800/80 backdrop-blur-sm rounded-3xl p-6 border border-white/5 shadow-2xl overflow-hidden">
+      <ThemedCardBackground color={cardBackgroundColor} className="backdrop-blur-sm rounded-3xl p-6 border border-white/5 shadow-2xl">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
           <div className="mb-4 md:mb-0">
@@ -417,7 +427,7 @@ export function MusicVibes({
               </div>
             )}
         </div>
-      </div>
+      </ThemedCardBackground>
     </div>
   );
 }

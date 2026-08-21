@@ -4,6 +4,8 @@ import { GenreStats } from '@/types';
 import { calculateWeightedVACRSScore } from '@/utils/musicClassification';
 import { VACRS_COLORS, VACRS_DIMENSIONS, VACRS_NAMES, VACRS_RANGE_LABELS } from '@/utils/vacrs';
 import { SpectrumDimensionBars, getVACRSDiversity } from './SpectrumDimensionBars';
+import { ThemedCardBackground } from '../ThemedCardBackground';
+import { CARD_THEMES } from '@/utils/cardThemes';
 
 export { getVACRSDiversity };
 
@@ -45,7 +47,7 @@ export const SpectrumCard: React.FC<SpectrumCardProps> = ({ genreStats, onShare 
   if (!genreStats?.length) return null;
 
   return (
-    <div className="bg-gradient-to-br from-gray-900 to-gray-800/80 backdrop-blur-sm rounded-3xl p-6 border border-white/5 shadow-2xl overflow-hidden">
+    <ThemedCardBackground color={CARD_THEMES.spectrum} className="backdrop-blur-sm rounded-3xl p-6 border border-white/5 shadow-2xl">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
         <div className="mb-4 md:mb-0">
           <div className="flex items-center gap-3">
@@ -95,6 +97,6 @@ export const SpectrumCard: React.FC<SpectrumCardProps> = ({ genreStats, onShare 
           <div className="text-xs text-gray-400 mt-1">Widest Range</div>
         </div>
       </div>
-    </div>
+    </ThemedCardBackground>
   );
 };

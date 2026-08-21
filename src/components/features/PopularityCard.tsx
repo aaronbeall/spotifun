@@ -5,6 +5,8 @@ import { analyzePopularity, getPopularityExtremes } from '@/utils/popularity';
 import { ImageBadge } from "../ImageBadge";
 import { PopularityHistogram } from './PopularityHistogram';
 import { SIGNATURE_EASE } from '@/utils/easing';
+import { ThemedCardBackground } from '../ThemedCardBackground';
+import { CARD_THEMES } from '@/utils/cardThemes';
 
 interface PopularityCardProps {
   tracks: SpotifyApi.TrackObjectFull[];
@@ -28,7 +30,7 @@ export const PopularityCard: React.FC<PopularityCardProps> = ({ tracks, onShare 
   const { mostPopularTrack, leastPopularTrack, mostPopularCount, leastPopularCount } = getPopularityExtremes(tracks);
 
   return (
-  <div className="bg-linear-to-br from-gray-900 to-gray-800/80 backdrop-blur-sm rounded-3xl p-6 border border-white/5 shadow-2xl overflow-hidden">
+  <ThemedCardBackground color={CARD_THEMES.popularity} className="backdrop-blur-sm rounded-3xl p-6 border border-white/5 shadow-2xl">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
         <div className="mb-4 md:mb-0">
           <div className="flex items-center gap-3">
@@ -119,6 +121,6 @@ export const PopularityCard: React.FC<PopularityCardProps> = ({ tracks, onShare 
         <div className="text-lg font-bold text-white/80 mt-1">{avgPopularity}% average</div>
         <p className="text-sm text-gray-400 mt-2 max-w-md mx-auto">{analysis.description}</p>
       </div>
-    </div>
+    </ThemedCardBackground>
   );
 };

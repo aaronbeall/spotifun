@@ -8,6 +8,8 @@ import { getGenreColor, formatRelativeTime } from '@/utils/format';
 import { MUSIC_VIBES } from '@/utils/musicVibes';
 import { FlowStreamChart, FlowChartMode, FlowTrack, getFlowData, getFlowDimensionsAndColors, getTopGenres } from './FlowStreamChart';
 import { FlowLegend } from './FlowLegend';
+import { ThemedCardBackground } from '../ThemedCardBackground';
+import { CARD_THEMES } from '@/utils/cardThemes';
 
 const CHART_MODES = ['genres', 'traits', 'vibes'] as const;
 
@@ -67,7 +69,7 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
   const lastDate = formatRelativeTime(flowData[flowData.length - 1].playedAt);
 
   return (
-    <div className="bg-linear-to-br from-gray-900 to-gray-800/80 backdrop-blur-sm rounded-3xl p-6 border border-white/5 shadow-2xl overflow-hidden">
+    <ThemedCardBackground color={CARD_THEMES.flow} className="backdrop-blur-sm rounded-3xl p-6 border border-white/5 shadow-2xl">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
         <div className="mb-4 md:mb-0">
           <div className="flex items-center gap-3">
@@ -298,6 +300,6 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
         <h3 className="text-xl font-bold text-pink-400">{CHART_MODE_TITLES[chartMode]}</h3>
         <p className="text-sm text-gray-400 mt-1 max-w-md mx-auto">{CHART_MODE_DESCRIPTIONS[chartMode]}</p>
       </div>
-    </div>
+    </ThemedCardBackground>
   );
 };
