@@ -35,7 +35,7 @@ export const PopularityCard: React.FC<PopularityCardProps> = ({ tracks, onShare 
         <div className="mb-4 md:mb-0">
           <div className="flex items-center gap-3">
             <Star className="w-6 h-6 text-yellow-400" />
-            <h2 className="text-2xl font-bold text-white">Track Popularity</h2>
+            <h2 className="text-2xl font-bold" style={{ color: CARD_THEMES.popularity.light }}>Track Popularity</h2>
           </div>
           <p className="text-gray-400 text-sm mt-1">
             Track popularity distribution and rating

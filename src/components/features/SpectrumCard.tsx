@@ -52,7 +52,7 @@ export const SpectrumCard: React.FC<SpectrumCardProps> = ({ genreStats, onShare 
         <div className="mb-4 md:mb-0">
           <div className="flex items-center gap-3">
             <Palette className="w-6 h-6 text-blue-400" />
-            <h2 className="text-2xl font-bold text-white">Genre Spectrum</h2>
+            <h2 className="text-2xl font-bold" style={{ color: CARD_THEMES.spectrum.light }}>Genre Spectrum</h2>
           </div>
           <p className="text-gray-400 text-sm mt-1">
             Diversity of your listening mapped by vibe dimensions

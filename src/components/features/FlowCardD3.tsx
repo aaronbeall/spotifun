@@ -74,7 +74,7 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
         <div className="mb-4 md:mb-0">
           <div className="flex items-center gap-3">
             <Activity className="w-6 h-6 text-pink-400" />
-            <h2 className="text-2xl font-bold text-white">Listening Flow</h2>
+            <h2 className="text-2xl font-bold" style={{ color: CARD_THEMES.flow.light }}>Listening Flow</h2>
           </div>
           <p className="text-gray-400 text-sm mt-1">
             Stream graph of your recent plays, by genre, trait, or vibe

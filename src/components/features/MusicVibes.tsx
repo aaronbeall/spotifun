@@ -290,7 +290,7 @@ export function MusicVibes({
           <div className="mb-4 md:mb-0">
             <div className="flex items-center gap-3">
               <Award className="w-6 h-6" style={{ color: vibe.color.light }} />
-              <h2 className="text-2xl font-bold text-white">Your Current Vibe</h2>
+              <h2 className="text-2xl font-bold" style={{ color: vibe.color.light }}>Your Current Vibe</h2>
             </div>
             <p className="text-gray-400 text-sm mt-1">
               Based on your recent listening history and genre preferences
