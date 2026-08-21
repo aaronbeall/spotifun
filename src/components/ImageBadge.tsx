@@ -12,7 +12,7 @@ interface ImageBadgeProps {
 
 export const ImageBadge = ({ title, name, subtitle, image, count, color, icon: Icon, className = '', percent }: ImageBadgeProps) => {
   return (
-    <div className={`flex flex-col items-center group hover:scale-105 transition-all ${className}`}>
+    <div className={`flex flex-col items-center group hover:scale-105 transition-all max-w-[9rem] ${className}`}>
       {/* Header with icon and title */}
       <div className="flex items-center gap-2 text-sm text-white/70 mb-3">
         <Icon className="w-4 h-4" style={{ color: color }} />
@@ -60,11 +60,11 @@ export const ImageBadge = ({ title, name, subtitle, image, count, color, icon: I
 
       {/* Name and plays */}
       <div className="mt-4 text-center">
-        <h3 className="text-base font-semibold text-white line-clamp-1 group-hover:text-white/90 transition-colors">
+        <h3 className="text-base font-semibold text-white line-clamp-2 group-hover:text-white/90 transition-colors">
           {name}
         </h3>
         {subtitle && (
-          <div className="text-xs text-white/40 mt-0.5 line-clamp-1 group-hover:text-white/50 transition-colors">
+          <div className="text-xs text-white/40 mt-0.5 line-clamp-2 group-hover:text-white/50 transition-colors">
             {subtitle}
           </div>
         )}

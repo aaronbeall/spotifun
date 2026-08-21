@@ -42,9 +42,12 @@ export function PopularityHistogram({ tracks, large, interactive = true }: Popul
   const barMaxHeight = large ? 160 : 110;
 
   return (
-    <div className="w-full flex justify-center relative" style={{ width: chartWidth, margin: '0 auto' }}>
+    <div className="flex justify-center relative" style={{ width: '100%', maxWidth: chartWidth, margin: '0 auto' }}>
       {interactive && tooltip.Tooltip}
-      <svg width={chartWidth} height={chartHeight} viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="rounded-lg bg-white/5">
+      <svg
+        viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+        className="rounded-lg bg-white/5 w-full h-auto"
+      >
         <defs>
           <linearGradient id="popularityGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#818cf8" />

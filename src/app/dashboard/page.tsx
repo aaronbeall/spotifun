@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { BarChart3, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User } from 'lucide-react';
-import { formatDuration, formatNumber, getGenreColorMap, getGenreColorClass } from '@/utils';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { BarChart3, ChevronDown, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User, RefreshCw } from 'lucide-react';
+import { formatDuration, formatNumber, formatRelativeTime, getGenreColorMap, getGenreColorClass, cn } from '@/utils';
 import Image from 'next/image';
 import FunStats from '@/components/features/FunStats';
 import TimeRangeToggle from '@/components/TimeRangeToggle';
@@ -11,6 +12,7 @@ import Achievements from '@/components/features/Achievements';
 import Rankings from '@/components/features/Rankings';
 import MusicProfile from '@/components/features/MusicProfile';
 import { SpotifyPlayOverlay } from '@/components/SpotifyPlayOverlay';
+import { NowPlayingWidget } from '@/components/NowPlayingWidget';
 
 import { UserProfile, Stats, TimeRange } from '@/types';
 
@@ -19,6 +21,8 @@ export default function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isLoadingTimeRange, setIsLoadingTimeRange] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastFetched, setLastFetched] = useState<Date | null>(null);
   const [timeRange, setTimeRange] = useState<TimeRange>('medium_term');
   const [playLimit, setPlayLimit] = useState<number>(50);
   const [showAllArtists, setShowAllArtists] = useState(false);
@@ -31,33 +35,46 @@ export default function Dashboard() {
   const TRACKS_TO_SHOW = 16;
   const GENRES_TO_SHOW = 12;
 
+  const fetchAll = useCallback(async (range: TimeRange, limit: number) => {
+    const [userResponse, statsResponse] = await Promise.all([
+      fetch('/api/user'),
+      fetch(`/api/stats?timeRange=${range}&limit=${limit}`)
+    ]);
+
+    if (userResponse.ok) {
+      const userData = await userResponse.json();
+      setUser(userData);
+    }
+
+    if (statsResponse.ok) {
+      const statsData = await statsResponse.json();
+      setStats(statsData);
+    }
+
+    setLastFetched(new Date());
+  }, []);
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [userResponse, statsResponse] = await Promise.all([
-          fetch('/api/user'),
-          fetch(`/api/stats?timeRange=medium_term&limit=${playLimit}`)
-        ]);
-
-        if (userResponse.ok) {
-          const userData = await userResponse.json();
-          setUser(userData);
-        }
-
-        if (statsResponse.ok) {
-          const statsData = await statsResponse.json();
-          setStats(statsData);
-        }
-      } catch (error) {
+    fetchAll(timeRange, playLimit)
+      .catch((error) => {
         console.error('Error fetching data:', error);
         router.push('/');
-      } finally {
-        setIsInitialLoading(false);
-      }
-    };
+      })
+      .finally(() => setIsInitialLoading(false));
+    // Only run once on mount — timeRange/playLimit changes are handled by their own handlers.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    fetchData();
-  }, [router]);
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await fetchAll(timeRange, playLimit);
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const handleTimeRangeChange = async (newTimeRange: TimeRange) => {
     if (timeRange === newTimeRange) return;
@@ -70,6 +87,7 @@ export default function Dashboard() {
       if (response.ok) {
         const data = await response.json();
         setStats(data);
+        setLastFetched(new Date());
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -92,6 +110,14 @@ export default function Dashboard() {
     });
     return map;
   }, [stats]);
+
+  // Ticks periodically just to force a re-render, so the "last fetched"
+  // relative-time label (e.g. "5m ago") stays fresh without user interaction.
+  const [, setClockTick] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => setClockTick(t => t + 1), 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (isInitialLoading) {
     return (
@@ -159,8 +185,8 @@ export default function Dashboard() {
       {/* Header - Always visible */}
       <div className="bg-gray-800 shadow-lg border-b border-gray-700 sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 shrink-0">
               <div className="relative w-10 h-10">
                 <Image
                   src="/logo.png"
@@ -174,44 +200,79 @@ export default function Dashboard() {
                 Spotifun
               </h1>
             </div>
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-3">
-                {user.images?.[0]?.url ? (
-                  <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-green-500">
-                    <Image
-                      src={user.images[0].url}
-                      alt={user.display_name || 'Profile'}
-                      fill
-                      className="object-cover"
-                      sizes="40px"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-green-900/30 border-2 border-green-500 flex items-center justify-center">
-                    <User className="w-5 h-5 text-green-400" />
-                  </div>
-                )}
-                <p className="text-gray-300 hidden sm:block">Welcome back, {user.display_name}!</p>
-              </div>
 
-              <div className="h-6 w-px bg-gray-600"></div>
+            <div className="flex-1 flex justify-center min-w-0">
+              <NowPlayingWidget />
+            </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleSettings}
-                  className="p-2 rounded-full hover:bg-gray-700 transition-colors"
-                  aria-label="Settings"
-                >
-                  <Settings className="w-5 h-5 text-gray-300" />
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="p-2 rounded-full hover:bg-gray-700 transition-colors"
-                  aria-label="Logout"
-                >
-                  <LogOut className="w-5 h-5 text-gray-300" />
-                </button>
-              </div>
+            <div className="flex items-center gap-1 bg-gray-900/60 border border-gray-700/50 rounded-full pl-3 pr-1.5 py-1.5 shrink-0">
+              <button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                aria-label="Refresh data"
+                className="flex items-center gap-1.5 text-gray-400 hover:text-gray-200 transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={cn('w-3.5 h-3.5', isRefreshing && 'animate-spin')} />
+                <span className="text-xs hidden lg:inline">
+                  {lastFetched ? formatRelativeTime(lastFetched) : ''}
+                </span>
+              </button>
+
+              <div className="h-5 w-px bg-gray-700 mx-2"></div>
+
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger asChild>
+                  <button
+                    className="flex items-center gap-2 rounded-full pr-2 py-0.5 hover:bg-gray-700/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+                    aria-label="Account menu"
+                  >
+                    {user.images?.[0]?.url ? (
+                      <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-green-500 shrink-0">
+                        <Image
+                          src={user.images[0].url}
+                          alt={user.display_name || 'Profile'}
+                          fill
+                          className="object-cover"
+                          sizes="32px"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-green-900/30 border-2 border-green-500 flex items-center justify-center shrink-0">
+                        <User className="w-4 h-4 text-green-400" />
+                      </div>
+                    )}
+                    <span className="text-sm text-gray-200 hidden sm:inline">
+                      {user.display_name?.split(' ')[0]}
+                    </span>
+                    <ChevronDown className="w-3.5 h-3.5 text-gray-400 hidden sm:inline" />
+                  </button>
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Portal>
+                  <DropdownMenu.Content
+                    align="end"
+                    sideOffset={8}
+                    className="min-w-[180px] bg-gray-800 border border-gray-700 rounded-lg shadow-xl py-1 z-50"
+                  >
+                    <div className="px-3 py-2 text-sm text-gray-300 border-b border-gray-700">
+                      Welcome, {user.display_name}
+                    </div>
+                    <DropdownMenu.Item
+                      onSelect={handleSettings}
+                      className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer outline-none"
+                    >
+                      <Settings className="w-4 h-4" />
+                      Settings
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item
+                      onSelect={handleLogout}
+                      className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer outline-none"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </DropdownMenu.Item>
+                  </DropdownMenu.Content>
+                </DropdownMenu.Portal>
+              </DropdownMenu.Root>
             </div>
           </div>
         </div>
@@ -232,6 +293,7 @@ export default function Dashboard() {
                 if (response.ok) {
                   const data = await response.json();
                   setStats(data);
+                  setLastFetched(new Date());
                 }
               } catch (error) {
                 console.error('Error fetching stats with new limit:', error);

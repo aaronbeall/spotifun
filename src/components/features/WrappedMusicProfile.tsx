@@ -191,7 +191,13 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
                 className="scale-75"
                 percent={Math.round(leastPopularTrack.popularity || 0)}
               />
-              <PopularityHistogram tracks={tracks} interactive={false} />
+              <div className="flex flex-col items-center">
+                <PopularityHistogram tracks={tracks} interactive={false} />
+                <div className="flex justify-between w-full mt-2 text-xs text-white/60" style={{ maxWidth: 320 }}>
+                  <span className="text-left">Niche</span>
+                  <span className="text-right">Popular</span>
+                </div>
+              </div>
               <ImageBadge
                 title="Most Popular"
                 name={mostPopularTrack.name}

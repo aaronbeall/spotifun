@@ -89,6 +89,17 @@ export interface StatsOverview {
 
 export type TimeRange = 'short_term' | 'medium_term' | 'long_term';
 
+export interface NowPlaying {
+  isPlaying: boolean;
+  track: {
+    id: string;
+    name: string;
+    artist: string;
+    image?: string;
+    url?: string;
+  } | null;
+}
+
 export interface Stats {
   overview: StatsOverview;
   recentlyPlayed: SpotifyApi.PlayHistoryObject[];

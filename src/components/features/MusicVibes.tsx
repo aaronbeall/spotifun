@@ -298,56 +298,67 @@ export function MusicVibes({
           )}
         </div>
 
-        {/* Main Badge with Side Badges */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="flex items-center justify-center gap-16">
-            {/* Top Artist Badge */}
+        {/* Main Badge with Side Badges — a 1fr/auto/1fr grid keeps the Main
+            Vibe badge exactly centered regardless of how the flanking
+            badges' text truncates (both 1fr tracks are always equal width,
+            regardless of content), while letting each side flex to use
+            whatever space is available (grid items get min-width: 0 for
+            free, so truncation "just works"). On md+, the badges sit toward
+            the inner edge of their track (snug against the Main Vibe, not
+            floating mid-track) via justify-self. Below md there's no room
+            for three badges side by side, so it becomes a 2-column grid: the
+            Main Vibe spans both columns on its own row, and the two badges
+            sit side by side in the row below it. */}
+        <div className="grid grid-cols-2 md:grid-cols-[1fr_auto_1fr] items-center justify-items-center gap-6 md:gap-8 mb-8">
+          {/* Top Artist Badge (left) — always rendered (even when there's no
+              top artist) so the Main Vibe badge doesn't shift when missing. */}
+          <motion.div
+            className="flex justify-center order-2 md:order-1 md:justify-self-end"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+          >
             {topArtist && (
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-              >
-                <ImageBadge
-                  {...topArtist}
-                  title="Top Artist"
-                  color="#a78bfa"
-                  icon={Users}
-                />
-              </motion.div>
-            )}
-
-            {/* Main Vibe Badge */}
-            <motion.div
-              className="relative z-10"
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0 }}
-            >
-              <VibeBadge
-                vibe={vibe}
-                matchPercentage={matchPercentage}
-                isCurrent
-                size="lg"
+              <ImageBadge
+                {...topArtist}
+                title="Top Artist"
+                color="#a78bfa"
+                icon={Users}
               />
-            </motion.div>
-
-            {/* Top Genre Badge */}
-            {topGenre && (
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-              >
-                <ImageBadge
-                  {...topGenre}
-                  title="Top Genre"
-                  color="#60a5fa"
-                  icon={Palette}
-                />
-              </motion.div>
             )}
-          </div>
+          </motion.div>
+
+          {/* Main Vibe Badge */}
+          <motion.div
+            className="relative z-10 order-1 md:order-2 col-span-2 md:col-span-1"
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0 }}
+          >
+            <VibeBadge
+              vibe={vibe}
+              matchPercentage={matchPercentage}
+              isCurrent
+              size="lg"
+            />
+          </motion.div>
+
+          {/* Top Genre Badge (right) */}
+          <motion.div
+            className="flex justify-center order-3 md:justify-self-start"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+          >
+            {topGenre && (
+              <ImageBadge
+                {...topGenre}
+                title="Top Genre"
+                color="#60a5fa"
+                icon={Palette}
+              />
+            )}
+          </motion.div>
         </div>
 
         {/* All Vibes Grid — reveals after the center badges so it doesn't compete for attention */}
