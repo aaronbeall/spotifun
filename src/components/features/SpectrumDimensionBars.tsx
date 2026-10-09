@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import * as d3 from "d3";
 import { GenreStats } from '@/types';
 import { calculateGenreVACRSScore, calculateWeightedVACRSScore } from '@/utils/musicClassification';
-import { VACRS_COLORS, VACRS_DIMENSIONS, VACRS_NAMES, VACRS_RANGE_LABELS, getDominantTrait } from '@/utils/vacrs';
+import { VACRS_COLORS, VACRS_DIMENSIONS, VACRS_RANGE_LABELS, getDominantTrait } from '@/utils/vacrs';
 import { useTooltip } from "@/hooks/useTooltip";
 import { WAVE_REVEAL_EASE } from '@/utils/easing';
 
@@ -174,23 +174,31 @@ export function SpectrumDimensionBars({ genreStats, interactive = true, compact 
         const weightedDimScore = weightedScore[dim];
         // Calculate y position for weighted score marker
         const weightedY = (1 - weightedDimScore) * chartHeight + offset;
+        // VACRS dimension names ("Valence", etc.) are internal jargon — the
+        // compact/share view labels the column with whichever trait the
+        // overall weighted score actually leans toward instead.
+        const dominant = getDominantTrait(dim, weightedDimScore);
         return (
           <div key={dim} className={compact ? "flex flex-col items-center" : "flex flex-col items-center px-2"}>
-            <span
-              className={compact ? "font-semibold mb-1 text-[10px]" : "font-semibold text-white mb-1 text-base"}
-              style={{ color: VACRS_COLORS[dim] }}
-            >
-              {compact ? VACRS_NAMES[dim].slice(0, 4) : VACRS_NAMES[dim]}
-            </span>
+            {compact && (
+              <span
+                className="font-semibold mb-1 text-[10px]"
+                style={{ color: VACRS_COLORS[dim] }}
+              >
+                {dominant.label.slice(0, 6)}
+              </span>
+            )}
             {/* Spread as percentage tag (just % value) */}
             {!compact && (
               <span className="mb-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-white/10 text-blue-200 border border-white/10">
                 {(spread[dim] * 100).toFixed(1)}%
               </span>
             )}
-            {/* Top axis label outside chart */}
+            {/* Top axis label outside chart — the trait itself, not the
+                VACRS dimension name, colored to keep the per-dimension
+                color-coding the removed name label used to carry. */}
             {!compact && (
-              <span className="mb-1 text-xs text-white/60 font-semibold">{VACRS_RANGE_LABELS[dim][1]}</span>
+              <span className="mb-1 text-xs font-semibold" style={{ color: VACRS_COLORS[dim] }}>{VACRS_RANGE_LABELS[dim][1]}</span>
             )}
             {/* Vertical scatter plot, no background box */}
             <div
@@ -243,8 +251,8 @@ export function SpectrumDimensionBars({ genreStats, interactive = true, compact 
                             </div>
                             <div className="flex items-center gap-1">
                               <span className="text-xs font-bold whitespace-nowrap">
-                                <span style={{ color: VACRS_COLORS[dim] }}>{(v.score * 100).toFixed(0)}%</span>
-                                <span className="text-xs text-slate-400 font-normal ml-1">{VACRS_NAMES[dim]}</span>
+                                <span style={{ color: VACRS_COLORS[dim] }}>{getDominantTrait(dim, v.score).percent}%</span>
+                                <span className="text-xs text-slate-400 font-normal ml-1">{getDominantTrait(dim, v.score).label}</span>
                               </span>
                             </div>
                             <div className="flex items-center gap-1">
@@ -272,10 +280,18 @@ export function SpectrumDimensionBars({ genreStats, interactive = true, compact 
               })()}
               {/* Axis line */}
               <div className="absolute left-1/2 -translate-x-1/2 w-1 h-full bg-white/10 rounded" style={{ zIndex: 1 }} />
+              {/* Neutral midpoint marker — makes the "two equal sides" the
+                  scatter is measured from visible, not just implied. */}
+              <div
+                className="absolute left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-gray-950 border border-white/20"
+                style={{ top: `${chartHeight / 2 + offset}px`, marginTop: '-6px', zIndex: 2 }}
+                aria-hidden="true"
+              />
             </div>
-            {/* Bottom axis label outside chart */}
+            {/* Bottom axis label outside chart — the trait itself, colored
+                to match the top label. */}
             {!compact && (
-              <span className="mt-1 text-xs text-white/60 font-semibold">{VACRS_RANGE_LABELS[dim][0]}</span>
+              <span className="mt-1 text-xs font-semibold" style={{ color: VACRS_COLORS[dim] }}>{VACRS_RANGE_LABELS[dim][0]}</span>
             )}
           </div>
         );

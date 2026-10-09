@@ -2,11 +2,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/utils';
 import { VACRSScore, MusicVibe, GenreStats } from "@/types";
 import { calculateWeightedVACRSScore, calculateVACRSScoreMatch } from '@/utils/musicClassification';
-import { capitalCase } from 'change-case';
 import { getAllMusicVibes } from '@/utils/musicVibesAnalyzer';
 import { GenreFilter } from './GenreFilter';
 import { useState, useMemo } from "react";
-import { VACRS_COLORS } from '@/utils/vacrs';
+import { VACRS_COLORS, getDominantTrait } from '@/utils/vacrs';
 
 export interface VibeMatchItemProps {
   vibe: MusicVibe;
@@ -141,21 +140,29 @@ export const VibeMatchItem = ({
 
       <div className="mt-4 space-y-2.5 flex-grow">
         {Object.entries(vibe.targetScore).map(([key, value], i) => {
-          const currentValue = currentVibeScore[key as keyof VACRSScore];
-          const dimensionName = capitalCase(key);
-          const color = VACRS_COLORS[key as keyof VACRSScore];
+          const dimKey = key as keyof VACRSScore;
+          const currentValue = currentVibeScore[dimKey];
+          const color = VACRS_COLORS[dimKey];
+          // The raw VACRS dimension/score is internal — the row is labeled
+          // and measured by which trait the target leans toward instead.
+          const dominant = getDominantTrait(dimKey, value);
+          const currentDominant = getDominantTrait(dimKey, currentValue);
+          const fillPercent = Math.abs(value - 0.5) * 100; // 0-50, half-track max
 
           return (
             <div key={key} className="flex items-center gap-2 text-xs">
-              <span className="w-24" style={{ color: `${vibe.color.light}cc` }}>{dimensionName}</span>
+              <span className="w-24 truncate" style={{ color: `${vibe.color.light}cc` }}>{dominant.label}</span>
               <div className="relative flex-1 h-2.5 bg-gray-800/40 rounded-full overflow-hidden">
-                {/* Target score bar */}
+                {/* Neutral midpoint */}
+                <div className="absolute top-0 bottom-0 left-1/2 w-px bg-white/10" />
+                {/* Target score bar, growing from center toward the dominant side */}
                 <motion.div
-                  className="absolute top-0 left-0 h-full rounded-full"
+                  className="absolute top-0 h-full rounded-full"
                   initial={{ width: 0 }}
-                  animate={{ width: `${value * 100}%` }}
+                  animate={{ width: `${fillPercent}%` }}
                   transition={{ duration: 0.8, delay: 0.2 + (i * 0.05), ease: [0.16, 1, 0.3, 1] }}
                   style={{
+                    [dominant.isHigh ? 'left' : 'right']: '50%',
                     backgroundColor: color,
                     opacity: 0.8
                   }}
@@ -184,12 +191,12 @@ export const VibeMatchItem = ({
                       'border border-white/10'
                     )}
                   >
-                    {Math.round(currentValue * 100)}%
+                    {currentDominant.percent}% {currentDominant.label}
                   </div>
                 </div>
               </div>
               <span className="w-8 text-right text-xs font-mono" style={{ color: vibe.color.light }}>
-                {Math.round(value * 100)}
+                {dominant.percent}
               </span>
             </div>
           );

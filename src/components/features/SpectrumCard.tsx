@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { Palette, Share2 } from 'lucide-react';
 import { GenreStats } from '@/types';
 import { calculateWeightedVACRSScore } from '@/utils/musicClassification';
-import { VACRS_COLORS, VACRS_DIMENSIONS, VACRS_NAMES, VACRS_RANGE_LABELS } from '@/utils/vacrs';
+import { VACRS_COLORS, VACRS_DIMENSIONS, VACRS_RANGE_LABELS, getDominantTrait } from '@/utils/vacrs';
 import { SpectrumDimensionBars, getVACRSDiversity } from './SpectrumDimensionBars';
 import { ThemedCardBackground } from '../ThemedCardBackground';
 import { CARD_THEMES } from '@/utils/cardThemes';
@@ -21,7 +21,7 @@ export const SpectrumCard: React.FC<SpectrumCardProps> = ({ genreStats, onShare 
   // Two flanking stats alongside diversity: the trait your listening leans
   // hardest into, and the one spanning the widest min-to-max range across
   // your genres (least to most "energetic", "raw", etc., all in one genre mix).
-  const { dominantTraitLabel, dominantTraitColor, widestRangeTraitLabel, widestRangeTraitColor } = useMemo(() => {
+  const { dominantTraitLabel, dominantTraitPercent, dominantTraitColor, widestRangeLabel, widestRangeTraitColor } = useMemo(() => {
     const weighted = calculateWeightedVACRSScore(genreStats);
     const leanOf = (dim: typeof VACRS_DIMENSIONS[number]) => Math.abs(weighted[dim] - 0.5);
     const rangeOf = (dim: typeof VACRS_DIMENSIONS[number]) => {
@@ -36,10 +36,17 @@ export const SpectrumCard: React.FC<SpectrumCardProps> = ({ genreStats, onShare 
       rangeOf(dim) > rangeOf(best) ? dim : best
     , VACRS_DIMENSIONS[0]);
 
+    const dominant = getDominantTrait(dominantDim, weighted[dominantDim]);
+
     return {
-      dominantTraitLabel: VACRS_RANGE_LABELS[dominantDim][weighted[dominantDim] >= 0.5 ? 1 : 0],
+      dominantTraitLabel: dominant.label,
+      dominantTraitPercent: dominant.percent,
       dominantTraitColor: VACRS_COLORS[dominantDim],
-      widestRangeTraitLabel: VACRS_NAMES[widestDim],
+      // "Widest range" describes the whole axis (how far genres spread
+      // between its two extremes), not a single direction — so unlike the
+      // dominant trait, it's framed as both trait labels rather than a
+      // percent-toward-one-side.
+      widestRangeLabel: VACRS_RANGE_LABELS[widestDim].join(' ↔ '),
       widestRangeTraitColor: VACRS_COLORS[widestDim],
     };
   }, [genreStats, values]);
@@ -77,8 +84,8 @@ export const SpectrumCard: React.FC<SpectrumCardProps> = ({ genreStats, onShare 
           the trait your listening leans hardest into vs. barely at all */}
       <div className="flex items-center justify-center gap-8 sm:gap-16 mt-8">
         <div className="text-center">
-          <div className="text-lg sm:text-xl font-bold capitalize" style={{ color: dominantTraitColor }}>
-            {dominantTraitLabel}
+          <div className="text-lg sm:text-xl font-bold" style={{ color: dominantTraitColor }}>
+            {dominantTraitPercent}% {dominantTraitLabel}
           </div>
           <div className="text-xs text-gray-400 mt-1">Dominant Trait</div>
         </div>
@@ -92,7 +99,7 @@ export const SpectrumCard: React.FC<SpectrumCardProps> = ({ genreStats, onShare 
 
         <div className="text-center">
           <div className="text-lg sm:text-xl font-bold" style={{ color: widestRangeTraitColor }}>
-            {widestRangeTraitLabel}
+            {widestRangeLabel}
           </div>
           <div className="text-xs text-gray-400 mt-1">Widest Range</div>
         </div>

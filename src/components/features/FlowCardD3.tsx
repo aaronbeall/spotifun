@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Activity, Sparkles, Share2, Tags, SlidersHorizontal } from 'lucide-react';
 import { VACRSScore } from '@/types';
 import { calculateGenreVACRSScore } from '@/utils/musicClassification';
-import { VACRS_DIMENSIONS, VACRS_COLORS } from '@/utils/vacrs';
+import { VACRS_DIMENSIONS, VACRS_COLORS, getDominantTrait } from '@/utils/vacrs';
 import { getGenreColor, formatRelativeTime } from '@/utils/format';
 import { MUSIC_VIBES } from '@/utils/musicVibes';
 import { FlowStreamChart, FlowChartMode, FlowTrack, getFlowData, getFlowDimensionsAndColors, getTopGenres } from './FlowStreamChart';
@@ -259,7 +259,9 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
                   );
                 })
               ) : (
-                // Traits mode: show original VACRS value
+                // Traits mode: show the dominant trait, not the raw VACRS
+                // dimension/score — a bidirectional bar growing from center
+                // toward whichever side (label + %) the average leans.
                 VACRS_DIMENSIONS.map((dim) => {
                   const originalRow = flowData[tooltip.idx];
                   if (!originalRow.genres || originalRow.genres.length === 0) {
@@ -269,20 +271,26 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
                   const avg = (key: keyof VACRSScore) => scores.reduce((sum, s) => sum + s[key], 0) / scores.length;
                   const value = avg(dim as keyof VACRSScore);
                   const dimColor = VACRS_COLORS[dim];
+                  const dominant = getDominantTrait(dim, value);
+                  const fillPercent = Math.abs(value - 0.5) * 100; // 0-50, half-track max
 
                   return (
                     <div key={dim} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ color: dimColor, fontWeight: 700, fontSize: 13, width: 18, textAlign: 'center' }}>{dim.charAt(0).toUpperCase()}</span>
-                      <div style={{ background: '#1e293b', borderRadius: 3, height: 6, width: 48, margin: '0 6px' }}>
+                      <span style={{ color: dimColor, fontWeight: 500, fontSize: 12, minWidth: 120 }}>{dominant.label}</span>
+                      <div style={{ background: '#1e293b', borderRadius: 3, height: 6, width: 48, margin: '0 6px', position: 'relative' }}>
+                        <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 1, background: 'rgba(255,255,255,0.15)' }} />
                         <div style={{
+                          position: 'absolute',
+                          top: 0,
+                          bottom: 0,
+                          [dominant.isHigh ? 'left' : 'right']: '50%',
                           background: dimColor,
-                          height: '100%',
-                          width: `${Math.round(value * 100)}%`,
+                          width: `${fillPercent}%`,
                           borderRadius: 3,
                           transition: 'width 0.2s',
                         }} />
                       </div>
-                      <span style={{ fontSize: 11, color: '#e5e7eb', minWidth: 28, textAlign: 'right' }}>{(value * 100).toFixed(0)}%</span>
+                      <span style={{ fontSize: 11, color: '#e5e7eb', minWidth: 28, textAlign: 'right' }}>{dominant.percent}%</span>
                     </div>
                   );
                 })
