@@ -129,13 +129,6 @@ export function generateSpectrumCaption(stats: Stats): string {
     return 'Your music spectrum across emotional and sonic dimensions.';
   }
 
-  // Calculate VACRS scores and spreads for analysis
-  const scores = stats.genres.map(g => {
-    const genreScore = {} as any;
-    // Simple approximation - in production this would use actual calculateGenreVACRSScore
-    return genreScore;
-  });
-
   // Analyze the trait spreads from the stats
   // For now, provide general insights based on the data structure
   const genreCount = stats.genres.length;
