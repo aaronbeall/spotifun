@@ -261,3 +261,23 @@ export function calculateVACRSScoreMatch(score1: VACRSScore, score2: VACRSScore)
   // Convert to percentage (0-100) where 0 distance = 100% match
   return Math.max(0, 100 * (1 - (distance / maxPossibleDistance)));
 }
+
+/**
+ * Debug helper: classify multiple genres and return detailed info
+ * @param genres - Array of genre strings
+ * @returns Debug info including matched genres, match types, scores, and coverage
+ */
+export function classifyGenresWithDetails(genres: string[]) {
+  const result = classifyGenreExtended(genres.join(', '));
+  
+  return {
+    matchedGenres: result.classifications
+      .filter(c => c.matchedGenre)
+      .map(c => c.matchedGenre!),
+    matchType: result.classifications
+      .map(c => c.matchType)
+      .join(', '),
+    scores: result.coverage > 0 ? result.scores : null,
+    coverage: result.coverage
+  };
+}

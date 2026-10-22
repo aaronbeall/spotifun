@@ -560,6 +560,58 @@ export default function Dashboard() {
           <Rankings stats={stats} />
         </div>
 
+        {/* Dev-only Debug Panel */}
+        {stats.debugGenreData && stats.debugGenreData.length > 0 && (
+          <div className="mb-8 bg-gray-800/40 border border-yellow-500/30 rounded-lg p-6">
+            <details className="group">
+              <summary className="cursor-pointer text-yellow-400 font-semibold flex items-center gap-2 mb-4">
+                <span className="text-lg">🐛 Genre Classification Debug Data</span>
+                <span className="text-xs text-gray-400">(dev only)</span>
+              </summary>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-gray-900/50 border-b border-gray-700">
+                    <tr>
+                      <th className="px-3 py-2 text-gray-300">Artist</th>
+                      <th className="px-3 py-2 text-gray-300">Spotify Genres</th>
+                      <th className="px-3 py-2 text-gray-300">Last.fm Tags</th>
+                      <th className="px-3 py-2 text-gray-300">Matched Nodes</th>
+                      <th className="px-3 py-2 text-gray-300">Match Type</th>
+                      <th className="px-3 py-2 text-gray-300">VACRS Scores</th>
+                      <th className="px-3 py-2 text-gray-300">Coverage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stats.debugGenreData.map((debug, i) => (
+                      <tr key={i} className="border-b border-gray-800/50 hover:bg-gray-900/30">
+                        <td className="px-3 py-2 text-white font-medium">{debug.artistName}</td>
+                        <td className="px-3 py-2 text-gray-300">
+                          {debug.spotifyGenres.length > 0 ? debug.spotifyGenres.join(', ') : '—'}
+                        </td>
+                        <td className="px-3 py-2 text-blue-300">
+                          {debug.lastFmTagsUsed.length > 0 ? debug.lastFmTagsUsed.join(', ') : '—'}
+                        </td>
+                        <td className="px-3 py-2 text-green-300">
+                          {debug.matchedNodes.length > 0 ? debug.matchedNodes.join(', ') : '—'}
+                        </td>
+                        <td className="px-3 py-2 text-purple-300">{debug.matchType}</td>
+                        <td className="px-3 py-2 text-gray-400 font-mono">
+                          {debug.vacrsScores ? (
+                            <span title={`V:${debug.vacrsScores.valence.toFixed(2)} A:${debug.vacrsScores.arousal.toFixed(2)} C:${debug.vacrsScores.complexity.toFixed(2)} R:${debug.vacrsScores.rawness.toFixed(2)} S:${debug.vacrsScores.socialPresence.toFixed(2)}`}>
+                              V:{debug.vacrsScores.valence.toFixed(2)} A:{debug.vacrsScores.arousal.toFixed(2)} C:{debug.vacrsScores.complexity.toFixed(2)}
+                            </span>
+                          ) : '—'}
+                        </td>
+                        <td className="px-3 py-2 text-gray-300">{Math.round(debug.coverage * 100)}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          </div>
+        )}
+
         {/* Attribution Footer */}
         <div className="mt-12 mb-4 text-center text-xs text-gray-500">
           Genre data enhanced with{' '}

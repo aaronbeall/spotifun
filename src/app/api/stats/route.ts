@@ -139,6 +139,35 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
       const coverageResult = calculateWeightedVACRSScoreWithCoverage(genreStats);
       stats.overview.genreCoverage = coverageResult.coverage;
 
+      // Dev-only debug data: include per-artist genre classification details
+      if (process.env.NODE_ENV === 'development' && searchParams.get('debugGenres') === '1') {
+        const { classifyGenresWithDetails } = await import('@/utils/musicClassification');
+        const debugData = artistStats.map(({ artist }) => {
+          const spotifyGenres = artist.genres || [];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const lastFmData = (artist as any)._lastFmData;
+          const lastFmTagsUsed = lastFmData?.classifications
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ?.filter((c: any) => c.matchedGenre && c.scores)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ?.map((c: any) => c.originalGenre) || [];
+          
+          const effectiveGenres = [...spotifyGenres, ...lastFmTagsUsed];
+          const classifications = classifyGenresWithDetails(effectiveGenres);
+          
+          return {
+            artistName: artist.name,
+            spotifyGenres,
+            lastFmTagsUsed,
+            matchedNodes: classifications.matchedGenres,
+            matchType: classifications.matchType,
+            vacrsScores: classifications.scores,
+            coverage: classifications.coverage
+          };
+        });
+        stats.debugGenreData = debugData;
+      }
+
       return stats;
     });
 
