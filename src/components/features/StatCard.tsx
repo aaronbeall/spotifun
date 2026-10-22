@@ -3,6 +3,7 @@ import { useState, useMemo, HTMLProps } from "react";
 import { motion } from "framer-motion";
 import { SpotifyPlayOverlay } from "@/components/SpotifyPlayOverlay";
 import { MetricInfo } from '../MetricInfo';
+import { getMetricDescription } from '@/utils/metricDescriptions';
 
 interface StatCardProps {
   icon: React.ElementType;
@@ -27,6 +28,8 @@ interface StatCardProps {
   score?: number;
   scoreLabel?: string;
   scoreTooltip?: string;
+  /** Key to auto-lookup tooltip from metricDescriptions */
+  scoreMetricKey?: string;
   mostPlayed?: Array<{ name: string; count: number; image?: string; url?: string }>;
   children?: React.ReactNode;
 }
@@ -43,6 +46,7 @@ export const StatCard = ({
                         score,
                         scoreLabel = 'Score',
                         scoreTooltip,
+                        scoreMetricKey,
                         mostPlayed = [],
                         children
                       }: StatCardProps) => {
@@ -52,6 +56,9 @@ export const StatCard = ({
     [showAllPills, mostPlayed]
   );
   const hasMorePills = mostPlayed.length > 3;
+  
+  // Auto-lookup tooltip if metricKey provided
+  const finalScoreTooltip = scoreTooltip || (scoreMetricKey ? getMetricDescription(scoreMetricKey) : undefined);
 
   return (
     <div className="relative h-full overflow-hidden rounded-2xl p-6 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:shadow-black/10">
@@ -190,7 +197,7 @@ export const StatCard = ({
             <div className="flex justify-between text-xs mb-1.5">
               <span className="text-white/70 font-medium flex items-center">
                 {scoreLabel}
-                {scoreTooltip && <MetricInfo description={scoreTooltip} />}
+                {finalScoreTooltip && <MetricInfo description={finalScoreTooltip} />}
               </span>
               <span
                 className="font-semibold"

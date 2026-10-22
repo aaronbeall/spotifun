@@ -5,7 +5,6 @@ import { formatNumber, formatDuration, formatRelativeTime, getGenreColorClass, c
 import { analyzePopularity } from "@/utils/popularity";
 import { WrappedMusicProfile } from "./WrappedMusicProfile";
 import { StatCard } from './StatCard';
-import { getMetricDescription } from '@/utils/metricDescriptions';
 
 const DATA_MODES = [
   { id: 'recent' as const, label: 'Recently Played', icon: Clock },
@@ -205,7 +204,7 @@ export default function MusicProfile({
               }))}
             score={stats.overview.artistDiversity}
             scoreLabel="Diversity"
-            scoreTooltip={getMetricDescription('artist-diversity')}
+            scoreMetricKey="artist-diversity"
             mostPlayed={stats.artists
               .sort((a, b) => b.playCount - a.playCount)
               .map(artist => ({
@@ -233,7 +232,7 @@ export default function MusicProfile({
               }))}
             score={stats.overview.uniqueTracks / Math.max(stats.overview.totalPlays, 1)}
             scoreLabel="Uniqueness"
-            scoreTooltip={getMetricDescription('track-uniqueness')}
+            scoreMetricKey="track-uniqueness"
             mostPlayed={stats.tracks
               .sort((a, b) => b.playCount - a.playCount)
               .map(track => ({
@@ -265,7 +264,7 @@ export default function MusicProfile({
               })}
             score={stats.overview.genreDiversity}
             scoreLabel="Diversity"
-            scoreTooltip={getMetricDescription('genre-diversity')}
+            scoreMetricKey="genre-diversity"
             mostPlayed={stats.genres
               .map(genre => ({
                 name: genre.genre,
@@ -285,7 +284,7 @@ export default function MusicProfile({
             iconColor="#34d399"
             score={stats.overview.averagePopularity / 100}
             scoreLabel="Average Popularity"
-            scoreTooltip={getMetricDescription('average-popularity')}
+            scoreMetricKey="average-popularity"
             badge={{
               label: popularity.label,
               description: popularity.description,
