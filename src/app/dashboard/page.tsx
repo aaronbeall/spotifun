@@ -26,6 +26,7 @@ export default function Dashboard() {
   const [lastFetched, setLastFetched] = useState<Date | null>(null);
   const [timeRange, setTimeRange] = useState<TimeRange>('medium_term');
   const [playLimit, setPlayLimit] = useState<number>(50);
+  const [dataMode, setDataMode] = useState<'recent' | 'topArtists' | 'topTracks'>('recent');
   const [showAllArtists, setShowAllArtists] = useState(false);
   const [showAllTracks, setShowAllTracks] = useState(false);
   const [showAllGenres, setShowAllGenres] = useState(false);
@@ -36,10 +37,10 @@ export default function Dashboard() {
   const TRACKS_TO_SHOW = 16;
   const GENRES_TO_SHOW = 12;
 
-  const fetchAll = useCallback(async (range: TimeRange, limit: number) => {
+  const fetchAll = useCallback(async (range: TimeRange, limit: number, mode: 'recent' | 'topArtists' | 'topTracks') => {
     const [userResponse, statsResponse] = await Promise.all([
       fetch('/api/user'),
-      fetch(`/api/stats?timeRange=${range}&limit=${limit}`)
+      fetch(`/api/stats?timeRange=${range}&limit=${limit}&mode=${mode}`)
     ]);
 
     if (userResponse.ok) {
@@ -56,20 +57,20 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    fetchAll(timeRange, playLimit)
+    fetchAll(timeRange, playLimit, dataMode)
       .catch((error) => {
         console.error('Error fetching data:', error);
         router.push('/');
       })
       .finally(() => setIsInitialLoading(false));
-    // Only run once on mount — timeRange/playLimit changes are handled by their own handlers.
+    // Only run once on mount — timeRange/playLimit/dataMode changes are handled by their own handlers.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await fetchAll(timeRange, playLimit);
+      await fetchAll(timeRange, playLimit, dataMode);
     } catch (error) {
       console.error('Error refreshing data:', error);
     } finally {
@@ -84,7 +85,27 @@ export default function Dashboard() {
     setIsLoadingTimeRange(true);
 
     try {
-      const response = await fetch(`/api/stats?timeRange=${newTimeRange}&limit=${playLimit}`);
+      const response = await fetch(`/api/stats?timeRange=${newTimeRange}&limit=${playLimit}&mode=${dataMode}`);
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data);
+        setLastFetched(new Date());
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    } finally {
+      setIsLoadingTimeRange(false);
+    }
+  };
+
+  const handleDataModeChange = async (newMode: 'recent' | 'topArtists' | 'topTracks') => {
+    if (dataMode === newMode) return;
+
+    setDataMode(newMode);
+    setIsLoadingTimeRange(true);
+
+    try {
+      const response = await fetch(`/api/stats?timeRange=${timeRange}&limit=${playLimit}&mode=${newMode}`);
       if (response.ok) {
         const data = await response.json();
         setStats(data);
@@ -275,11 +296,15 @@ export default function Dashboard() {
             lastFetched={lastFetched}
             isRefreshing={isRefreshing}
             onRefresh={handleRefresh}
+            timeRange={timeRange}
+            onTimeRangeChange={handleTimeRangeChange}
+            dataMode={dataMode}
+            onDataModeChange={handleDataModeChange}
             onPlayLimitChange={async (newLimit) => {
               setPlayLimit(newLimit);
               setIsLoadingTimeRange(true);
               try {
-                const response = await fetch(`/api/stats?timeRange=${timeRange}&limit=${newLimit}`);
+                const response = await fetch(`/api/stats?timeRange=${timeRange}&limit=${newLimit}&mode=${dataMode}`);
                 if (response.ok) {
                   const data = await response.json();
                   setStats(data);

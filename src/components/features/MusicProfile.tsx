@@ -1,27 +1,20 @@
 import { Headphones, Users, Music, Clock, Sparkles, Palette, Disc, Disc3, Disc2, TrendingUp, Star, RefreshCw } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { Stats, TimeRange } from '@/types';
+import { useMemo } from 'react';
+import { Stats, TimeRange, DataMode } from '@/types';
 import { formatNumber, formatDuration, formatRelativeTime, getGenreColorClass, cn } from "@/utils";
 import { analyzePopularity } from "@/utils/popularity";
 import { WrappedMusicProfile } from "./WrappedMusicProfile";
 import { StatCard } from './StatCard';
 
-// Stubbed for now — switching data modes will require changes to the stats
-// input feeding this card (recent plays vs. top artists vs. top tracks), so
-// this only drives the tab's own selected state until that's wired up.
 const DATA_MODES = [
-  { id: 'recent', label: 'Recently Played', icon: Clock },
-  { id: 'topArtists', label: 'Top Artists', icon: Users },
-  { id: 'topTracks', label: 'Top Tracks', icon: Music },
+  { id: 'recent' as const, label: 'Recently Played', icon: Clock },
+  { id: 'topArtists' as const, label: 'Top Artists', icon: Users },
+  { id: 'topTracks' as const, label: 'Top Tracks', icon: Music },
 ] as const;
-type DataMode = typeof DATA_MODES[number]['id'];
 
 const PLAY_LIMITS = [50, 25, 10, 5] as const;
 
-// "Top" modes come from Spotify's top-items endpoint, which is windowed by
-// time_range rather than a result count — so the "how many" control swaps to
-// these ranges instead of PLAY_LIMITS when a Top tab is selected. Stubbed
-// (see DATA_MODES above): not yet wired to an actual API call.
+// Time ranges for Top modes
 const TOP_RANGES: { value: TimeRange; label: string }[] = [
   { value: 'short_term', label: '4 Weeks' },
   { value: 'medium_term', label: '6 Months' },
@@ -33,18 +26,50 @@ interface MusicProfileProps {
   isLoadingTimeRange: boolean;
   playLimit: number;
   onPlayLimitChange: (limit: number) => void;
+  timeRange: TimeRange;
+  onTimeRangeChange: (range: TimeRange) => void;
+  dataMode: DataMode;
+  onDataModeChange: (mode: DataMode) => void;
   lastFetched: Date | null;
   isRefreshing: boolean;
   onRefresh: () => void;
 }
 
-export default function MusicProfile({ stats, isLoadingTimeRange, playLimit, onPlayLimitChange, lastFetched, isRefreshing, onRefresh }: MusicProfileProps) {
-  const [dataMode, setDataMode] = useState<DataMode>('recent');
-  const [topRange, setTopRange] = useState<TimeRange>('medium_term');
+export default function MusicProfile({ 
+  stats, 
+  isLoadingTimeRange, 
+  playLimit, 
+  onPlayLimitChange, 
+  timeRange,
+  onTimeRangeChange,
+  dataMode,
+  onDataModeChange,
+  lastFetched, 
+  isRefreshing, 
+  onRefresh 
+}: MusicProfileProps) {
   const isTopMode = dataMode !== 'recent';
   const limitIndex = Math.max(0, PLAY_LIMITS.indexOf(playLimit as typeof PLAY_LIMITS[number]));
-  // Calculate average plays per day (assuming 30 days for the time range)
-  const avgPlaysPerDay = Math.round(stats.overview.totalPlays / 30);
+  
+  // Calculate metrics and labels based on mode
+  const { avgMetric, avgMetricLabel, uniquenessDescription, totalListeningLabel } = useMemo(() => {
+    if (dataMode === 'recent') {
+      return {
+        avgMetric: Math.round(stats.overview.totalPlays / 30),
+        avgMetricLabel: 'plays per day',
+        uniquenessDescription: `${Math.round((stats.overview.uniqueTracks / stats.overview.totalPlays) * 100)}% unique`,
+        totalListeningLabel: 'total listening'
+      };
+    } else {
+      // Top modes use rank-based weights
+      return {
+        avgMetric: Math.round(stats.overview.totalPlays / Math.max(stats.overview.uniqueTracks, 1)),
+        avgMetricLabel: 'avg weight',
+        uniquenessDescription: `${stats.overview.uniqueTracks} tracks`,
+        totalListeningLabel: 'total duration'
+      };
+    }
+  }, [dataMode, stats.overview]);
 
   const popularity = analyzePopularity(stats.tracks.map(track => track.track));
 
@@ -69,9 +94,7 @@ export default function MusicProfile({ stats, isLoadingTimeRange, playLimit, onP
           <div className="absolute -top-6 -right-6 w-32 h-32 bg-pink-500/10 rounded-full filter blur-3xl"></div>
           <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-blue-500/10 rounded-full filter blur-3xl"></div>
 
-          {/* Data nav — flush with the card's edges (negative margins cancel
-              the parent's p-6) so it reads as a distinct header strip rather
-              than an inset panel floating inside the card. */}
+          {/* Data nav */}
           <div className="relative z-10 -mx-6 -mt-6 mb-6 bg-black/20 rounded-t-2xl border-b border-white/5 p-4 flex flex-wrap items-center gap-3">
             <div className="relative inline-flex items-center gap-1 bg-white/5 border border-white/10 rounded-full p-1">
               {DATA_MODES.map(({ id, label, icon: Icon }) => {
@@ -79,8 +102,9 @@ export default function MusicProfile({ stats, isLoadingTimeRange, playLimit, onP
                 return (
                   <button
                     key={id}
-                    onClick={() => setDataMode(id)}
-                    className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors focus:outline-none ${
+                    onClick={() => onDataModeChange(id)}
+                    disabled={isLoadingTimeRange}
+                    className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors focus:outline-none disabled:opacity-50 ${
                       isActive ? 'text-white' : 'text-white/50 hover:text-white/80'
                     }`}
                   >
@@ -94,18 +118,15 @@ export default function MusicProfile({ stats, isLoadingTimeRange, playLimit, onP
               })}
             </div>
 
-            {/* Deliberately quieter than the Recent/Top mode selector above
-                (no border, no bright active fill) — it's a secondary
-                refinement of that choice, not a peer of it. */}
             {isTopMode ? (
               <div className="inline-flex items-center gap-0.5 bg-white/[0.03] rounded-full p-0.5">
                 {TOP_RANGES.map(({ value, label }) => (
                   <button
                     key={value}
-                    onClick={() => setTopRange(value)}
+                    onClick={() => onTimeRangeChange(value)}
                     disabled={isLoadingTimeRange}
                     className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors disabled:opacity-50 ${
-                      value === topRange ? 'bg-white/10 text-white/70' : 'text-white/35 hover:text-white/60'
+                      value === timeRange ? 'bg-white/10 text-white/70' : 'text-white/35 hover:text-white/60'
                     }`}
                   >
                     {label}
@@ -131,7 +152,7 @@ export default function MusicProfile({ stats, isLoadingTimeRange, playLimit, onP
 
             <span className="flex items-center gap-1.5 text-xs text-white/40 shrink-0">
               <Clock className="w-3.5 h-3.5" />
-              {formatDuration(stats.overview.totalDuration)} total listening
+              {formatDuration(stats.overview.totalDuration)} {totalListeningLabel}
             </span>
 
             <div className="flex items-center gap-3 ml-auto">
@@ -171,7 +192,7 @@ export default function MusicProfile({ stats, isLoadingTimeRange, playLimit, onP
             icon={Users}
             title="Artists"
             value={stats.overview.uniqueArtists}
-            description={`${avgPlaysPerDay} plays per day`}
+            description={`${avgMetric} ${avgMetricLabel}`}
             gradient="bg-gradient-to-br from-purple-900/80 to-indigo-900/80"
             iconColor="#a78bfa"
             items={stats.artists
@@ -198,7 +219,7 @@ export default function MusicProfile({ stats, isLoadingTimeRange, playLimit, onP
             icon={Music}
             title="Tracks"
             value={stats.overview.uniqueTracks}
-            description={`${Math.round((stats.overview.uniqueTracks / stats.overview.totalPlays) * 100)}% unique`}
+            description={uniquenessDescription}
             gradient="bg-gradient-to-br from-amber-900/80 to-pink-900/80"
             iconColor="#f59e0b"
             items={stats.tracks
@@ -208,7 +229,7 @@ export default function MusicProfile({ stats, isLoadingTimeRange, playLimit, onP
                 count: track.playCount,
                 image: track.track.album?.images?.[0]?.url
               }))}
-            score={stats.overview.uniqueTracks / stats.overview.totalPlays}
+            score={stats.overview.uniqueTracks / Math.max(stats.overview.totalPlays, 1)}
             scoreLabel="Uniqueness"
             mostPlayed={stats.tracks
               .sort((a, b) => b.playCount - a.playCount)

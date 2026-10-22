@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getRecentlyPlayed, getTopTracks, getTopArtists, calculateTrackStats, calculateArtistStats,
-  calculateGenreStats, calculateTopGenres, fetchArtistsInBatches
+  calculateGenreStats, calculateTopGenres, fetchArtistsInBatches,
+  calculateTopTracksStats, calculateTopArtistsStats
 } from '@/lib/spotify';
 import { setAuthCookies, UnauthenticatedError, withSpotifyAccessToken } from '@/lib/auth';
-import { Stats, TimeRange } from '@/types';
+import { Stats, TimeRange, DataMode } from '@/types';
 
 export async function GET(request: NextRequest): Promise<NextResponse<Stats | { error: string }>> {
   try {
     const { searchParams } = new URL(request.url);
     const timeRange = (searchParams.get('timeRange') as TimeRange) || 'medium_term';
     const limit = Math.min(50, Math.max(5, parseInt(searchParams.get('limit') || '50', 10))); // Ensure limit is between 5 and 50
+    const mode = (searchParams.get('mode') as DataMode) || 'recent';
 
     const { result: stats, refreshedTokens } = await withSpotifyAccessToken(request, async () => {
       // Fetch initial data in parallel
@@ -20,32 +22,59 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
         getTopArtists(timeRange, 50)
       ]);
 
-      // Get all unique artist IDs from recently played tracks
-      const artistIds = Array.from(new Set(
-        recentlyPlayed.flatMap(item => item.track.artists.map(artist => artist.id))
-      ));
-
-      // Fetch all artist details in batches
-      const recentlyPlayedArtistsById = await fetchArtistsInBatches(artistIds);
-
       // Calculate top genres from top artists
       const topGenres = calculateTopGenres(topArtists);
 
-      // Calculate statistics in parallel with pre-fetched artist data
-      const [trackStats, artistStats, genreStats] = await Promise.all([
-        calculateTrackStats(recentlyPlayed, recentlyPlayedArtistsById),
-        calculateArtistStats(recentlyPlayed, recentlyPlayedArtistsById),
-        calculateGenreStats(recentlyPlayed, recentlyPlayedArtistsById)
-      ]);
+      let trackStats, artistStats, genreStats, totalPlays, totalDuration, totalGenres, averagePopularity;
 
-      // Calculate additional metrics
-      const totalPlays = recentlyPlayed.length;
-      const totalDuration = recentlyPlayed.reduce((sum, item) => sum + item.track.duration_ms, 0);
-      const totalGenres = Object.values(recentlyPlayedArtistsById).reduce((sum, artist) => sum + (artist.genres?.length || 0), 0);
+      if (mode === 'topTracks') {
+        // Top Tracks mode: use rank-based weights from top tracks
+        const artistIds = Array.from(new Set(
+          topTracks.flatMap(track => track.artists.map(artist => artist.id))
+        ));
+        const topTracksArtistsById = await fetchArtistsInBatches(artistIds);
 
-      // Calculate average track popularity (0-100 scale)
-      const totalPopularity = recentlyPlayed.reduce((sum, item) => sum + (item.track.popularity || 0), 0);
-      const averagePopularity = totalPlays > 0 ? Math.round(totalPopularity / totalPlays) : 0;
+        const statsResult = calculateTopTracksStats(topTracks, topTracksArtistsById);
+        trackStats = statsResult.trackStats;
+        artistStats = statsResult.artistStats;
+        genreStats = statsResult.genreStats;
+        totalPlays = statsResult.totalWeight;
+        totalDuration = statsResult.totalDuration;
+        totalGenres = Object.values(topTracksArtistsById).reduce((sum, artist) => sum + (artist.genres?.length || 0), 0);
+        
+        const totalPopularity = topTracks.reduce((sum, track) => sum + (track.popularity || 0), 0);
+        averagePopularity = topTracks.length > 0 ? Math.round(totalPopularity / topTracks.length) : 0;
+
+      } else if (mode === 'topArtists') {
+        // Top Artists mode: use rank-based weights, match tracks from user's top tracks
+        const statsResult = calculateTopArtistsStats(topArtists, topTracks);
+        trackStats = statsResult.trackStats;
+        artistStats = statsResult.artistStats;
+        genreStats = statsResult.genreStats;
+        totalPlays = statsResult.totalWeight;
+        totalDuration = statsResult.totalDuration;
+        totalGenres = topArtists.reduce((sum, artist) => sum + (artist.genres?.length || 0), 0);
+        
+        const totalPopularity = trackStats.reduce((sum, track) => sum + (track.track.popularity || 0), 0);
+        averagePopularity = trackStats.length > 0 ? Math.round(totalPopularity / trackStats.length) : 0;
+
+      } else {
+        // Recently Played mode: use actual play counts
+        const artistIds = Array.from(new Set(
+          recentlyPlayed.flatMap(item => item.track.artists.map(artist => artist.id))
+        ));
+        const recentlyPlayedArtistsById = await fetchArtistsInBatches(artistIds);
+
+        trackStats = calculateTrackStats(recentlyPlayed, recentlyPlayedArtistsById);
+        artistStats = calculateArtistStats(recentlyPlayed, recentlyPlayedArtistsById);
+        genreStats = calculateGenreStats(recentlyPlayed, recentlyPlayedArtistsById);
+        totalPlays = recentlyPlayed.length;
+        totalDuration = recentlyPlayed.reduce((sum, item) => sum + item.track.duration_ms, 0);
+        totalGenres = Object.values(recentlyPlayedArtistsById).reduce((sum, artist) => sum + (artist.genres?.length || 0), 0);
+
+        const totalPopularity = recentlyPlayed.reduce((sum, item) => sum + (item.track.popularity || 0), 0);
+        averagePopularity = totalPlays > 0 ? Math.round(totalPopularity / totalPlays) : 0;
+      }
 
       const stats: Stats = {
         overview: {
@@ -54,7 +83,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
           uniqueTracks: trackStats.length,
           uniqueGenres: genreStats.length,
           totalDuration,
-          averageSessionLength: totalDuration / totalPlays / 60000, // in minutes
+          averageSessionLength: totalDuration / Math.max(totalPlays, 1) / 60000, // in minutes
           genreDiversity: genreStats.length / Math.max(totalGenres, 1),
           artistDiversity: artistStats.length / Math.max(totalPlays, 1),
           averagePopularity
@@ -66,7 +95,8 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
         topTracks,
         topArtists,
         topGenres,
-        timeRange
+        timeRange,
+        mode
       };
 
       return stats;
