@@ -4,6 +4,7 @@ import { formatNumber, formatDuration, getGenreColorClass } from "@/utils";
 import { analyzePopularity } from "@/utils/popularity";
 import { MusicVibes } from "./MusicVibes";
 import { StatCard } from './StatCard';
+import { getMetricDescription } from '@/utils/metricDescriptions';
 
 
 interface RecentlyPlayedProps {
@@ -127,6 +128,7 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange, playLimit, o
               }))}
             score={stats.overview.artistDiversity}
             scoreLabel="Diversity"
+            scoreTooltip={getMetricDescription('artist-diversity')}
             mostPlayed={stats.artists
               .sort((a, b) => b.playCount - a.playCount)
               .map(artist => ({
@@ -152,6 +154,7 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange, playLimit, o
               }))}
             score={stats.overview.uniqueTracks / stats.overview.totalPlays}
             scoreLabel="Uniqueness"
+            scoreTooltip={getMetricDescription('track-uniqueness')}
             mostPlayed={stats.tracks
               .sort((a, b) => b.playCount - a.playCount)
               .map(track => ({
@@ -181,6 +184,7 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange, playLimit, o
               })}
             score={stats.overview.genreDiversity}
             scoreLabel="Diversity"
+            scoreTooltip={getMetricDescription('genre-diversity')}
             mostPlayed={stats.genres
               .map(genre => ({
                 name: genre.genre,
@@ -198,6 +202,7 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange, playLimit, o
             iconColor="#34d399"
             score={stats.overview.averagePopularity / 100}
             scoreLabel="Average Popularity"
+            scoreTooltip={getMetricDescription('average-popularity')}
             badge={{
               label: popularity.label,
               description: popularity.description,
