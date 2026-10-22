@@ -9,7 +9,12 @@
 4. Add redirect URI: `http://localhost:3000/api/auth/callback/spotify`
 
 ### 2. Configure Environment
-Update `.env.local` with your credentials:
+Copy `.env.example` to `.env.local` and update with your credentials:
+```bash
+cp .env.example .env.local
+```
+
+Required variables:
 ```env
 SPOTIFY_CLIENT_ID=your_spotify_client_id_here
 SPOTIFY_CLIENT_SECRET=your_spotify_client_secret_here
@@ -17,6 +22,15 @@ SPOTIFY_REDIRECT_URI=http://localhost:3000/api/auth/callback/spotify
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=your_nextauth_secret_here
 ```
+
+Optional variables:
+```env
+# Last.fm API for enhanced genre classification (recommended)
+# Get your API key at: https://www.last.fm/api/account/create
+LASTFM_API_KEY=your_lastfm_api_key_here
+```
+
+**Note:** Last.fm integration is optional but recommended. It improves genre classification coverage for artists with sparse Spotify genres by supplementing with Last.fm tags. Without it, classification will still work but may return lower coverage scores.
 
 ### 3. Run the Application
 ```bash

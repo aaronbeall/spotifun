@@ -42,9 +42,15 @@
 - [ ] Genre images (lookup genre top artists and use their pictures)
 - [ ] Extract artist/theme colors (can also be used for genres)
 - [ ] Full music story share (include everything on one card)
-- [ ] Supplement track/artist genres with external APIs (Last.fm, MusicBrainz)
+- [x] Supplement track/artist genres with external APIs (Last.fm, MusicBrainz)
+  - [x] Last.fm artist tags integration with rate limiting
+  - [x] Tag filtering (remove junk tags like "seen live", nationalities, years)
+  - [x] Weighted tag scoring against genre taxonomy and descriptor vocabulary
+  - [x] Next.js fetch caching with long revalidation (7 days)
+  - [x] Graceful degradation when API key is missing
+  - [ ] MusicBrainz integration (optional, background only)
 - [ ] Supplement reccomendations with external APIs (Last.fm)
-- [ ] Add song moods with external APIs (Last.fm)
+- [x] Add song moods with external APIs (Last.fm) - via descriptor vocabulary scoring
 
 ## Premium
 - [ ] Poll user data
@@ -54,8 +60,14 @@
 - [ ] AI features -> LLM based playlist creation, analysis, etc
 
 ## Advanced
+- [x] Genre classification improvements
+  - [x] Hierarchical genre taxonomy with parent fallback
+  - [x] Normalized genre matching (case, diacritics, hyphens, aliases)
+  - [x] Whole-word matching to avoid false positives (e.g., "trap" vs "rap")
+  - [x] Unknown genre tracking with coverage metrics (instead of defaulting to 0.5)
+  - [x] Descriptor vocabulary for mood/tag scoring
+  - [x] Validation script for taxonomy integrity
 - [ ] ML and sentiment analysis
-  - [ ] Genre classification for unmapped genres
   - [ ] Better (maybe?) vibe classification
   - [ ] Better (maybe?) persona classification
 - [ ] Automatic caching of connected accounts in realtime

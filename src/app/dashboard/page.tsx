@@ -534,6 +534,19 @@ export default function Dashboard() {
         <div className="mb-8">
           <Rankings stats={stats} />
         </div>
+
+        {/* Attribution Footer */}
+        <div className="mt-12 mb-4 text-center text-xs text-gray-500">
+          Genre data enhanced with{' '}
+          <a 
+            href="https://www.last.fm" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-gray-400 hover:text-gray-300 underline"
+          >
+            Last.fm
+          </a>
+        </div>
       </div>
     </div>
   );

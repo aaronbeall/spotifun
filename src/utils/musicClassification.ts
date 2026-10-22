@@ -1,130 +1,50 @@
 // Music Classification System based on VACRS model
 // (Valence, Arousal, Complexity, Rawness, Social Presence)
+//
+// This module now uses the improved classification system with:
+// - Hierarchical genre taxonomy with parent fallback
+// - Whole-word matching to avoid false positives
+// - Unknown genre tracking with coverage metrics
+// - External API integration (Last.fm) for thin genres
 
-import { GenreStats, VACRSScore, GenreProfile } from '@/types';
-import { GENRE_PROFILES } from "@/utils/genreProfiles";
-import { GENRE_SCORES } from "./genreScores";
+import { GenreStats, VACRSScore } from '@/types';
+import { 
+  classifyGenre as classifyGenreImproved, 
+  calculateGenreVACRSScore as calculateScoreImproved,
+  WeightedClassificationResult 
+} from './improvedClassification';
 
 /**
  * Classifies a genre string into VACRS dimensions
+ * 
+ * Uses improved classification with hierarchical taxonomy and whole-word matching.
+ * 
  * @param genreString - The genre string to classify (can be comma-separated)
  * @returns A VACRSScore object with normalized values between 0 and 1
  */
 export function classifyGenre(genreString: string): VACRSScore {
-  const inputGenres = genreString.toLowerCase().split(/[,\/&]|\s+and\s+/).map(g => g.trim());
-  const matches: GenreProfile[] = [];
-
-  // Find all matching genre profiles
-  inputGenres.forEach(genre => {
-    if (!genre) return;
-
-    for (const [key, profile] of Object.entries(GENRE_PROFILES)) {
-      if (profile.aliases.some(alias => genre.includes(alias))) {
-        matches.push(profile);
-      }
-    }
-  });
-
-  // If no matches found, return a neutral score
-  if (matches.length === 0) {
-    return {
-      valence: 0.5,
-      arousal: 0.5,
-      complexity: 0.5,
-      rawness: 0.5,
-      socialPresence: 0.5
-    };
-  }
-
-  // Calculate weighted average of all matches
-  const result: VACRSScore = {
-    valence: 0,
-    arousal: 0,
-    complexity: 0,
-    rawness: 0,
-    socialPresence: 0
-  };
-
-  const totalWeight = matches.length;
-
-  for (const match of matches) {
-    result.valence += match.valence;
-    result.arousal += match.arousal;
-    result.complexity += match.complexity;
-    result.rawness += match.rawness;
-    result.socialPresence += match.socialPresence;
-  }
-
-  // Normalize the results
-  result.valence = Math.min(1, Math.max(0, result.valence / totalWeight));
-  result.arousal = Math.min(1, Math.max(0, result.arousal / totalWeight));
-  result.complexity = Math.min(1, Math.max(0, result.complexity / totalWeight));
-  result.rawness = Math.min(1, Math.max(0, result.rawness / totalWeight));
-  result.socialPresence = Math.min(1, Math.max(0, result.socialPresence / totalWeight));
-
-  return result;
+  const result = classifyGenreImproved(genreString);
+  return result.scores;
 }
 
 /**
- * Classifies a genre string into VACRS dimensions using the expanded genre scores
+ * Classifies a genre string and returns extended result with coverage metrics
+ * 
+ * @param genreString - The genre string to classify
+ * @returns Extended classification result with coverage information
+ */
+export function classifyGenreExtended(genreString: string): WeightedClassificationResult {
+  return classifyGenreImproved(genreString);
+}
+
+/**
+ * Classifies a genre string into VACRS dimensions
+ * 
  * @param genreString - The genre string to classify (single genre, will be normalized)
  * @returns A VACRSScore object with normalized values between 0 and 1
  */
 export function calculateGenreVACRSScore(genreString: string): VACRSScore {
-  // Default score if no match is found
-  const defaultScore: VACRSScore = {
-    valence: 0.5,
-    arousal: 0.5,
-    complexity: 0.5,
-    rawness: 0.5,
-    socialPresence: 0.5
-  };
-
-  if (!genreString?.trim()) {
-    return defaultScore;
-  }
-
-  // Normalize the input genre
-  const genre = genreString.trim().toLowerCase();
-
-  // Initialize score accumulators and match counters
-  const scoreSums: VACRSScore = {
-    valence: 0,
-    arousal: 0,
-    complexity: 0,
-    rawness: 0,
-    socialPresence: 0
-  };
-
-  const matchCounts = {
-    valence: 0,
-    arousal: 0,
-    complexity: 0,
-    rawness: 0,
-    socialPresence: 0
-  };
-
-  // Check each VACRS dimension
-  for (const dimension of Object.keys(GENRE_SCORES) as Array<keyof VACRSScore>) {
-    const buckets = GENRE_SCORES[dimension];
-
-    // Check each bucket in this dimension
-    for (const bucket of buckets) {
-      if (bucket.genres.some(g => genre.includes(g))) {
-        scoreSums[dimension] += bucket.score;
-        matchCounts[dimension]++;
-      }
-    }
-  }
-
-  // Calculate final scores, using default for dimensions with no matches
-  return {
-    valence: matchCounts.valence > 0 ? scoreSums.valence / matchCounts.valence : defaultScore.valence,
-    arousal: matchCounts.arousal > 0 ? scoreSums.arousal / matchCounts.arousal : defaultScore.arousal,
-    complexity: matchCounts.complexity > 0 ? scoreSums.complexity / matchCounts.complexity : defaultScore.complexity,
-    rawness: matchCounts.rawness > 0 ? scoreSums.rawness / matchCounts.rawness : defaultScore.rawness,
-    socialPresence: matchCounts.socialPresence > 0 ? scoreSums.socialPresence / matchCounts.socialPresence : defaultScore.socialPresence
-  };
+  return calculateScoreImproved(genreString);
 }
 
 /**
