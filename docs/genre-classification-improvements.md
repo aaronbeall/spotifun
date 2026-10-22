@@ -16,7 +16,7 @@ This document describes the improvements made to the genre classification system
 
 ### 1. Genre Taxonomy (`src/utils/genreTaxonomy.ts`)
 
-Unified hierarchical genre taxonomy merging data from `genreProfiles.ts` and `genreScores.ts`:
+Unified hierarchical genre taxonomy merging data from legacy genre profiles and scores:
 
 - **150+ genres** with VACRS scores and aliases
 - **Hierarchical structure** with parent fallback (e.g., "uk drill" → "drill" → "trap" → "hiphop")
@@ -42,7 +42,7 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
 
 ### 2. Descriptor Vocabulary (`src/utils/descriptorVocabulary.ts`)
 
-Separate mood/tag vocabulary extracted from old `genreScores.ts`:
+Separate mood/tag vocabulary extracted from legacy genre scores:
 
 - **200+ descriptors** organized by VACRS dimension
 - Used for scoring Last.fm tags and mood adjectives
@@ -299,9 +299,9 @@ This runs the validation suite which:
 - `SETUP.md` - Added Last.fm setup instructions
 - `TODO.md` - Updated with completed items
 
-**Preserved (for reference):**
-- `src/utils/genreProfiles.ts` - Original profiles (can be removed)
-- `src/utils/genreScores.ts` - Original scores (can be removed)
+**Removed (replaced by new system):**
+- `src/utils/genreProfiles.ts` - ✅ Replaced by genreTaxonomy.ts
+- `src/utils/genreScores.ts` - ✅ Replaced by genreTaxonomy.ts + descriptorVocabulary.ts
 
 ## Backward Compatibility
 

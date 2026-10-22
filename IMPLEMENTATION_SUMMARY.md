@@ -15,7 +15,7 @@ Successfully improved Spotifun's genre classification system on branch `cursor/i
 - Whole-word matching to avoid false positives
 
 **Unified Genre Taxonomy** (`src/utils/genreTaxonomy.ts`)
-- 150+ genres merged from genreProfiles.ts and genreScores.ts
+- 150+ genres merged from old genre profiles and scores
 - Hierarchical structure with parent inheritance
 - Each genre has:
   - Optional VACRS scores (required at top level)
@@ -264,7 +264,7 @@ Since this is development without live Spotify/Last.fm credentials, the followin
 2. **KV Store Upgrade** - Better persistence than fetch cache
 3. **Coverage UI** - Show classification confidence to users
 4. **ML Fallback** - Use audio features when genre coverage poor
-5. **Cleanup** - Remove old genreProfiles.ts and genreScores.ts
+5. **Cleanup** - ✅ Removed old genreProfiles.ts and genreScores.ts
 
 ## Conclusion
 
