@@ -4,16 +4,16 @@
 
 ### Genre-to-Trait Mapping System
 
-Spotifun uses a VACRS (Valence, Arousal, Complexity, Rawness, Social Presence) model to map genres to personality traits. The implementation consists of two main files:
+Spotifun uses a VACRS (Valence, Arousal, Complexity, Rawness, Social Presence) model to map genres to personality traits. The original implementation consisted of two main files that have now been replaced:
 
-1. **`src/utils/genreProfiles.ts`** - 16 core genre profiles with aliases
+1. **`src/utils/genreProfiles.ts`** (deprecated, removed) - 16 core genre profiles with aliases
    - Pop, Rock, Classical, Jazz, Electronic, Hip-Hop, Metal, Punk, Ambient, Folk, R&B, Country, Blues, Reggae, Experimental, Indie
-   - Each profile maps to VACRS dimensions (0-1 scale)
-   - Uses simple alias matching (e.g., "rock and roll" → rock)
+   - Each profile mapped to VACRS dimensions (0-1 scale)
+   - Used simple alias matching (e.g., "rock and roll" → rock)
 
-2. **`src/utils/genreScores.ts`** - Comprehensive genre bucketing (360 lines)
+2. **`src/utils/genreScores.ts`** (deprecated, removed) - Comprehensive genre bucketing (360 lines)
    - 5 buckets per VACRS dimension, each with score and genre lists
-   - Covers hundreds of genres and subgenres
+   - Covered hundreds of genres and subgenres
    - Examples: funeral doom (valence: 0.1), happy hardcore (valence: 0.9)
    - Includes descriptors for each bucket
 
@@ -253,7 +253,7 @@ Response:
 
 ### Current Mapping Coverage
 
-**`genreScores.ts` analysis:**
+**Legacy `genreScores.ts` analysis (for reference):**
 - 5 buckets per dimension × 5 dimensions = 25 total buckets
 - Hundreds of genres covered (estimated 300-500 unique strings)
 - Good coverage for major genres and subgenres

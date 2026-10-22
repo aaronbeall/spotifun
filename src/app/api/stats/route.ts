@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   getRecentlyPlayed, getTopTracks, getTopArtists, calculateTrackStats, calculateArtistStats,
   calculateGenreStats, calculateTopGenres, fetchArtistsInBatches,
-  calculateTopTracksStats, calculateTopArtistsStats
+  calculateTopTracksStats, calculateTopArtistsStats, enhanceArtistsWithLastFm
 } from '@/lib/spotify';
 import { setAuthCookies, UnauthenticatedError, withSpotifyAccessToken } from '@/lib/auth';
 import { Stats, TimeRange, DataMode } from '@/types';
@@ -16,11 +16,20 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
 
     const { result: stats, refreshedTokens } = await withSpotifyAccessToken(request, async () => {
       // Fetch initial data in parallel
-      const [recentlyPlayed, topTracks, topArtists] = await Promise.all([
+      const [recentlyPlayed, topTracksRaw, topArtistsRaw] = await Promise.all([
         getRecentlyPlayed(limit),
         getTopTracks(timeRange, 50),
         getTopArtists(timeRange, 50)
       ]);
+
+      // Enhance top artists with Last.fm data for artists with thin genres
+      // This is server-side only, cached 7 days, rate-limited
+      const topArtists = await enhanceArtistsWithLastFm(
+        topArtistsRaw,
+        process.env.LASTFM_API_KEY
+      );
+      
+      const topTracks = topTracksRaw;
 
       // Calculate top genres from top artists
       const topGenres = calculateTopGenres(topArtists);
@@ -33,7 +42,16 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
           const artistIds = Array.from(new Set(
             topTracks.flatMap(track => track.artists.map(artist => artist.id))
           ));
-          const topTracksArtistsById = await fetchArtistsInBatches(artistIds);
+          const topTracksArtistsByIdRaw = await fetchArtistsInBatches(artistIds);
+          
+          // Enhance these artists with Last.fm too
+          const topTracksArtistsArray = await enhanceArtistsWithLastFm(
+            Object.values(topTracksArtistsByIdRaw),
+            process.env.LASTFM_API_KEY
+          );
+          const topTracksArtistsById = Object.fromEntries(
+            topTracksArtistsArray.map(artist => [artist.id, artist])
+          );
 
           const statsResult = calculateTopTracksStats(topTracks, topTracksArtistsById);
           trackStats = statsResult.trackStats;
@@ -67,7 +85,16 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
           const artistIds = Array.from(new Set(
             recentlyPlayed.flatMap(item => item.track.artists.map(artist => artist.id))
           ));
-          const recentlyPlayedArtistsById = await fetchArtistsInBatches(artistIds);
+          const recentlyPlayedArtistsByIdRaw = await fetchArtistsInBatches(artistIds);
+          
+          // Enhance these artists with Last.fm too
+          const recentlyPlayedArtistsArray = await enhanceArtistsWithLastFm(
+            Object.values(recentlyPlayedArtistsByIdRaw),
+            process.env.LASTFM_API_KEY
+          );
+          const recentlyPlayedArtistsById = Object.fromEntries(
+            recentlyPlayedArtistsArray.map(artist => [artist.id, artist])
+          );
 
           trackStats = calculateTrackStats(recentlyPlayed, recentlyPlayedArtistsById);
           artistStats = calculateArtistStats(recentlyPlayed, recentlyPlayedArtistsById);
@@ -92,7 +119,8 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
           averageSessionLength: totalDuration / Math.max(totalPlays, 1) / 60000, // in minutes
           genreDiversity: genreStats.length / Math.max(totalGenres, 1),
           artistDiversity: artistStats.length / Math.max(totalPlays, 1),
-          averagePopularity
+          averagePopularity,
+          genreCoverage: 0 // Will be computed below
         },
         recentlyPlayed,
         tracks: trackStats,
@@ -104,6 +132,41 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
         timeRange,
         mode
       };
+
+      // Compute genre coverage using the improved classification system
+      // Import here to avoid circular dependencies
+      const { calculateWeightedVACRSScoreWithCoverage } = await import('@/utils/musicClassification');
+      const coverageResult = calculateWeightedVACRSScoreWithCoverage(genreStats);
+      stats.overview.genreCoverage = coverageResult.coverage;
+
+      // Dev-only debug data: include per-artist genre classification details
+      if (process.env.NODE_ENV === 'development' && searchParams.get('debugGenres') === '1') {
+        const { classifyGenresWithDetails } = await import('@/utils/musicClassification');
+        const debugData = artistStats.map(({ artist }) => {
+          const spotifyGenres = artist.genres || [];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const lastFmData = (artist as any)._lastFmData;
+          const lastFmTagsUsed = lastFmData?.classifications
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ?.filter((c: any) => c.matchedGenre && c.scores)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ?.map((c: any) => c.originalGenre) || [];
+          
+          const effectiveGenres = [...spotifyGenres, ...lastFmTagsUsed];
+          const classifications = classifyGenresWithDetails(effectiveGenres);
+          
+          return {
+            artistName: artist.name,
+            spotifyGenres,
+            lastFmTagsUsed,
+            matchedNodes: classifications.matchedGenres,
+            matchType: classifications.matchType,
+            vacrsScores: classifications.scores,
+            coverage: classifications.coverage
+          };
+        });
+        stats.debugGenreData = debugData;
+      }
 
       return stats;
     });

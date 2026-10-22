@@ -88,6 +88,7 @@ export interface StatsOverview {
   genreDiversity: number;
   artistDiversity: number;
   averagePopularity: number; // 0-100 scale
+  genreCoverage?: number; // 0-1 scale: proportion of genre weight successfully classified
 }
 
 export type TimeRange = 'short_term' | 'medium_term' | 'long_term';
@@ -115,11 +116,22 @@ export interface Stats {
   timeRange: TimeRange;
   topGenres: TopGenre[];
   mode: DataMode;
+  debugGenreData?: ArtistGenreDebugInfo[]; // Dev-only: available when NODE_ENV=development and ?debugGenres=1
 }
 
 interface TopGenre {
   genre: string;
   count: number;
+}
+
+export interface ArtistGenreDebugInfo {
+  artistName: string;
+  spotifyGenres: string[];
+  lastFmTagsUsed: string[];
+  matchedNodes: string[];
+  matchType: string;
+  vacrsScores: VACRSScore | null;
+  coverage: number; // 0-1 scale
 }
 
 export interface VACRSScore {

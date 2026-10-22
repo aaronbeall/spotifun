@@ -23,6 +23,7 @@ export const METRIC_DESCRIPTIONS: Record<string, string> = {
   'genre-diversity': 'Ratio of unique genres to total genre tags across all your artists. Higher means less repetition in genre tags.',
   'artist-diversity': 'Ratio of unique artists to total plays. Higher means you sample widely rather than focusing on a few favorites.',
   'average-popularity': 'Average Spotify popularity rating (0-100) of your tracks. Higher means mainstream hits; lower means niche, underground music.',
+  'genre-coverage': 'Percentage of your listened genres successfully mapped to personality traits. Unmapped genres are excluded from trait calculations; higher coverage means more complete personality profiling.',
   
   // Popularity Metrics
   'popularity-range': 'The spread from your most niche to most popular track. Wide range means you enjoy both underground and mainstream music.',
