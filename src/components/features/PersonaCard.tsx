@@ -36,7 +36,8 @@ export const PersonaCard: React.FC<PersonaCardProps> = ({ stats, onShare }) => {
       <div className="relative w-32 h-32 mb-6 rounded-full overflow-hidden border-4 border-white/10 shadow-2xl">
         <GenerativeArt seed={persona.id} colors={colors} profile={artProfile} className="w-full h-full" />
       </div>
-      <h3 className="text-2xl font-bold mb-2 tracking-tight" style={{ color: colors.light }}>Listener Persona</h3>
+      <h3 className="text-2xl font-bold mb-1 tracking-tight" style={{ color: colors.light }}>Listener Persona</h3>
+      <p className="text-gray-400 text-xs mb-4">Your listening personality and behavior patterns</p>
       <div className="mb-4 text-white/80 text-center max-w-md">
         <span className="block text-lg font-semibold mb-1" style={{ color: colors.light }}>{persona.name}</span>
         <span className="block text-sm">{persona.description}</span>

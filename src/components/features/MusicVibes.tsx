@@ -254,21 +254,16 @@ export function MusicVibes({
   const isTopMode = mode !== 'recent';
   const vibeLabel = isTopMode ? 'Top Vibe' : 'Current Vibe';
   const vibeDescription = isTopMode 
-    ? 'Based on your top listened genres in this time period'
-    : 'Based on your recent listening history and genre preferences';
+    ? 'Your musical personality based on top listened genres'
+    : 'Your musical personality based on recent listening patterns';
   
-  // Create a minimal stats-like object for caption generation
-  const statsForCaption = useMemo(() => ({
-    mode,
-    genres: genreStats,
-  }), [mode, genreStats]);
-  
+  // Dynamic caption based on actual data (shown below the visualization)
   const dynamicCaption = useMemo(() => {
     const genreCount = genreStats.length;
     const topGenreName = topGenre?.name;
     
     if (!topGenreName) {
-      return vibeDescription;
+      return null;
     }
     
     if (genreCount <= 2) {
@@ -286,7 +281,7 @@ export function MusicVibes({
     return isTopMode
       ? `${topGenreName.charAt(0).toUpperCase() + topGenreName.slice(1)} leads your top genres, alongside ${genreCount - 1} others.`
       : `${topGenreName.charAt(0).toUpperCase() + topGenreName.slice(1)} is trending in your recent plays, mixed with ${genreCount - 1} other genres.`;
-  }, [genreStats, topGenre, isTopMode, vibeDescription]);
+  }, [genreStats, topGenre, isTopMode]);
 
   // vibe.color.dark is tuned for the share card's full-bleed hero background
   // (a vivid accent, not an actual dark tone) — darken it further for the
@@ -335,7 +330,7 @@ export function MusicVibes({
               <h2 className="text-2xl font-bold" style={{ color: vibe.color.light }}>Your {vibeLabel}</h2>
             </div>
             <p className="text-gray-400 text-sm mt-1">
-              {dynamicCaption}
+              {vibeDescription}
             </p>
           </div>
 
@@ -413,6 +408,18 @@ export function MusicVibes({
             )}
           </motion.div>
         </div>
+
+        {/* Data-driven caption about genre patterns */}
+        {dynamicCaption && (
+          <motion.div 
+            className="text-center mt-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <p className="text-sm text-gray-400 max-w-md mx-auto">{dynamicCaption}</p>
+          </motion.div>
+        )}
 
         {/* All Vibes Grid — reveals after the center badges so it doesn't compete for attention */}
         <div className="mt-12">

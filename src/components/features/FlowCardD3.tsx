@@ -81,7 +81,10 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
             <h2 className="text-2xl font-bold" style={{ color: CARD_THEMES.flow.light }}>Listening Flow</h2>
           </div>
           <p className="text-gray-400 text-sm mt-1">
-            Stream graph of your recent plays, by genre, trait, or vibe
+            {mode === 'recent' 
+              ? 'Stream graph of your recent plays, by genre, trait, or vibe'
+              : 'Stream graph of your top music, by genre, trait, or vibe'
+            }
           </p>
         </div>
         {onShare && (

@@ -65,7 +65,7 @@ export const SpectrumCard: React.FC<SpectrumCardProps> = ({ genreStats, onShare,
             <h2 className="text-2xl font-bold" style={{ color: CARD_THEMES.spectrum.light }}>Genre Spectrum</h2>
           </div>
           <p className="text-gray-400 text-sm mt-1">
-            {caption}
+            How your listening spreads across emotional and sonic dimensions
           </p>
         </div>
         {onShare && (
@@ -106,6 +106,11 @@ export const SpectrumCard: React.FC<SpectrumCardProps> = ({ genreStats, onShare,
           </div>
           <div className="text-xs text-gray-400 mt-1">Widest Range</div>
         </div>
+      </div>
+
+      {/* Data-driven caption about diversity patterns */}
+      <div className="text-center mt-6">
+        <p className="text-sm text-gray-400 max-w-md mx-auto">{caption}</p>
       </div>
     </ThemedCardBackground>
   );
