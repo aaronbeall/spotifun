@@ -3,12 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Award, Trophy, ChevronDown, ChevronUp, Palette, Users, Share2 } from 'lucide-react';
 import { findBestMatchingVibe, getAllMusicVibes } from '@/utils/musicVibesAnalyzer';
 import { calculateWeightedVACRSScore, calculateVACRSScoreMatch } from '@/utils/musicClassification';
-import { GenreStats, MusicVibe } from '@/types';
+import { GenreStats, MusicVibe, DataMode } from '@/types';
 import { VibeMatchList } from './VibeMatchList';
 import { cn } from '@/utils';
 import { ImageBadge } from '../ImageBadge';
 import { ThemedCardBackground } from '../ThemedCardBackground';
 import { darkenHex } from '@/utils/color';
+import { generateVibeCaption } from '@/utils/visualizationCaptions';
 
 // Lets the center badges (vibe + flanking top artist/genre) finish their own
 // reveal sequence before the Other Vibe Matches section starts fading in.
@@ -20,6 +21,7 @@ interface VibeBadgeProps {
   isCurrent?: boolean;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
+  vibeLabel?: string;
 }
 
 const VibeBadge = ({
@@ -27,7 +29,8 @@ const VibeBadge = ({
   matchPercentage,
   isCurrent = false,
   className = '',
-  size = 'md'
+  size = 'md',
+  vibeLabel = 'Current Vibe'
 }: VibeBadgeProps) => {
   const sizeClasses = {
     sm: 'w-20 h-20',
@@ -216,7 +219,7 @@ const VibeBadge = ({
         )}
         {isCurrent && (
           <div className="mt-2 px-2 py-0.5 bg-white/5 rounded-full text-xs text-white/80 inline-block">
-            Current Vibe
+            {vibeLabel}
           </div>
         )}
       </div>
@@ -231,6 +234,7 @@ interface MusicVibesProps {
   topGenre?: { name: string; image?: string; count: number; percentage?: number };
   className?: string;
   onShare?: () => void;
+  mode: DataMode;
 }
 
 export function MusicVibes({
@@ -238,13 +242,46 @@ export function MusicVibes({
   topArtist,
   topGenre,
   className = '',
-  onShare
+  onShare,
+  mode
 }: MusicVibesProps) {
   const [showAllVibes, setShowAllVibes] = useState(false);
   const { vibe, matchPercentage } = useMemo(
     () => findBestMatchingVibe(genreStats),
     [genreStats]
   );
+
+  const isTopMode = mode !== 'recent';
+  const vibeLabel = isTopMode ? 'Top Vibe' : 'Current Vibe';
+  const vibeDescription = isTopMode 
+    ? 'Your musical personality based on top listened genres'
+    : 'Your musical personality based on recent listening patterns';
+  
+  // Dynamic caption based on actual data (shown below the visualization)
+  const dynamicCaption = useMemo(() => {
+    const genreCount = genreStats.length;
+    const topGenreName = topGenre?.name;
+    
+    if (!topGenreName) {
+      return null;
+    }
+    
+    if (genreCount <= 2) {
+      return isTopMode
+        ? `Focused listening centered on ${topGenreName}.`
+        : `Your recent plays are centered on ${topGenreName}.`;
+    }
+    
+    if (genreCount >= 8) {
+      return isTopMode
+        ? `Eclectic taste spanning ${genreCount} genres, with ${topGenreName} leading.`
+        : `Wide-ranging recent listening across ${genreCount} genres, led by ${topGenreName}.`;
+    }
+    
+    return isTopMode
+      ? `${topGenreName.charAt(0).toUpperCase() + topGenreName.slice(1)} leads your top genres, alongside ${genreCount - 1} others.`
+      : `${topGenreName.charAt(0).toUpperCase() + topGenreName.slice(1)} is trending in your recent plays, mixed with ${genreCount - 1} other genres.`;
+  }, [genreStats, topGenre, isTopMode]);
 
   // vibe.color.dark is tuned for the share card's full-bleed hero background
   // (a vivid accent, not an actual dark tone) — darken it further for the
@@ -290,10 +327,10 @@ export function MusicVibes({
           <div className="mb-4 md:mb-0">
             <div className="flex items-center gap-3">
               <Award className="w-6 h-6" style={{ color: vibe.color.light }} />
-              <h2 className="text-2xl font-bold" style={{ color: vibe.color.light }}>Your Current Vibe</h2>
+              <h2 className="text-2xl font-bold" style={{ color: vibe.color.light }}>Your {vibeLabel}</h2>
             </div>
             <p className="text-gray-400 text-sm mt-1">
-              Based on your recent listening history and genre preferences
+              {vibeDescription}
             </p>
           </div>
 
@@ -350,6 +387,7 @@ export function MusicVibes({
               matchPercentage={matchPercentage}
               isCurrent
               size="lg"
+              vibeLabel={vibeLabel}
             />
           </motion.div>
 
@@ -370,6 +408,18 @@ export function MusicVibes({
             )}
           </motion.div>
         </div>
+
+        {/* Data-driven caption about genre patterns */}
+        {dynamicCaption && (
+          <motion.div 
+            className="text-center mt-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <p className="text-sm text-gray-400 max-w-md mx-auto">{dynamicCaption}</p>
+          </motion.div>
+        )}
 
         {/* All Vibes Grid — reveals after the center badges so it doesn't compete for attention */}
         <div className="mt-12">

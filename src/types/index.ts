@@ -91,6 +91,7 @@ export interface StatsOverview {
 }
 
 export type TimeRange = 'short_term' | 'medium_term' | 'long_term';
+export type DataMode = 'recent' | 'topArtists' | 'topTracks';
 
 export interface NowPlaying {
   isPlaying: boolean;
@@ -113,6 +114,7 @@ export interface Stats {
   topArtists: SpotifyApi.ArtistObjectFull[];
   timeRange: TimeRange;
   topGenres: TopGenre[];
+  mode: DataMode;
 }
 
 interface TopGenre {

@@ -76,6 +76,7 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange, playLimit, o
           <div className="mb-6">
             <MusicVibes 
               genreStats={stats.genres}
+              mode={stats.mode}
               topArtist={stats.artists.length > 0 ? {
                 name: stats.artists[0].artist.name,
                 image: stats.artists[0].artist.images?.[0]?.url,
@@ -126,6 +127,7 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange, playLimit, o
               }))}
             score={stats.overview.artistDiversity}
             scoreLabel="Diversity"
+            scoreMetricKey="artist-diversity"
             mostPlayed={stats.artists
               .sort((a, b) => b.playCount - a.playCount)
               .map(artist => ({
@@ -151,6 +153,7 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange, playLimit, o
               }))}
             score={stats.overview.uniqueTracks / stats.overview.totalPlays}
             scoreLabel="Uniqueness"
+            scoreMetricKey="track-uniqueness"
             mostPlayed={stats.tracks
               .sort((a, b) => b.playCount - a.playCount)
               .map(track => ({
@@ -180,6 +183,7 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange, playLimit, o
               })}
             score={stats.overview.genreDiversity}
             scoreLabel="Diversity"
+            scoreMetricKey="genre-diversity"
             mostPlayed={stats.genres
               .map(genre => ({
                 name: genre.genre,
@@ -197,6 +201,7 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange, playLimit, o
             iconColor="#34d399"
             score={stats.overview.averagePopularity / 100}
             scoreLabel="Average Popularity"
+            scoreMetricKey="average-popularity"
             badge={{
               label: popularity.label,
               description: popularity.description,
