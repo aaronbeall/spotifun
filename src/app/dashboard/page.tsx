@@ -15,7 +15,7 @@ import MusicProfile from '@/components/features/MusicProfile';
 import { SpotifyPlayOverlay } from '@/components/SpotifyPlayOverlay';
 import { NowPlayingWidget } from '@/components/NowPlayingWidget';
 
-import { UserProfile, Stats, TimeRange } from '@/types';
+import { UserProfile, Stats, TimeRange, DataMode } from '@/types';
 
 export default function Dashboard() {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -37,7 +37,7 @@ export default function Dashboard() {
   const TRACKS_TO_SHOW = 16;
   const GENRES_TO_SHOW = 12;
 
-  const fetchAll = useCallback(async (range: TimeRange, limit: number, mode: 'recent' | 'topArtists' | 'topTracks') => {
+  const fetchAll = useCallback(async (range: TimeRange, limit: number, mode: DataMode) => {
     const [userResponse, statsResponse] = await Promise.all([
       fetch('/api/user'),
       fetch(`/api/stats?timeRange=${range}&limit=${limit}&mode=${mode}`)

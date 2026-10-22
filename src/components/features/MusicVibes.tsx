@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Award, Trophy, ChevronDown, ChevronUp, Palette, Users, Share2 } from 'lucide-react';
 import { findBestMatchingVibe, getAllMusicVibes } from '@/utils/musicVibesAnalyzer';
 import { calculateWeightedVACRSScore, calculateVACRSScoreMatch } from '@/utils/musicClassification';
-import { GenreStats, MusicVibe } from '@/types';
+import { GenreStats, MusicVibe, DataMode } from '@/types';
 import { VibeMatchList } from './VibeMatchList';
 import { cn } from '@/utils';
 import { ImageBadge } from '../ImageBadge';
@@ -234,7 +234,7 @@ interface MusicVibesProps {
   topGenre?: { name: string; image?: string; count: number; percentage?: number };
   className?: string;
   onShare?: () => void;
-  mode: 'recent' | 'topArtists' | 'topTracks';
+  mode: DataMode;
 }
 
 export function MusicVibes({
