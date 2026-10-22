@@ -86,6 +86,7 @@ export function describeVACRSScore(score: VACRSScore): string {
 
 /**
  * Calculates a weighted VACRSScore based on a list of GenreStats
+ * Uses improved classification that excludes unknown genres (no 0.5 defaults)
  * @param genreStats - Array of genre statistics with play counts
  * @returns A VACRSScore that is the weighted average of all genres based on play counts
  */
@@ -102,6 +103,7 @@ export function calculateWeightedVACRSScore(genreStats: GenreStats[]): VACRSScor
   }
 
   let totalWeight = 0;
+  let classifiedWeight = 0;
   const weightedScores = {
     valence: 0,
     arousal: 0,
@@ -110,50 +112,125 @@ export function calculateWeightedVACRSScore(genreStats: GenreStats[]): VACRSScor
     socialPresence: 0
   };
 
-  // Calculate total weight (sum of all play counts)
+  // Calculate weighted scores, excluding unknowns
   for (const stat of genreStats) {
-    totalWeight += stat.playCount;
+    const result = classifyGenreImproved(stat.genre);
+    const weight = stat.playCount;
+    
+    totalWeight += weight;
+    
+    // Only include if classification succeeded (coverage > 0)
+    if (result.coverage > 0) {
+      classifiedWeight += weight;
+      const normalizedWeight = weight * result.coverage;
+      
+      weightedScores.valence += result.scores.valence * normalizedWeight;
+      weightedScores.arousal += result.scores.arousal * normalizedWeight;
+      weightedScores.complexity += result.scores.complexity * normalizedWeight;
+      weightedScores.rawness += result.scores.rawness * normalizedWeight;
+      weightedScores.socialPresence += result.scores.socialPresence * normalizedWeight;
+    }
   }
 
-  // If no play counts, give equal weight to all genres
-  if (totalWeight === 0) {
-    for (const stat of genreStats) {
-      const score = calculateGenreVACRSScore(stat.genre);
-      weightedScores.valence += score.valence;
-      weightedScores.arousal += score.arousal;
-      weightedScores.complexity += score.complexity;
-      weightedScores.rawness += score.rawness;
-      weightedScores.socialPresence += score.socialPresence;
-    }
-
-    const count = genreStats.length;
+  // If nothing was classified, return neutral
+  if (classifiedWeight === 0) {
     return {
-      valence: weightedScores.valence / count,
-      arousal: weightedScores.arousal / count,
-      complexity: weightedScores.complexity / count,
-      rawness: weightedScores.rawness / count,
-      socialPresence: weightedScores.socialPresence / count
+      valence: 0.5,
+      arousal: 0.5,
+      complexity: 0.5,
+      rawness: 0.5,
+      socialPresence: 0.5
     };
   }
 
-  // Calculate weighted scores
-  for (const stat of genreStats) {
-    const weight = stat.playCount / totalWeight;
-    const score = calculateGenreVACRSScore(stat.genre);
+  // Normalize by classified weight
+  return {
+    valence: Math.min(1, Math.max(0, weightedScores.valence / classifiedWeight)),
+    arousal: Math.min(1, Math.max(0, weightedScores.arousal / classifiedWeight)),
+    complexity: Math.min(1, Math.max(0, weightedScores.complexity / classifiedWeight)),
+    rawness: Math.min(1, Math.max(0, weightedScores.rawness / classifiedWeight)),
+    socialPresence: Math.min(1, Math.max(0, weightedScores.socialPresence / classifiedWeight))
+  };
+}
 
-    weightedScores.valence += score.valence * weight;
-    weightedScores.arousal += score.arousal * weight;
-    weightedScores.complexity += score.complexity * weight;
-    weightedScores.rawness += score.rawness * weight;
-    weightedScores.socialPresence += score.socialPresence * weight;
+/**
+ * Calculates a weighted VACRSScore with coverage metrics
+ * @param genreStats - Array of genre statistics with play counts
+ * @returns VACRS scores and coverage (proportion of weight successfully classified)
+ */
+export function calculateWeightedVACRSScoreWithCoverage(genreStats: GenreStats[]): {
+  scores: VACRSScore;
+  coverage: number;
+} {
+  if (!genreStats || genreStats.length === 0) {
+    return {
+      scores: {
+        valence: 0.5,
+        arousal: 0.5,
+        complexity: 0.5,
+        rawness: 0.5,
+        socialPresence: 0.5
+      },
+      coverage: 0
+    };
   }
 
+  let totalWeight = 0;
+  let classifiedWeight = 0;
+  const weightedScores = {
+    valence: 0,
+    arousal: 0,
+    complexity: 0,
+    rawness: 0,
+    socialPresence: 0
+  };
+
+  // Calculate weighted scores, tracking coverage
+  for (const stat of genreStats) {
+    const result = classifyGenreImproved(stat.genre);
+    const weight = stat.playCount;
+    
+    totalWeight += weight;
+    
+    if (result.coverage > 0) {
+      const effectiveWeight = weight * result.coverage;
+      classifiedWeight += effectiveWeight;
+      
+      weightedScores.valence += result.scores.valence * effectiveWeight;
+      weightedScores.arousal += result.scores.arousal * effectiveWeight;
+      weightedScores.complexity += result.scores.complexity * effectiveWeight;
+      weightedScores.rawness += result.scores.rawness * effectiveWeight;
+      weightedScores.socialPresence += result.scores.socialPresence * effectiveWeight;
+    }
+  }
+
+  // Calculate coverage
+  const coverage = totalWeight > 0 ? classifiedWeight / totalWeight : 0;
+
+  // If nothing was classified, return neutral with 0 coverage
+  if (classifiedWeight === 0) {
+    return {
+      scores: {
+        valence: 0.5,
+        arousal: 0.5,
+        complexity: 0.5,
+        rawness: 0.5,
+        socialPresence: 0.5
+      },
+      coverage: 0
+    };
+  }
+
+  // Normalize by classified weight
   return {
-    valence: Math.min(1, Math.max(0, weightedScores.valence)),
-    arousal: Math.min(1, Math.max(0, weightedScores.arousal)),
-    complexity: Math.min(1, Math.max(0, weightedScores.complexity)),
-    rawness: Math.min(1, Math.max(0, weightedScores.rawness)),
-    socialPresence: Math.min(1, Math.max(0, weightedScores.socialPresence))
+    scores: {
+      valence: Math.min(1, Math.max(0, weightedScores.valence / classifiedWeight)),
+      arousal: Math.min(1, Math.max(0, weightedScores.arousal / classifiedWeight)),
+      complexity: Math.min(1, Math.max(0, weightedScores.complexity / classifiedWeight)),
+      rawness: Math.min(1, Math.max(0, weightedScores.rawness / classifiedWeight)),
+      socialPresence: Math.min(1, Math.max(0, weightedScores.socialPresence / classifiedWeight))
+    },
+    coverage
   };
 }
 
