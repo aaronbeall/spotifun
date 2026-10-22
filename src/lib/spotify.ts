@@ -102,6 +102,29 @@ export async function fetchArtistsInBatches(artistIds: string[]) {
 }
 
 // Calculate track statistics from play history
+/**
+ * Get effective genres for an artist, blending Spotify and Last.fm data
+ * For artists with 0-2 Spotify genres, includes Last.fm tags if available
+ */
+function getEffectiveGenres(fullArtist: SpotifyApi.ArtistObjectFull): string[] {
+  const spotifyGenres = 'genres' in fullArtist ? fullArtist.genres || [] : [];
+  
+  // Check if artist has Last.fm data
+  const lastFmData = (fullArtist as any)._lastFmData;
+  
+  // If artist has thin Spotify genres (0-2) and Last.fm data, blend them
+  if (spotifyGenres.length <= 2 && lastFmData?.classifications) {
+    // Extract genre names from Last.fm classifications that matched
+    const lastFmGenres = lastFmData.classifications
+      .filter((c: any) => c.matchedGenre && c.scores)
+      .map((c: any) => c.originalGenre);
+    
+    // Combine Spotify and Last.fm genres, prioritizing Spotify
+    return [...spotifyGenres, ...lastFmGenres];
+  }
+  
+  return spotifyGenres;
+}
 export const calculateTrackStats = (
   playHistory: SpotifyApi.PlayHistoryObject[],
   artistDetails: Record<string, SpotifyApi.ArtistObjectFull> = {}
