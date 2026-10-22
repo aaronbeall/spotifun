@@ -201,7 +201,7 @@ export const calculateGenreStats = (
     item.track.artists.forEach(artist => {
       const artistId = artist.id;
       const fullArtist = artistDetails[artistId] || artist;
-      const artistGenres = 'genres' in fullArtist ? fullArtist.genres || [] : [];
+      const artistGenres = getEffectiveGenres(fullArtist);
 
       // Process each genre of the artist
       artistGenres.forEach(genre => {
@@ -320,7 +320,7 @@ export const calculateTopTracksStats = (
       }
 
       // Genre stats
-      const artistGenres = 'genres' in fullArtist ? fullArtist.genres || [] : [];
+      const artistGenres = getEffectiveGenres(fullArtist);
       artistGenres.forEach(genre => {
         if (genreMap.has(genre)) {
           const stats = genreMap.get(genre)!;
@@ -442,7 +442,8 @@ export const calculateTopArtistsStats = (
     });
 
     // Genre stats
-    artist.genres?.forEach(genre => {
+    const artistGenres = getEffectiveGenres(artist);
+    artistGenres.forEach(genre => {
       if (genreMap.has(genre)) {
         const stats = genreMap.get(genre)!;
         stats.playCount += weight;
