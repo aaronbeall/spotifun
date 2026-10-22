@@ -34,7 +34,7 @@
 - [ ] Recently Played time frame
 - [ ] Vibes for liked songs
 - [ ] Vibes for playlists
-- [ ] Vibes for tops
+- [x] Vibes for tops
 - [x] Spotify links for all the artist/track/album/playlist/genre
 - [x] Share option
 - [x] Timeout/refresh handling

@@ -59,7 +59,7 @@ function useDimensionColumnGeometry(deps: unknown[]) {
   return { containerRef, boxRefs, geometry };
 }
 
-export function getVACRSDiversity(genreStats: GenreStats[]) {
+export function getVACRSRange(genreStats: GenreStats[]) {
   // Calculate VACRS scores for each genre
   const scores = genreStats.map(g => calculateGenreVACRSScore(g.genre));
   // For each dimension, collect all values
@@ -76,9 +76,9 @@ export function getVACRSDiversity(genreStats: GenreStats[]) {
     const variance = values[dim].reduce((a, b) => a + Math.pow(b.score - mean, 2), 0) / values[dim].length;
     spread[dim] = Math.sqrt(variance);
   });
-  // Diversity score: average spread
-  const diversityScore = (Object.values(spread).reduce((a, b) => a + b, 0) / VACRS_DIMENSIONS.length) * 100;
-  return { spread, values, diversityScore };
+  // Range score: average spread across all dimensions
+  const rangeScore = (Object.values(spread).reduce((a, b) => a + b, 0) / VACRS_DIMENSIONS.length) * 100;
+  return { spread, values, rangeScore };
 }
 
 interface SpectrumDimensionBarsProps {
@@ -95,7 +95,7 @@ export function SpectrumDimensionBars({ genreStats, interactive = true, compact 
   const tooltip = useTooltip();
   const waveClipId = useId();
   const { spread, values, weightedScore } = useMemo(() => {
-    const { spread, values } = getVACRSDiversity(genreStats);
+    const { spread, values } = getVACRSRange(genreStats);
     return { spread, values, weightedScore: calculateWeightedVACRSScore(genreStats) };
   }, [genreStats]);
   const { containerRef, boxRefs, geometry } = useDimensionColumnGeometry([genreStats, compact]);

@@ -259,3 +259,229 @@ export const calculateTopGenres = (artists: SpotifyApi.ArtistObjectFull[]): Arra
     .sort((a, b) => b.count - a.count);
 };
 
+// Calculate statistics for Top Tracks mode using rank-based weights
+export const calculateTopTracksStats = (
+  topTracks: SpotifyApi.TrackObjectFull[],
+  artistDetails: Record<string, SpotifyApi.ArtistObjectFull> = {}
+): {
+  trackStats: TrackStats[];
+  artistStats: ArtistStats[];
+  genreStats: GenreStats[];
+  totalWeight: number;
+  totalDuration: number;
+} => {
+  const trackMap = new Map<string, TrackStats>();
+  const artistMap = new Map<string, ArtistStats & { trackIds: Set<string> }>();
+  const genreMap = new Map<string, GenreStats & { trackIds: Set<string>; artistIds: Set<string> }>();
+  
+  let totalWeight = 0;
+  let totalDuration = 0;
+
+  // Process tracks with exponentially decreasing weights
+  topTracks.forEach((track, index) => {
+    // Exponential decay weight: earlier tracks have more weight
+    const weight = Math.pow(0.95, index) * 100;
+    totalWeight += weight;
+    totalDuration += track.duration_ms;
+
+    const artists = track.artists.map(artist => artistDetails[artist.id] || artist);
+
+    // Track stats
+    trackMap.set(track.id, {
+      track,
+      artists,
+      playCount: Math.round(weight),
+      firstPlayed: new Date().toISOString(),
+      lastPlayed: new Date().toISOString(),
+      totalDuration: track.duration_ms
+    });
+
+    // Artist stats
+    track.artists.forEach(artist => {
+      const artistId = artist.id;
+      const fullArtist = artistDetails[artistId] || artist;
+
+      if (artistMap.has(artistId)) {
+        const stats = artistMap.get(artistId)!;
+        stats.playCount += weight;
+        stats.totalDuration += track.duration_ms;
+        stats.trackIds.add(track.id);
+        stats.uniqueTracks = stats.trackIds.size;
+      } else {
+        artistMap.set(artistId, {
+          artist: fullArtist,
+          playCount: weight,
+          uniqueTracks: 1,
+          totalDuration: track.duration_ms,
+          genres: fullArtist.genres || [],
+          trackIds: new Set([track.id])
+        });
+      }
+
+      // Genre stats
+      const artistGenres = 'genres' in fullArtist ? fullArtist.genres || [] : [];
+      artistGenres.forEach(genre => {
+        if (genreMap.has(genre)) {
+          const stats = genreMap.get(genre)!;
+          stats.playCount += weight;
+          stats.totalDuration += track.duration_ms;
+          stats.trackIds.add(track.id);
+          stats.artistIds.add(artistId);
+          stats.uniqueTracks = stats.trackIds.size;
+          stats.uniqueArtists = stats.artistIds.size;
+        } else {
+          genreMap.set(genre, {
+            genre,
+            playCount: weight,
+            uniqueTracks: 1,
+            uniqueArtists: 1,
+            totalDuration: track.duration_ms,
+            trackIds: new Set([track.id]),
+            artistIds: new Set([artistId])
+          });
+        }
+      });
+    });
+  });
+
+  return {
+    trackStats: Array.from(trackMap.values()).sort((a, b) => b.playCount - a.playCount),
+    artistStats: Array.from(artistMap.values())
+      .map(stats => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { trackIds: _, ...artistStats } = stats;
+        return { ...artistStats, playCount: Math.round(artistStats.playCount) };
+      })
+      .sort((a, b) => b.playCount - a.playCount),
+    genreStats: Array.from(genreMap.values())
+      .map(stats => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { trackIds: _, artistIds: __, ...genreStats } = stats;
+        return { ...genreStats, playCount: Math.round(genreStats.playCount) };
+      })
+      .sort((a, b) => b.playCount - a.playCount),
+    totalWeight: Math.round(totalWeight),
+    totalDuration
+  };
+};
+
+// Calculate statistics for Top Artists mode using rank-based weights
+// Matches tracks from the user's own top tracks for the same time range
+export const calculateTopArtistsStats = (
+  topArtists: SpotifyApi.ArtistObjectFull[],
+  topTracks: SpotifyApi.TrackObjectFull[]
+): {
+  trackStats: TrackStats[];
+  artistStats: ArtistStats[];
+  genreStats: GenreStats[];
+  totalWeight: number;
+  totalDuration: number;
+} => {
+  const artistMap = new Map<string, ArtistStats & { trackIds: Set<string> }>();
+  const trackMap = new Map<string, TrackStats>();
+  const genreMap = new Map<string, GenreStats & { trackIds: Set<string>; artistIds: Set<string> }>();
+  
+  let totalWeight = 0;
+  let totalDuration = 0;
+
+  // Build a map of artist IDs with their weights
+  const artistWeights = new Map<string, number>();
+  topArtists.forEach((artist, index) => {
+    const weight = Math.pow(0.95, index) * 100;
+    artistWeights.set(artist.id, weight);
+  });
+
+  // Process each top artist
+  topArtists.forEach((artist, index) => {
+    const weight = Math.pow(0.95, index) * 100;
+    totalWeight += weight;
+
+    // Find tracks by this artist from the user's top tracks
+    const artistTracks = topTracks.filter(track => 
+      track.artists.some(a => a.id === artist.id)
+    );
+
+    artistTracks.forEach(track => {
+      totalDuration += track.duration_ms;
+    });
+
+    // Initialize artist stats
+    artistMap.set(artist.id, {
+      artist,
+      playCount: weight,
+      uniqueTracks: artistTracks.length,
+      totalDuration: artistTracks.reduce((sum, t) => sum + t.duration_ms, 0),
+      genres: artist.genres || [],
+      trackIds: new Set(artistTracks.map(t => t.id))
+    });
+
+    // Process tracks for this artist
+    artistTracks.forEach((track, trackIndex) => {
+      // Distribute artist weight across their tracks
+      const trackWeight = weight / Math.max(artistTracks.length, 1);
+
+      if (!trackMap.has(track.id)) {
+        // Map track artists to full artist objects where available
+        const fullArtists = track.artists
+          .map(a => topArtists.find(ta => ta.id === a.id))
+          .filter((a): a is SpotifyApi.ArtistObjectFull => a !== undefined);
+        
+        trackMap.set(track.id, {
+          track,
+          artists: fullArtists.length > 0 ? fullArtists : [artist],
+          playCount: Math.round(trackWeight),
+          firstPlayed: new Date().toISOString(),
+          lastPlayed: new Date().toISOString(),
+          totalDuration: track.duration_ms
+        });
+      } else {
+        const stats = trackMap.get(track.id)!;
+        stats.playCount += Math.round(trackWeight);
+      }
+    });
+
+    // Genre stats
+    artist.genres?.forEach(genre => {
+      if (genreMap.has(genre)) {
+        const stats = genreMap.get(genre)!;
+        stats.playCount += weight;
+        stats.totalDuration += artistTracks.reduce((sum, t) => sum + t.duration_ms, 0);
+        artistTracks.forEach(track => stats.trackIds.add(track.id));
+        stats.artistIds.add(artist.id);
+        stats.uniqueTracks = stats.trackIds.size;
+        stats.uniqueArtists = stats.artistIds.size;
+      } else {
+        genreMap.set(genre, {
+          genre,
+          playCount: weight,
+          uniqueTracks: artistTracks.length,
+          uniqueArtists: 1,
+          totalDuration: artistTracks.reduce((sum, t) => sum + t.duration_ms, 0),
+          trackIds: new Set(artistTracks.map(t => t.id)),
+          artistIds: new Set([artist.id])
+        });
+      }
+    });
+  });
+
+  return {
+    trackStats: Array.from(trackMap.values()).sort((a, b) => b.playCount - a.playCount),
+    artistStats: Array.from(artistMap.values())
+      .map(stats => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { trackIds: _, ...artistStats } = stats;
+        return { ...artistStats, playCount: Math.round(artistStats.playCount) };
+      })
+      .sort((a, b) => b.playCount - a.playCount),
+    genreStats: Array.from(genreMap.values())
+      .map(stats => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { trackIds: _, artistIds: __, ...genreStats } = stats;
+        return { ...genreStats, playCount: Math.round(genreStats.playCount) };
+      })
+      .sort((a, b) => b.playCount - a.playCount),
+    totalWeight: Math.round(totalWeight),
+    totalDuration
+  };
+};
+

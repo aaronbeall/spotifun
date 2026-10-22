@@ -5,6 +5,9 @@ import { getUserPersona, personaToArtProfile } from "@/utils/musicPersonas";
 import { darkenHex } from "@/utils/color";
 import { GenerativeArt } from "../GenerativeArt";
 import { ThemedCardBackground } from "../ThemedCardBackground";
+import { generatePersonaCaption } from "@/utils/visualizationCaptions";
+import { MetricInfo } from '../MetricInfo';
+import { getMetricDescription } from '@/utils/metricDescriptions';
 
 interface PersonaCardProps {
   stats: Stats;
@@ -15,6 +18,7 @@ export const PersonaCard: React.FC<PersonaCardProps> = ({ stats, onShare }) => {
   const persona = useMemo(() => getUserPersona(stats), [stats]);
   const colors = useMemo(() => ({ light: persona.color, dark: darkenHex(persona.color, 0.6) }), [persona.color]);
   const artProfile = useMemo(() => personaToArtProfile(persona), [persona]);
+  const caption = useMemo(() => generatePersonaCaption(stats), [stats]);
 
   return (
     <ThemedCardBackground
@@ -34,26 +38,29 @@ export const PersonaCard: React.FC<PersonaCardProps> = ({ stats, onShare }) => {
       <div className="relative w-32 h-32 mb-6 rounded-full overflow-hidden border-4 border-white/10 shadow-2xl">
         <GenerativeArt seed={persona.id} colors={colors} profile={artProfile} className="w-full h-full" />
       </div>
-      <h3 className="text-2xl font-bold mb-2 tracking-tight" style={{ color: colors.light }}>Listener Persona</h3>
+      <h3 className="text-2xl font-bold mb-1 tracking-tight" style={{ color: colors.light }}>Listener Persona</h3>
+      <p className="text-gray-400 text-xs mb-4">Your listening personality and behavior patterns</p>
       <div className="mb-4 text-white/80 text-center max-w-md">
         <span className="block text-lg font-semibold mb-1" style={{ color: colors.light }}>{persona.name}</span>
         <span className="block text-sm">{persona.description}</span>
+        <span className="block text-xs text-white/60 mt-2">{caption}</span>
       </div>
       <div className="flex flex-wrap justify-center gap-3 mt-4 text-xs">
         {[
-          { label: 'Genre Diversity', value: persona.dimensions.genreDiversity },
-          { label: 'Popularity', value: persona.dimensions.trackPopularity },
-          { label: 'Artist Loyalty', value: persona.dimensions.artistConsistency },
-          { label: 'Era', value: persona.dimensions.era },
-          { label: 'Mood', value: persona.dimensions.valence },
-          { label: 'Energy', value: persona.dimensions.arousal },
-        ].map(({ label, value }) => (
+          { label: 'Genre Diversity', value: persona.dimensions.genreDiversity, tooltip: getMetricDescription('persona-genre-diversity') },
+          { label: 'Popularity', value: persona.dimensions.trackPopularity, tooltip: getMetricDescription('persona-popularity') },
+          { label: 'Artist Loyalty', value: persona.dimensions.artistConsistency, tooltip: getMetricDescription('persona-artist-loyalty') },
+          { label: 'Era', value: persona.dimensions.era, tooltip: getMetricDescription('persona-era') },
+          { label: 'Mood', value: persona.dimensions.valence, tooltip: getMetricDescription('persona-mood') },
+          { label: 'Energy', value: persona.dimensions.arousal, tooltip: getMetricDescription('persona-energy') },
+        ].map(({ label, value, tooltip }) => (
           <span
             key={label}
-            className="px-2.5 py-1 rounded-full border capitalize"
+            className="px-2.5 py-1 rounded-full border capitalize flex items-center gap-1"
             style={{ borderColor: `${colors.light}30`, color: colors.light, backgroundColor: `${colors.light}0f` }}
           >
             {label}: {value}
+            {tooltip && <MetricInfo description={tooltip} />}
           </span>
         ))}
       </div>
