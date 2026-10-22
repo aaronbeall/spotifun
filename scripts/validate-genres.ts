@@ -1,9 +1,12 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 /**
- * Run genre taxonomy validation
+ * Genre Taxonomy Validation Script
+ * 
+ * Validates the genre taxonomy structure and tests classification accuracy
+ * on real Spotify genre strings.
  */
 
-import { printValidationResults } from './src/utils/genreValidation.js';
+import { printValidationResults } from '../src/utils/genreValidation';
 
 console.log('Running genre classification validation suite...\n');
 

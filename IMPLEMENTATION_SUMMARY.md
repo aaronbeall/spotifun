@@ -46,12 +46,14 @@ Successfully improved Spotifun's genre classification system on branch `cursor/i
   - No circular references
   - Every top-level genre has complete VACRS scores
   - All genres can resolve to scores
-- Tests classification on 70+ real Spotify genre strings
+- Tests classification on 90+ real Spotify genre strings
 - Reports coverage and identifies unknown genres
+- Run with: `npm run validate:genres`
 
 **Test Results:**
-- 68/70 genres classified (97.1% coverage)
-- 2 unknown: "wonky", "seapunk" (niche genres, easily added if needed)
+- 92 test cases (real Spotify genre strings)
+- 88 classified (95.7% coverage)
+- 4 unknown: "wonky", "glitch hop", "seapunk", "hyperpop" (niche genres)
 
 ### 2. External Classification (Last.fm + Optional MusicBrainz) ✅
 
@@ -172,10 +174,11 @@ spotifyGenres: []
 - False positives unknown
 
 **New System:**
-- 70 test cases from real Spotify data
-- 97.1% classification rate
+- 92 test cases from real Spotify data
+- 95.7% classification rate
 - Known unknowns documented
 - Validation suite catches taxonomy errors
+- Run with: `npm run validate:genres`
 
 ## What Cannot Be Verified Without Live Keys
 

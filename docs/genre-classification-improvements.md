@@ -252,15 +252,14 @@ Last.fm API usage requires attribution. Add to your UI footer:
 
 To validate taxonomy and test classification:
 
-```typescript
-import { printValidationResults } from '@/utils/genreValidation';
-
-printValidationResults();
-// Prints:
-// - Taxonomy validation results
-// - Classification coverage on 70+ test genres
-// - Unknown genres that need taxonomy entries
+```bash
+npm run validate:genres
 ```
+
+This runs the validation suite which:
+- Validates taxonomy structure (no cycles, all parents exist, complete scores)
+- Tests classification on 90+ real Spotify genre strings
+- Reports coverage and identifies unknown genres
 
 ## Future Enhancements
 
