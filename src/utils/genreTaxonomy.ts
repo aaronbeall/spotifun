@@ -726,4 +726,34 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
     parent: 'latin pop',
     description: 'Brazilian percussion-driven music'
   },
+  
+  // ========== EMERGING / INTERNET GENRES ==========
+  
+  hyperpop: {
+    scores: { valence: 0.7, arousal: 0.9, complexity: 0.6, rawness: 0.4, socialPresence: 0.8 },
+    aliases: ['hyperpop', 'hyper pop'],
+    parent: 'electronic',
+    description: 'Maximalist, experimental pop with exaggerated production'
+  },
+  
+  'glitch hop': {
+    scores: { valence: 0.6, arousal: 0.7, complexity: 0.7, rawness: 0.6, socialPresence: 0.6 },
+    aliases: ['glitch hop', 'glitchop'],
+    parent: 'electronic',
+    description: 'Hip-hop with glitchy electronic production'
+  },
+  
+  wonky: {
+    scores: { valence: 0.5, arousal: 0.6, complexity: 0.7, rawness: 0.5, socialPresence: 0.5 },
+    aliases: ['wonky'],
+    parent: 'electronic',
+    description: 'Off-kilter, experimental electronic music'
+  },
+  
+  seapunk: {
+    scores: { valence: 0.7, arousal: 0.6, complexity: 0.5, rawness: 0.5, socialPresence: 0.7 },
+    aliases: ['seapunk', 'sea punk'],
+    parent: 'electronic',
+    description: 'Internet-born electronic subculture music'
+  },
 };

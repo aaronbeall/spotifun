@@ -88,6 +88,7 @@ export interface StatsOverview {
   genreDiversity: number;
   artistDiversity: number;
   averagePopularity: number; // 0-100 scale
+  genreCoverage?: number; // 0-1 scale: proportion of genre weight successfully classified
 }
 
 export type TimeRange = 'short_term' | 'medium_term' | 'long_term';

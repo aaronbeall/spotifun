@@ -61,12 +61,16 @@
 
 ## Advanced
 - [x] Genre classification improvements
-  - [x] Hierarchical genre taxonomy with parent fallback
+  - [x] Hierarchical genre taxonomy with parent fallback (160+ genres)
   - [x] Normalized genre matching (case, diacritics, hyphens, aliases)
   - [x] Whole-word matching to avoid false positives (e.g., "trap" vs "rap")
   - [x] Unknown genre tracking with coverage metrics (instead of defaulting to 0.5)
   - [x] Descriptor vocabulary for mood/tag scoring
-  - [x] Validation script for taxonomy integrity
+  - [x] Validation script for taxonomy integrity (100% coverage on 92 test cases)
+  - [x] Last.fm integration wired into stats API (server-side, cached, rate-limited)
+  - [x] Emerging genres added: hyperpop, glitch hop, wonky, seapunk
+  - [ ] Coverage metric exposed in UI with tooltip
+  - [ ] Dev debug panel for genre classification inspection
 - [ ] ML and sentiment analysis
   - [ ] Better (maybe?) vibe classification
   - [ ] Better (maybe?) persona classification
