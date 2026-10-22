@@ -5,6 +5,8 @@ import { formatNumber, formatDuration, formatRelativeTime, getGenreColorClass, c
 import { analyzePopularity } from "@/utils/popularity";
 import { WrappedMusicProfile } from "./WrappedMusicProfile";
 import { StatCard } from './StatCard';
+import { MetricInfo } from '../MetricInfo';
+import { getMetricDescription } from '@/utils/metricDescriptions';
 
 const DATA_MODES = [
   { id: 'recent' as const, label: 'Recently Played', icon: Clock },
@@ -248,7 +250,17 @@ export default function MusicProfile({
             icon={Palette}
             title="Genres"
             value={stats.overview.uniqueGenres}
-            description={`${Math.round(stats.overview.genreDiversity * 100)}% diverse`}
+            description={
+              <div className="space-y-0.5">
+                <div>{Math.round(stats.overview.genreDiversity * 100)}% diverse</div>
+                {stats.overview.genreCoverage !== undefined && (
+                  <div className="flex items-center justify-center text-xs text-gray-400">
+                    {Math.round(stats.overview.genreCoverage * 100)}% coverage
+                    <MetricInfo description={getMetricDescription('genre-coverage')!} />
+                  </div>
+                )}
+              </div>
+            }
             gradient="bg-gradient-to-br from-blue-900/80 to-cyan-900/80"
             iconColor="#60a5fa"
             items={stats.genres

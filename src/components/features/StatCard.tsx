@@ -10,7 +10,7 @@ interface StatCardProps {
   className?: string;
   title: string;
   value: string | number;
-  description: string;
+  description: string | React.ReactNode;
   gradient: string;
   iconColor: string;
   items?: Array<{

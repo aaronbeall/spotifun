@@ -110,13 +110,16 @@ function getEffectiveGenres(fullArtist: SpotifyApi.ArtistObjectFull): string[] {
   const spotifyGenres = 'genres' in fullArtist ? fullArtist.genres || [] : [];
   
   // Check if artist has Last.fm data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const lastFmData = (fullArtist as any)._lastFmData;
   
   // If artist has thin Spotify genres (0-2) and Last.fm data, blend them
   if (spotifyGenres.length <= 2 && lastFmData?.classifications) {
     // Extract genre names from Last.fm classifications that matched
     const lastFmGenres = lastFmData.classifications
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .filter((c: any) => c.matchedGenre && c.scores)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map((c: any) => c.originalGenre);
     
     // Combine Spotify and Last.fm genres, prioritizing Spotify

@@ -119,7 +119,8 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
           averageSessionLength: totalDuration / Math.max(totalPlays, 1) / 60000, // in minutes
           genreDiversity: genreStats.length / Math.max(totalGenres, 1),
           artistDiversity: artistStats.length / Math.max(totalPlays, 1),
-          averagePopularity
+          averagePopularity,
+          genreCoverage: 0 // Will be computed below
         },
         recentlyPlayed,
         tracks: trackStats,
@@ -131,6 +132,12 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
         timeRange,
         mode
       };
+
+      // Compute genre coverage using the improved classification system
+      // Import here to avoid circular dependencies
+      const { calculateWeightedVACRSScoreWithCoverage } = await import('@/utils/musicClassification');
+      const coverageResult = calculateWeightedVACRSScoreWithCoverage(genreStats);
+      stats.overview.genreCoverage = coverageResult.coverage;
 
       return stats;
     });
