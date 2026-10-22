@@ -5,6 +5,7 @@ import { getUserPersona, personaToArtProfile } from "@/utils/musicPersonas";
 import { darkenHex } from "@/utils/color";
 import { GenerativeArt } from "../GenerativeArt";
 import { ThemedCardBackground } from "../ThemedCardBackground";
+import { generatePersonaCaption } from "@/utils/visualizationCaptions";
 
 interface PersonaCardProps {
   stats: Stats;
@@ -15,6 +16,7 @@ export const PersonaCard: React.FC<PersonaCardProps> = ({ stats, onShare }) => {
   const persona = useMemo(() => getUserPersona(stats), [stats]);
   const colors = useMemo(() => ({ light: persona.color, dark: darkenHex(persona.color, 0.6) }), [persona.color]);
   const artProfile = useMemo(() => personaToArtProfile(persona), [persona]);
+  const caption = useMemo(() => generatePersonaCaption(stats), [stats]);
 
   return (
     <ThemedCardBackground
@@ -38,6 +40,7 @@ export const PersonaCard: React.FC<PersonaCardProps> = ({ stats, onShare }) => {
       <div className="mb-4 text-white/80 text-center max-w-md">
         <span className="block text-lg font-semibold mb-1" style={{ color: colors.light }}>{persona.name}</span>
         <span className="block text-sm">{persona.description}</span>
+        <span className="block text-xs text-white/60 mt-2">{caption}</span>
       </div>
       <div className="flex flex-wrap justify-center gap-3 mt-4 text-xs">
         {[

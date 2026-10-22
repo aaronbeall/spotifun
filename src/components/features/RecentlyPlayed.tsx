@@ -76,6 +76,7 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange, playLimit, o
           <div className="mb-6">
             <MusicVibes 
               genreStats={stats.genres}
+              mode={stats.mode}
               topArtist={stats.artists.length > 0 ? {
                 name: stats.artists[0].artist.name,
                 image: stats.artists[0].artist.images?.[0]?.url,

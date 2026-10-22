@@ -100,11 +100,12 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
   // case reuses the same visual component the live card renders, rather than
   // re-creating the chart/emblem.
   const shareContent = useMemo((): ShareContent => {
+    const isTopMode = stats.mode !== 'recent';
     switch (currentCard) {
       case 0: {
         const { vibe, matchPercentage } = findBestMatchingVibe(stats.genres);
         return {
-          eyebrow: 'Your Current Vibe',
+          eyebrow: isTopMode ? 'Your Top Vibe' : 'Your Current Vibe',
           title: vibe.name,
           value: `${Math.round(matchPercentage)}% Match`,
           description: vibe.description,
@@ -244,16 +245,17 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
             topArtist={topArtist}
             topGenre={topGenre}
             onShare={openShare}
+            mode={stats.mode}
           />
         )}
         {currentCard === 1 && (
-          <SpectrumCard genreStats={stats.genres} onShare={openShare} />
+          <SpectrumCard genreStats={stats.genres} onShare={openShare} stats={stats} />
         )}
         {currentCard === 2 && (
-          <FlowCardD3 tracks={flowTracks} onShare={openShare} onChartModeChange={setFlowChartMode} />
+          <FlowCardD3 tracks={flowTracks} onShare={openShare} onChartModeChange={setFlowChartMode} mode={stats.mode} />
         )}
         {currentCard === 3 && (
-          <PopularityCard tracks={stats.tracks.map(t => t.track)} onShare={openShare} />
+          <PopularityCard tracks={stats.tracks.map(t => t.track)} onShare={openShare} stats={stats} />
         )}
         {currentCard === 4 && (
           <PersonaCard stats={stats} onShare={openShare} />

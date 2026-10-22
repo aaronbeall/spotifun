@@ -1,16 +1,19 @@
 import React, { useMemo } from "react";
 import { motion } from 'framer-motion';
 import { Star, Gem, Share2 } from 'lucide-react';
+import { Stats } from '@/types';
 import { analyzePopularity, getPopularityExtremes } from '@/utils/popularity';
 import { ImageBadge } from "../ImageBadge";
 import { PopularityHistogram } from './PopularityHistogram';
 import { SIGNATURE_EASE } from '@/utils/easing';
 import { ThemedCardBackground } from '../ThemedCardBackground';
 import { CARD_THEMES } from '@/utils/cardThemes';
+import { generatePopularityCaption } from '@/utils/visualizationCaptions';
 
 interface PopularityCardProps {
   tracks: SpotifyApi.TrackObjectFull[];
   onShare?: () => void;
+  stats: Stats;
 }
 
 // Matches the flanking top-artist/top-genre badge delays on the Vibes card
@@ -18,8 +21,9 @@ interface PopularityCardProps {
 const BADGES_BASE_DELAY = 0.15;
 const BADGES_STAGGER = 0.15;
 
-export const PopularityCard: React.FC<PopularityCardProps> = ({ tracks, onShare }) => {
+export const PopularityCard: React.FC<PopularityCardProps> = ({ tracks, onShare, stats }) => {
   const analysis = useMemo(() => analyzePopularity(tracks), [tracks]);
+  const caption = useMemo(() => generatePopularityCaption(stats), [stats]);
 
   if (!tracks?.length) return null;
 
@@ -119,7 +123,7 @@ export const PopularityCard: React.FC<PopularityCardProps> = ({ tracks, onShare 
           {analysis.label}
         </div>
         <div className="text-lg font-bold text-white/80 mt-1">{avgPopularity}% average</div>
-        <p className="text-sm text-gray-400 mt-2 max-w-md mx-auto">{analysis.description}</p>
+        <p className="text-sm text-gray-400 mt-2 max-w-md mx-auto">{caption}</p>
       </div>
     </ThemedCardBackground>
   );

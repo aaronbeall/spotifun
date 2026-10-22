@@ -1,22 +1,25 @@
 import React, { useMemo } from "react";
 import { Palette, Share2 } from 'lucide-react';
-import { GenreStats } from '@/types';
+import { GenreStats, Stats, DataMode } from '@/types';
 import { calculateWeightedVACRSScore } from '@/utils/musicClassification';
 import { VACRS_COLORS, VACRS_DIMENSIONS, VACRS_RANGE_LABELS, getDominantTrait } from '@/utils/vacrs';
 import { SpectrumDimensionBars, getVACRSDiversity } from './SpectrumDimensionBars';
 import { ThemedCardBackground } from '../ThemedCardBackground';
 import { CARD_THEMES } from '@/utils/cardThemes';
+import { generateSpectrumCaption } from '@/utils/visualizationCaptions';
 
 export { getVACRSDiversity };
 
 interface SpectrumCardProps {
   genreStats: GenreStats[];
   onShare?: () => void;
+  stats: Stats;
 }
 
 
-export const SpectrumCard: React.FC<SpectrumCardProps> = ({ genreStats, onShare }) => {
+export const SpectrumCard: React.FC<SpectrumCardProps> = ({ genreStats, onShare, stats }) => {
   const { diversityScore, values } = useMemo(() => getVACRSDiversity(genreStats), [genreStats]);
+  const caption = useMemo(() => generateSpectrumCaption(stats), [stats]);
 
   // Two flanking stats alongside diversity: the trait your listening leans
   // hardest into, and the one spanning the widest min-to-max range across
@@ -62,7 +65,7 @@ export const SpectrumCard: React.FC<SpectrumCardProps> = ({ genreStats, onShare 
             <h2 className="text-2xl font-bold" style={{ color: CARD_THEMES.spectrum.light }}>Genre Spectrum</h2>
           </div>
           <p className="text-gray-400 text-sm mt-1">
-            Diversity of your listening mapped by vibe dimensions
+            {caption}
           </p>
         </div>
         {onShare && (

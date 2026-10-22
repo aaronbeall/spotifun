@@ -9,6 +9,7 @@ import { cn } from '@/utils';
 import { ImageBadge } from '../ImageBadge';
 import { ThemedCardBackground } from '../ThemedCardBackground';
 import { darkenHex } from '@/utils/color';
+import { generateVibeCaption } from '@/utils/visualizationCaptions';
 
 // Lets the center badges (vibe + flanking top artist/genre) finish their own
 // reveal sequence before the Other Vibe Matches section starts fading in.
@@ -20,6 +21,7 @@ interface VibeBadgeProps {
   isCurrent?: boolean;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
+  vibeLabel?: string;
 }
 
 const VibeBadge = ({
@@ -27,7 +29,8 @@ const VibeBadge = ({
   matchPercentage,
   isCurrent = false,
   className = '',
-  size = 'md'
+  size = 'md',
+  vibeLabel = 'Current Vibe'
 }: VibeBadgeProps) => {
   const sizeClasses = {
     sm: 'w-20 h-20',
@@ -216,7 +219,7 @@ const VibeBadge = ({
         )}
         {isCurrent && (
           <div className="mt-2 px-2 py-0.5 bg-white/5 rounded-full text-xs text-white/80 inline-block">
-            Current Vibe
+            {vibeLabel}
           </div>
         )}
       </div>
@@ -231,6 +234,7 @@ interface MusicVibesProps {
   topGenre?: { name: string; image?: string; count: number; percentage?: number };
   className?: string;
   onShare?: () => void;
+  mode: 'recent' | 'topArtists' | 'topTracks';
 }
 
 export function MusicVibes({
@@ -238,13 +242,51 @@ export function MusicVibes({
   topArtist,
   topGenre,
   className = '',
-  onShare
+  onShare,
+  mode
 }: MusicVibesProps) {
   const [showAllVibes, setShowAllVibes] = useState(false);
   const { vibe, matchPercentage } = useMemo(
     () => findBestMatchingVibe(genreStats),
     [genreStats]
   );
+
+  const isTopMode = mode !== 'recent';
+  const vibeLabel = isTopMode ? 'Top Vibe' : 'Current Vibe';
+  const vibeDescription = isTopMode 
+    ? 'Based on your top listened genres in this time period'
+    : 'Based on your recent listening history and genre preferences';
+  
+  // Create a minimal stats-like object for caption generation
+  const statsForCaption = useMemo(() => ({
+    mode,
+    genres: genreStats,
+  }), [mode, genreStats]);
+  
+  const dynamicCaption = useMemo(() => {
+    const genreCount = genreStats.length;
+    const topGenreName = topGenre?.name;
+    
+    if (!topGenreName) {
+      return vibeDescription;
+    }
+    
+    if (genreCount <= 2) {
+      return isTopMode
+        ? `Focused listening centered on ${topGenreName}.`
+        : `Your recent plays are centered on ${topGenreName}.`;
+    }
+    
+    if (genreCount >= 8) {
+      return isTopMode
+        ? `Eclectic taste spanning ${genreCount} genres, with ${topGenreName} leading.`
+        : `Wide-ranging recent listening across ${genreCount} genres, led by ${topGenreName}.`;
+    }
+    
+    return isTopMode
+      ? `${topGenreName.charAt(0).toUpperCase() + topGenreName.slice(1)} leads your top genres, alongside ${genreCount - 1} others.`
+      : `${topGenreName.charAt(0).toUpperCase() + topGenreName.slice(1)} is trending in your recent plays, mixed with ${genreCount - 1} other genres.`;
+  }, [genreStats, topGenre, isTopMode, vibeDescription]);
 
   // vibe.color.dark is tuned for the share card's full-bleed hero background
   // (a vivid accent, not an actual dark tone) — darken it further for the
@@ -290,10 +332,10 @@ export function MusicVibes({
           <div className="mb-4 md:mb-0">
             <div className="flex items-center gap-3">
               <Award className="w-6 h-6" style={{ color: vibe.color.light }} />
-              <h2 className="text-2xl font-bold" style={{ color: vibe.color.light }}>Your Current Vibe</h2>
+              <h2 className="text-2xl font-bold" style={{ color: vibe.color.light }}>Your {vibeLabel}</h2>
             </div>
             <p className="text-gray-400 text-sm mt-1">
-              Based on your recent listening history and genre preferences
+              {dynamicCaption}
             </p>
           </div>
 
@@ -350,6 +392,7 @@ export function MusicVibes({
               matchPercentage={matchPercentage}
               isCurrent
               size="lg"
+              vibeLabel={vibeLabel}
             />
           </motion.div>
 
