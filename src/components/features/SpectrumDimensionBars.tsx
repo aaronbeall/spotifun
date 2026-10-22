@@ -6,6 +6,8 @@ import { calculateGenreVACRSScore, calculateWeightedVACRSScore } from '@/utils/m
 import { VACRS_COLORS, VACRS_DIMENSIONS, VACRS_RANGE_LABELS, getDominantTrait } from '@/utils/vacrs';
 import { useTooltip } from "@/hooks/useTooltip";
 import { WAVE_REVEAL_EASE } from '@/utils/easing';
+import { MetricInfo } from '../MetricInfo';
+import { getMetricDescription } from '@/utils/metricDescriptions';
 
 // Fan of wave steps from the min (-1) through the calculated value (0) to the
 // max (1), used to draw the left-to-right curves through each dimension.
@@ -198,7 +200,10 @@ export function SpectrumDimensionBars({ genreStats, interactive = true, compact 
                 VACRS dimension name, colored to keep the per-dimension
                 color-coding the removed name label used to carry. */}
             {!compact && (
-              <span className="mb-1 text-xs font-semibold" style={{ color: VACRS_COLORS[dim] }}>{VACRS_RANGE_LABELS[dim][1]}</span>
+              <div className="flex items-center mb-1">
+                <span className="text-xs font-semibold" style={{ color: VACRS_COLORS[dim] }}>{VACRS_RANGE_LABELS[dim][1]}</span>
+                <MetricInfo description={getMetricDescription(dim)!} />
+              </div>
             )}
             {/* Vertical scatter plot, no background box */}
             <div

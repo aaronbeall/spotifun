@@ -2,6 +2,7 @@ import { Star, Music } from 'lucide-react';
 import { useState, useMemo, HTMLProps } from "react";
 import { motion } from "framer-motion";
 import { SpotifyPlayOverlay } from "@/components/SpotifyPlayOverlay";
+import { MetricInfo } from '../MetricInfo';
 
 interface StatCardProps {
   icon: React.ElementType;
@@ -25,6 +26,7 @@ interface StatCardProps {
   };
   score?: number;
   scoreLabel?: string;
+  scoreTooltip?: string;
   mostPlayed?: Array<{ name: string; count: number; image?: string; url?: string }>;
   children?: React.ReactNode;
 }
@@ -40,6 +42,7 @@ export const StatCard = ({
                         badge,
                         score,
                         scoreLabel = 'Score',
+                        scoreTooltip,
                         mostPlayed = [],
                         children
                       }: StatCardProps) => {
@@ -185,7 +188,10 @@ export const StatCard = ({
         {score !== undefined && (
           <div className="mt-4">
             <div className="flex justify-between text-xs mb-1.5">
-              <span className="text-white/70 font-medium">{scoreLabel}</span>
+              <span className="text-white/70 font-medium flex items-center">
+                {scoreLabel}
+                {scoreTooltip && <MetricInfo description={scoreTooltip} />}
+              </span>
               <span
                 className="font-semibold"
                 style={{

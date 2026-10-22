@@ -7,6 +7,8 @@ import { SpectrumDimensionBars, getVACRSRange } from './SpectrumDimensionBars';
 import { ThemedCardBackground } from '../ThemedCardBackground';
 import { CARD_THEMES } from '@/utils/cardThemes';
 import { generateSpectrumCaption } from '@/utils/visualizationCaptions';
+import { MetricInfo } from '../MetricInfo';
+import { getMetricDescription } from '@/utils/metricDescriptions';
 
 export { getVACRSRange };
 
@@ -90,21 +92,30 @@ export const SpectrumCard: React.FC<SpectrumCardProps> = ({ genreStats, onShare,
           <div className="text-lg sm:text-xl font-bold" style={{ color: dominantTraitColor }}>
             {dominantTraitPercent}% {dominantTraitLabel}
           </div>
-          <div className="text-xs text-gray-400 mt-1">Dominant Trait</div>
+          <div className="text-xs text-gray-400 mt-1 flex items-center justify-center">
+            Dominant Trait
+            <MetricInfo description={getMetricDescription('dominant-trait')!} />
+          </div>
         </div>
 
         <div className="text-center">
           <div className="text-4xl sm:text-5xl font-black text-blue-400">
             {rangeScore.toFixed(0)}%
           </div>
-          <div className="text-sm text-gray-400 mt-1">Sonic Range</div>
+          <div className="text-sm text-gray-400 mt-1 flex items-center justify-center">
+            Sonic Range
+            <MetricInfo description={getMetricDescription('sonic-range')!} />
+          </div>
         </div>
 
         <div className="text-center">
           <div className="text-lg sm:text-xl font-bold" style={{ color: widestRangeTraitColor }}>
             {widestRangeLabel}
           </div>
-          <div className="text-xs text-gray-400 mt-1">Widest Range</div>
+          <div className="text-xs text-gray-400 mt-1 flex items-center justify-center">
+            Widest Range
+            <MetricInfo description={getMetricDescription('widest-range')!} />
+          </div>
         </div>
       </div>
 

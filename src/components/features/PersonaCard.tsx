@@ -6,6 +6,8 @@ import { darkenHex } from "@/utils/color";
 import { GenerativeArt } from "../GenerativeArt";
 import { ThemedCardBackground } from "../ThemedCardBackground";
 import { generatePersonaCaption } from "@/utils/visualizationCaptions";
+import { MetricInfo } from '../MetricInfo';
+import { getMetricDescription } from '@/utils/metricDescriptions';
 
 interface PersonaCardProps {
   stats: Stats;
@@ -45,19 +47,20 @@ export const PersonaCard: React.FC<PersonaCardProps> = ({ stats, onShare }) => {
       </div>
       <div className="flex flex-wrap justify-center gap-3 mt-4 text-xs">
         {[
-          { label: 'Genre Diversity', value: persona.dimensions.genreDiversity },
-          { label: 'Popularity', value: persona.dimensions.trackPopularity },
-          { label: 'Artist Loyalty', value: persona.dimensions.artistConsistency },
-          { label: 'Era', value: persona.dimensions.era },
-          { label: 'Mood', value: persona.dimensions.valence },
-          { label: 'Energy', value: persona.dimensions.arousal },
-        ].map(({ label, value }) => (
+          { label: 'Genre Diversity', value: persona.dimensions.genreDiversity, tooltip: getMetricDescription('persona-genre-diversity') },
+          { label: 'Popularity', value: persona.dimensions.trackPopularity, tooltip: getMetricDescription('persona-popularity') },
+          { label: 'Artist Loyalty', value: persona.dimensions.artistConsistency, tooltip: getMetricDescription('persona-artist-loyalty') },
+          { label: 'Era', value: persona.dimensions.era, tooltip: getMetricDescription('persona-era') },
+          { label: 'Mood', value: persona.dimensions.valence, tooltip: getMetricDescription('persona-mood') },
+          { label: 'Energy', value: persona.dimensions.arousal, tooltip: getMetricDescription('persona-energy') },
+        ].map(({ label, value, tooltip }) => (
           <span
             key={label}
-            className="px-2.5 py-1 rounded-full border capitalize"
+            className="px-2.5 py-1 rounded-full border capitalize flex items-center gap-1"
             style={{ borderColor: `${colors.light}30`, color: colors.light, backgroundColor: `${colors.light}0f` }}
           >
             {label}: {value}
+            {tooltip && <MetricInfo description={tooltip} />}
           </span>
         ))}
       </div>
