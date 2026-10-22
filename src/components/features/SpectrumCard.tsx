@@ -3,12 +3,12 @@ import { Palette, Share2 } from 'lucide-react';
 import { GenreStats, Stats, DataMode } from '@/types';
 import { calculateWeightedVACRSScore } from '@/utils/musicClassification';
 import { VACRS_COLORS, VACRS_DIMENSIONS, VACRS_RANGE_LABELS, getDominantTrait } from '@/utils/vacrs';
-import { SpectrumDimensionBars, getVACRSDiversity } from './SpectrumDimensionBars';
+import { SpectrumDimensionBars, getVACRSRange } from './SpectrumDimensionBars';
 import { ThemedCardBackground } from '../ThemedCardBackground';
 import { CARD_THEMES } from '@/utils/cardThemes';
 import { generateSpectrumCaption } from '@/utils/visualizationCaptions';
 
-export { getVACRSDiversity };
+export { getVACRSRange };
 
 interface SpectrumCardProps {
   genreStats: GenreStats[];
@@ -18,7 +18,7 @@ interface SpectrumCardProps {
 
 
 export const SpectrumCard: React.FC<SpectrumCardProps> = ({ genreStats, onShare, stats }) => {
-  const { diversityScore, values } = useMemo(() => getVACRSDiversity(genreStats), [genreStats]);
+  const { rangeScore, values } = useMemo(() => getVACRSRange(genreStats), [genreStats]);
   const caption = useMemo(() => generateSpectrumCaption(stats), [stats]);
 
   // Two flanking stats alongside diversity: the trait your listening leans
@@ -95,9 +95,9 @@ export const SpectrumCard: React.FC<SpectrumCardProps> = ({ genreStats, onShare,
 
         <div className="text-center">
           <div className="text-4xl sm:text-5xl font-black text-blue-400">
-            {diversityScore.toFixed(0)}%
+            {rangeScore.toFixed(0)}%
           </div>
-          <div className="text-sm text-gray-400 mt-1">Genre Diversity</div>
+          <div className="text-sm text-gray-400 mt-1">Sonic Range</div>
         </div>
 
         <div className="text-center">

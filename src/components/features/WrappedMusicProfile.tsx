@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Award, BarChart, Activity, Star, Gem, User, Users, Palette } from "lucide-react";
 import { SequenceNavigator } from "./SequenceNavigator";
 import { MusicVibes } from "./MusicVibes";
-import { SpectrumCard, getVACRSDiversity } from "./SpectrumCard";
+import { SpectrumCard, getVACRSRange } from "./SpectrumCard";
 import { SpectrumDimensionBars } from "./SpectrumDimensionBars";
 import { Stats } from "@/types";
 import { PopularityCard } from "./PopularityCard";
@@ -140,11 +140,11 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
         };
       }
       case 1: {
-        const { diversityScore } = getVACRSDiversity(stats.genres);
+        const { rangeScore } = getVACRSRange(stats.genres);
         return {
           eyebrow: 'Genre Spectrum',
-          title: 'Genre Diversity',
-          value: `${Math.round(diversityScore)}% Diverse`,
+          title: 'Sonic Range',
+          value: `${Math.round(rangeScore)}%`,
           description: 'How your listening spreads across valence, arousal, complexity, rawness, and social presence.',
           color: CARD_THEMES.spectrum,
           visual: <SpectrumDimensionBars genreStats={stats.genres} interactive={false} compact />,
