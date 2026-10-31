@@ -6,24 +6,46 @@
 1. Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
 2. Create a new app
 3. Note your Client ID and Client Secret
-4. Add redirect URI: `http://localhost:3000/api/auth/callback/spotify`
+4. **Important:** Add redirect URI: `http://127.0.0.1:3000/api/auth/callback/spotify`
+   - Spotify no longer allows `localhost` - you must use `127.0.0.1`
 
 ### 2. Configure Environment
-Update `.env.local` with your credentials:
+Copy `.env.example` to `.env.local`:
+```bash
+cp .env.example .env.local
+```
+
+Then edit `.env.local` with your credentials.
+
+**Required variables:**
 ```env
 SPOTIFY_CLIENT_ID=your_spotify_client_id_here
 SPOTIFY_CLIENT_SECRET=your_spotify_client_secret_here
-SPOTIFY_REDIRECT_URI=http://localhost:3000/api/auth/callback/spotify
-NEXTAUTH_URL=http://localhost:3000
+# Must use 127.0.0.1 (not localhost) - Spotify requirement
+SPOTIFY_REDIRECT_URI=http://127.0.0.1:3000/api/auth/callback/spotify
+NEXTAUTH_URL=http://127.0.0.1:3000
+# Generate with: openssl rand -base64 32
 NEXTAUTH_SECRET=your_nextauth_secret_here
 ```
+
+**Optional variables:**
+```env
+# Last.fm API for enhanced genre classification (recommended)
+# Get your API key at: https://www.last.fm/api/account/create
+LASTFM_API_KEY=your_lastfm_api_key_here
+```
+
+**Notes:**
+- **127.0.0.1 vs localhost:** Spotify no longer accepts `localhost` in redirect URIs. Always use `127.0.0.1`.
+- **Last.fm integration:** Optional but recommended. Improves genre classification coverage for artists with sparse Spotify genres. Without it, classification works but may return lower coverage scores.
+- **Deployment:** When deploying to Vercel, set `LASTFM_API_KEY` in your Vercel project's environment variables (Settings → Environment Variables).
 
 ### 3. Run the Application
 ```bash
 npm run dev
 ```
 
-Visit `http://localhost:3000` and connect with Spotify!
+Visit `http://127.0.0.1:3000` and connect with Spotify!
 
 ## 🏗️ Project Structure
 

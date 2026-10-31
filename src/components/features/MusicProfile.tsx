@@ -1,10 +1,12 @@
-import { Headphones, Users, Music, Clock, Sparkles, Palette, Disc, Disc3, Disc2, TrendingUp, Star, RefreshCw } from 'lucide-react';
+import { Headphones, Users, Music, Clock, Sparkles, Palette, Disc, Disc3, Disc2, TrendingUp, Star, RefreshCw, CloudAlert } from 'lucide-react';
 import { useMemo } from 'react';
 import { Stats, TimeRange, DataMode } from '@/types';
 import { formatNumber, formatDuration, formatRelativeTime, getGenreColorClass, cn } from "@/utils";
 import { analyzePopularity } from "@/utils/popularity";
 import { WrappedMusicProfile } from "./WrappedMusicProfile";
 import { StatCard } from './StatCard';
+import { MetricInfo } from '../MetricInfo';
+import { getMetricDescription } from '@/utils/metricDescriptions';
 
 const DATA_MODES = [
   { id: 'recent' as const, label: 'Recently Played', icon: Clock },
@@ -61,10 +63,9 @@ export default function MusicProfile({
         totalListeningLabel: 'total listening'
       };
     } else {
-      // Top modes use rank-based weights
       return {
-        avgMetric: Math.round(stats.overview.totalPlays / Math.max(stats.overview.uniqueTracks, 1)),
-        avgMetricLabel: 'avg weight',
+        avgMetric: null,
+        avgMetricLabel: 'ranked by Spotify',
         uniquenessDescription: `${stats.overview.uniqueTracks} tracks`,
         totalListeningLabel: 'total duration'
       };
@@ -156,6 +157,16 @@ export default function MusicProfile({
             </span>
 
             <div className="flex items-center gap-3 ml-auto">
+              {stats.lastFmUnavailableCount ? (
+                <span
+                  className="flex items-center gap-1.5 text-xs text-amber-400/60 cursor-help"
+                  title={`Last.fm couldn't be reached for ${stats.lastFmUnavailableCount} artist${stats.lastFmUnavailableCount === 1 ? '' : 's'} (likely rate limited), so their genres are Spotify-only. Refresh in a minute to fill them in.`}
+                >
+                  <CloudAlert className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Genres partially enriched</span>
+                </span>
+              ) : null}
+
               <button
                 onClick={onRefresh}
                 disabled={isRefreshing}
@@ -192,7 +203,7 @@ export default function MusicProfile({
             icon={Users}
             title="Artists"
             value={stats.overview.uniqueArtists}
-            description={`${avgMetric} ${avgMetricLabel}`}
+            description={avgMetric == null ? avgMetricLabel : `${avgMetric} ${avgMetricLabel}`}
             gradient="bg-gradient-to-br from-purple-900/80 to-indigo-900/80"
             iconColor="#a78bfa"
             items={stats.artists
@@ -205,6 +216,8 @@ export default function MusicProfile({
             score={stats.overview.artistDiversity}
             scoreLabel="Diversity"
             scoreMetricKey="artist-diversity"
+            listLabel={isTopMode ? 'Top' : undefined}
+            showCounts={!isTopMode}
             mostPlayed={stats.artists
               .sort((a, b) => b.playCount - a.playCount)
               .map(artist => ({
@@ -233,6 +246,8 @@ export default function MusicProfile({
             score={stats.overview.uniqueTracks / Math.max(stats.overview.totalPlays, 1)}
             scoreLabel="Uniqueness"
             scoreMetricKey="track-uniqueness"
+            listLabel={isTopMode ? 'Top' : undefined}
+            showCounts={!isTopMode}
             mostPlayed={stats.tracks
               .sort((a, b) => b.playCount - a.playCount)
               .map(track => ({
@@ -248,7 +263,17 @@ export default function MusicProfile({
             icon={Palette}
             title="Genres"
             value={stats.overview.uniqueGenres}
-            description={`${Math.round(stats.overview.genreDiversity * 100)}% diverse`}
+            description={
+              <div className="space-y-0.5">
+                <div>{Math.round(stats.overview.genreDiversity * 100)}% diverse</div>
+                {stats.overview.genreCoverage !== undefined && (
+                  <div className="flex items-center justify-center text-xs text-gray-400">
+                    {Math.round(stats.overview.genreCoverage * 100)}% coverage
+                    <MetricInfo description={getMetricDescription('genre-coverage')!} />
+                  </div>
+                )}
+              </div>
+            }
             gradient="bg-gradient-to-br from-blue-900/80 to-cyan-900/80"
             iconColor="#60a5fa"
             items={stats.genres
@@ -265,6 +290,8 @@ export default function MusicProfile({
             score={stats.overview.genreDiversity}
             scoreLabel="Diversity"
             scoreMetricKey="genre-diversity"
+            listLabel={isTopMode ? 'Top' : undefined}
+            showCounts={!isTopMode}
             mostPlayed={stats.genres
               .map(genre => ({
                 name: genre.genre,

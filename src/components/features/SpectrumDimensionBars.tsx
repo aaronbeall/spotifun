@@ -87,11 +87,13 @@ interface SpectrumDimensionBarsProps {
   interactive?: boolean;
   /** Renders the same bubble scatter at a smaller fixed size, without axis labels/spread tags (fits the fixed-width share graphic) */
   compact?: boolean;
+  /** Tooltip play counts. Off in top modes, where the number is not a play count. */
+  showPlayCounts?: boolean;
 }
 
 // The core Spectrum visual, extracted so it can be reused both in the live
 // interactive Spectrum card and in the static share graphic.
-export function SpectrumDimensionBars({ genreStats, interactive = true, compact = false }: SpectrumDimensionBarsProps) {
+export function SpectrumDimensionBars({ genreStats, interactive = true, compact = false, showPlayCounts = true }: SpectrumDimensionBarsProps) {
   const tooltip = useTooltip();
   const waveClipId = useId();
   const { spread, values, weightedScore } = useMemo(() => {
@@ -255,11 +257,13 @@ export function SpectrumDimensionBars({ genreStats, interactive = true, compact 
                                 <span className="text-xs text-slate-400 font-normal ml-1">{getDominantTrait(dim, v.score).label}</span>
                               </span>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs text-slate-400 whitespace-nowrap">
-                                {v.playCount} {v.playCount === 1 ? 'play' : 'plays'}
-                              </span>
-                            </div>
+                            {showPlayCounts && (
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs text-slate-400 whitespace-nowrap">
+                                  {v.playCount} {v.playCount === 1 ? 'play' : 'plays'}
+                                </span>
+                              </div>
+                            )}
                           </div>, e) : undefined}
                         onMouseMove={interactive ? tooltip.move : undefined}
                         onMouseLeave={interactive ? tooltip.hide : undefined}

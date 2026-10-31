@@ -88,10 +88,23 @@ export interface StatsOverview {
   genreDiversity: number;
   artistDiversity: number;
   averagePopularity: number; // 0-100 scale
+  genreCoverage?: number; // 0-1 scale: proportion of genre weight successfully classified
 }
 
 export type TimeRange = 'short_term' | 'medium_term' | 'long_term';
 export type DataMode = 'recent' | 'topArtists' | 'topTracks';
+
+/** A Spotify top artist plus how many times they appear in the recent-plays window. */
+export interface TopArtistItem extends SpotifyApi.ArtistObjectFull {
+  recentPlays: number;
+}
+
+/** A Spotify top track plus how many times it appears in the recent-plays window. */
+export interface TopTrackItem extends SpotifyApi.TrackObjectFull {
+  recentPlays: number;
+  /** Latest play in that window. Absent when the track was not played recently. */
+  lastPlayed?: string;
+}
 
 export interface NowPlaying {
   isPlaying: boolean;
@@ -110,16 +123,57 @@ export interface Stats {
   tracks: TrackStats[];
   artists: ArtistStats[];
   genres: GenreStats[];
-  topTracks: SpotifyApi.TrackObjectFull[];
-  topArtists: SpotifyApi.ArtistObjectFull[];
+  topTracks: TopTrackItem[];
+  topArtists: TopArtistItem[];
   timeRange: TimeRange;
   topGenres: TopGenre[];
   mode: DataMode;
+  /** Artists whose genres couldn't be enriched with Last.fm (rate limit or API error); omitted when 0 */
+  lastFmUnavailableCount?: number;
+  debugGenreData?: ArtistGenreDebugInfo[]; // Dev-only: always returned when NODE_ENV=development
+  debugLastFmStatus?: LastFmDebugStatus;
 }
+
+/**
+ * How a single genre/tag string was resolved:
+ * - exact: string is a taxonomy node name
+ * - alias: string is a listed alias of a node
+ * - partial: a node alias appears as whole words inside the string
+ * - keyword: only the last word matched a node
+ * - descriptor: not a genre, but a mood/descriptor in the descriptor vocabulary
+ * - unknown: nothing matched
+ */
+export type GenreMatchKind = 'exact' | 'alias' | 'partial' | 'keyword' | 'descriptor' | 'unknown';
+
+export interface GenreTagDebugInfo {
+  tag: string;
+  source: 'spotify' | 'lastfm';
+  kind: GenreMatchKind;
+  /** Taxonomy node the tag resolved to */
+  node: string | null;
+  /** Node whose scores were actually used (differs from `node` when inherited from a parent) */
+  scoresFrom: string | null;
+  /** Last.fm tag weight (0-100, relative to the artist's top tag) */
+  weight?: number;
+  /** Dropped by the Last.fm junk-tag filter before classification */
+  filteredAsJunk?: boolean;
+  usedInScoring: boolean;
+}
+
+export type LastFmDebugStatus = 'on' | 'disabled' | 'no-api-key';
 
 interface TopGenre {
   genre: string;
   count: number;
+}
+
+export interface ArtistGenreDebugInfo {
+  artistName: string;
+  /** Last.fm returned tags for this artist (it is only queried for artists with 0-2 Spotify genres) */
+  hasLastFmData: boolean;
+  tags: GenreTagDebugInfo[];
+  vacrsScores: VACRSScore | null;
+  coverage: number; // 0-1 scale
 }
 
 export interface VACRSScore {

@@ -10,7 +10,7 @@ interface StatCardProps {
   className?: string;
   title: string;
   value: string | number;
-  description: string;
+  description: string | React.ReactNode;
   gradient: string;
   iconColor: string;
   items?: Array<{
@@ -31,6 +31,10 @@ interface StatCardProps {
   /** Key to auto-lookup tooltip from metricDescriptions */
   scoreMetricKey?: string;
   mostPlayed?: Array<{ name: string; count: number; image?: string; url?: string }>;
+  /** Heading above the list. Defaults to "Most Played" (or "Most Popular" for the Popularity card). */
+  listLabel?: string;
+  /** When false, list entries are names only. Used where count is not a play count. */
+  showCounts?: boolean;
   children?: React.ReactNode;
 }
 
@@ -48,6 +52,8 @@ export const StatCard = ({
                         scoreTooltip,
                         scoreMetricKey,
                         mostPlayed = [],
+                        listLabel,
+                        showCounts = true,
                         children
                       }: StatCardProps) => {
   const [showAllPills, setShowAllPills] = useState(false);
@@ -153,7 +159,7 @@ export const StatCard = ({
                       zIndex: 3 - i,
                       boxShadow: '0 4px 12px -2px rgba(0,0,0,0.2)'
                     }}
-                    title={`${item.name} • ${item.count} plays`}
+                    title={showCounts ? `${item.name} • ${item.count} plays` : item.name}
                   >
                     {item.image ? (
                       <img
@@ -169,11 +175,13 @@ export const StatCard = ({
                         {item.name.charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <span className="text-white text-[10px] font-bold bg-black/60 px-1.5 py-0.5 rounded-full">
-                        {item.count}
-                      </span>
-                    </div>
+                    {showCounts && (
+                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span className="text-white text-[10px] font-bold bg-black/60 px-1.5 py-0.5 rounded-full">
+                          {item.count}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -226,7 +234,7 @@ export const StatCard = ({
         {mostPlayed.length > 0 && (
           <div className="mt-5">
             <p className="text-xs font-medium text-white/70 mb-2.5">
-              {title === 'Popularity' ? 'Most Popular' : 'Most Played'}
+              {listLabel ?? (title === 'Popularity' ? 'Most Popular' : 'Most Played')}
             </p>
             <div className="flex flex-wrap gap-2">
               {displayedPills.map((item, i) => {
@@ -247,9 +255,11 @@ export const StatCard = ({
                       borderColor: `${iconColor}50`,
                       boxShadow: `0 4px 12px -1px ${iconColor}20`
                     }}
-                    title={`${item.name} • ${
-                      title === 'Popularity' ? `${item.count}%` : `${item.count} plays`
-                    }`}
+                    title={
+                      !showCounts
+                        ? item.name
+                        : `${item.name} • ${title === 'Popularity' ? `${item.count}%` : `${item.count} plays`}`
+                    }
                   >
                     <div className="relative w-5 h-5 rounded-full overflow-hidden shrink-0 bg-black/20">
                       {item.image ? (
@@ -260,12 +270,14 @@ export const StatCard = ({
                       {item.url && <SpotifyPlayOverlay size="xs" />}
                     </div>
                     <span className="truncate max-w-[100px] font-medium">{item.name}</span>
-                    <span
-                      className="flex-shrink-0 font-semibold"
-                      style={{ color: iconColor }}
-                    >
-                      {title === 'Popularity' ? `${item.count}%` : item.count}
-                    </span>
+                    {showCounts && (
+                      <span
+                        className="flex-shrink-0 font-semibold"
+                        style={{ color: iconColor }}
+                      >
+                        {title === 'Popularity' ? `${item.count}%` : item.count}
+                      </span>
+                    )}
                   </PillTag>
                 );
               })}

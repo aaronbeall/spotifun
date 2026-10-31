@@ -86,12 +86,12 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
   const topArtist = useMemo(() => stats.artists.length > 0 ? {
     name: stats.artists[0].artist.name,
     image: stats.artists[0].artist.images?.[0]?.url,
-    count: stats.artists[0].playCount,
+    ...(stats.mode === 'recent' ? { count: stats.artists[0].playCount } : {}),
   } : undefined, [stats]);
 
   const topGenre = useMemo(() => stats.genres.length > 0 ? {
     name: stats.genres[0].genre,
-    count: stats.genres[0].playCount,
+    ...(stats.mode === 'recent' ? { count: stats.genres[0].playCount } : {}),
     image: genreImages.get(stats.genres[0].genre),
   } : undefined, [stats, genreImages]);
 
@@ -147,7 +147,7 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
           value: `${Math.round(rangeScore)}%`,
           description: 'How your listening spreads across valence, arousal, complexity, rawness, and social presence.',
           color: CARD_THEMES.spectrum,
-          visual: <SpectrumDimensionBars genreStats={stats.genres} interactive={false} compact />,
+          visual: <SpectrumDimensionBars genreStats={stats.genres} interactive={false} compact showPlayCounts={stats.mode === 'recent'} />,
         };
       }
       case 2: {
