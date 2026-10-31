@@ -7,6 +7,9 @@ import { ArtistGenreDebugInfo, GenreMatchKind, GenreTagDebugInfo } from '@/types
 interface GenreDebugPanelProps {
   debugData?: ArtistGenreDebugInfo[];
   overallCoverage?: number;
+  isLoading: boolean;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 const KIND_META: Record<GenreMatchKind, { label: string; className: string; description: string }> = {
@@ -97,8 +100,7 @@ function TagChip({ tag }: { tag: GenreTagDebugInfo }) {
  * Dev-only debug panel for genre classification.
  * Shows how every Spotify genre and Last.fm tag resolved, per artist, as a bottom drawer.
  */
-export function GenreDebugPanel({ debugData, overallCoverage }: GenreDebugPanelProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function GenreDebugPanel({ debugData, overallCoverage, isLoading, isOpen, onOpenChange }: GenreDebugPanelProps) {
   const [onlyProblems, setOnlyProblems] = useState(false);
 
   const summary = useMemo(() => {
@@ -116,19 +118,16 @@ export function GenreDebugPanel({ debugData, overallCoverage }: GenreDebugPanelP
     return { kindCounts, unmatched: byCount(unmatched), moods: byCount(moods) };
   }, [debugData]);
 
-  if (process.env.NODE_ENV !== 'development' || !debugData || debugData.length === 0) {
-    return null;
-  }
-
+  const data = debugData ?? [];
   const rows = onlyProblems
-    ? debugData.filter(a => a.tags.length === 0 || a.tags.some(t => t.kind === 'unknown'))
-    : debugData;
+    ? data.filter(a => a.tags.length === 0 || a.tags.some(t => t.kind === 'unknown'))
+    : data;
 
   return (
     <>
       {!isOpen && (
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={() => onOpenChange(true)}
           className="fixed bottom-4 right-4 z-50 bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-2 rounded-lg shadow-xl flex items-center gap-2 transition-all"
           aria-label="Open debug panel"
         >
@@ -141,7 +140,10 @@ export function GenreDebugPanel({ debugData, overallCoverage }: GenreDebugPanelP
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900/98 border-t-4 border-yellow-500 shadow-2xl max-h-[75vh] flex flex-col">
           <div className="flex items-center justify-between px-6 py-3 border-b border-gray-700 bg-gray-800/50 gap-4">
             <div>
-              <h3 className="text-yellow-400 font-bold text-lg">Genre Classification Debug</h3>
+              <h3 className="text-yellow-400 font-bold text-lg">
+                Genre Classification Debug
+                {isLoading && <span className="ml-2 text-xs font-normal text-gray-400 animate-pulse">refreshing…</span>}
+              </h3>
               <p className="text-gray-400 text-xs">
                 Overall coverage: {overallCoverage !== undefined ? `${Math.round(overallCoverage * 100)}%` : 'N/A'}
                 {' • '}
@@ -159,7 +161,7 @@ export function GenreDebugPanel({ debugData, overallCoverage }: GenreDebugPanelP
                 Only artists with unmatched tags
               </label>
               <button
-                onClick={() => setIsOpen(false)}
+                onClick={() => onOpenChange(false)}
                 className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-gray-700 rounded"
                 aria-label="Close debug panel"
               >
@@ -169,6 +171,13 @@ export function GenreDebugPanel({ debugData, overallCoverage }: GenreDebugPanelP
           </div>
 
           <div className="flex-1 overflow-auto p-6 space-y-6">
+            {data.length === 0 ? (
+              <p className="text-gray-400 text-sm">
+                {isLoading
+                  ? 'Loading genre debug data…'
+                  : 'No debug data in the last stats response. It is only returned by the dev server (NODE_ENV=development).'}
+              </p>
+            ) : (<>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="p-3 bg-gray-800/50 rounded-lg border border-gray-700">
                 <h4 className="text-red-300 font-semibold text-sm mb-2">
@@ -257,6 +266,7 @@ export function GenreDebugPanel({ debugData, overallCoverage }: GenreDebugPanelP
                 with 3+ Spotify genres). Hover any chip for details.
               </p>
             </div>
+            </>)}
           </div>
         </div>
       )}
