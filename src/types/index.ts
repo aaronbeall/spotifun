@@ -116,7 +116,7 @@ export interface Stats {
   timeRange: TimeRange;
   topGenres: TopGenre[];
   mode: DataMode;
-  debugGenreData?: ArtistGenreDebugInfo[]; // Dev-only: available when NODE_ENV=development and ?debugGenres=1
+  debugGenreData?: ArtistGenreDebugInfo[]; // Dev-only: returned when NODE_ENV=development and the dashboard's debug panel toggle is on
   debugLastFmStatus?: LastFmDebugStatus;
 }
 

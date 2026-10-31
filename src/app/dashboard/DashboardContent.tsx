@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { BarChart3, ChevronDown, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User, Bug, Tags, Check } from 'lucide-react';
@@ -33,7 +33,6 @@ export default function DashboardContent() {
   const [showAllTracks, setShowAllTracks] = useState(false);
   const [showAllGenres, setShowAllGenres] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   // Constants for number of items to show
   const ARTISTS_TO_SHOW = 8;
@@ -41,12 +40,7 @@ export default function DashboardContent() {
   const GENRES_TO_SHOW = 12;
 
   const isDev = process.env.NODE_ENV === 'development';
-  // ?debugGenres=1 just switches the persisted setting on; the menu toggle is the source of truth.
-  const [debugPanelEnabled, setDebugPanelEnabled] = usePersistedToggle(
-    'spotifun.debugPanel',
-    false,
-    searchParams.get('debugGenres') === '1' ? true : undefined
-  );
+  const [debugPanelEnabled, setDebugPanelEnabled] = usePersistedToggle('spotifun.debugPanel', false);
   const [lastFmEnabled, setLastFmEnabled] = usePersistedToggle('spotifun.lastFmEnrichment', true);
   const debugEnabled = isDev && debugPanelEnabled;
   const [debugPanelOpen, setDebugPanelOpen] = useState(false);
