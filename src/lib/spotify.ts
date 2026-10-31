@@ -1,6 +1,6 @@
 import SpotifyWebApi from 'spotify-web-api-node';
 import { TrackStats, ArtistStats, GenreStats } from '@/types';
-import { batchClassifyWithLastFm, supplementGenresWithLastFm } from '@/utils/lastfm';
+import { batchClassifyWithLastFm, supplementGenresWithLastFm, type LastFmClassificationResult } from '@/utils/lastfm';
 
 // Initialize Spotify API
 export const spotifyApi = new SpotifyWebApi({
@@ -80,33 +80,11 @@ export async function fetchArtistsInBatches(artistIds: string[]) {
   }, {});
 }
 
-// Calculate track statistics from play history
-/**
- * Get effective genres for an artist, blending Spotify and Last.fm data
- * For artists with 0-2 Spotify genres, includes Last.fm tags if available
- */
-function getEffectiveGenres(fullArtist: SpotifyApi.ArtistObjectFull): string[] {
-  const spotifyGenres = 'genres' in fullArtist ? fullArtist.genres || [] : [];
-  
-  // Check if artist has Last.fm data
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const lastFmData = (fullArtist as any)._lastFmData;
-  
-  // If artist has thin Spotify genres (0-2) and Last.fm data, blend them
-  if (spotifyGenres.length <= 2 && lastFmData?.classifications) {
-    // Extract genre names from Last.fm classifications that matched
-    const lastFmGenres = lastFmData.classifications
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .filter((c: any) => c.matchedGenre && c.scores)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .map((c: any) => c.originalGenre);
-    
-    // Combine Spotify and Last.fm genres, prioritizing Spotify
-    return [...spotifyGenres, ...lastFmGenres];
-  }
-  
-  return spotifyGenres;
+function getGenres(artist: SpotifyApi.ArtistObjectFull | SpotifyApi.ArtistObjectSimplified): string[] {
+  return 'genres' in artist ? artist.genres || [] : [];
 }
+
+// Calculate track statistics from play history
 export const calculateTrackStats = (
   playHistory: SpotifyApi.PlayHistoryObject[],
   artistDetails: Record<string, SpotifyApi.ArtistObjectFull> = {}
@@ -206,7 +184,7 @@ export const calculateGenreStats = (
     item.track.artists.forEach(artist => {
       const artistId = artist.id;
       const fullArtist = artistDetails[artistId] || artist;
-      const artistGenres = getEffectiveGenres(fullArtist);
+      const artistGenres = getGenres(fullArtist);
 
       // Process each genre of the artist
       artistGenres.forEach(genre => {
@@ -325,7 +303,7 @@ export const calculateTopTracksStats = (
       }
 
       // Genre stats
-      const artistGenres = getEffectiveGenres(fullArtist);
+      const artistGenres = getGenres(fullArtist);
       artistGenres.forEach(genre => {
         if (genreMap.has(genre)) {
           const stats = genreMap.get(genre)!;
@@ -447,7 +425,7 @@ export const calculateTopArtistsStats = (
     });
 
     // Genre stats
-    const artistGenres = getEffectiveGenres(artist);
+    const artistGenres = getGenres(artist);
     artistGenres.forEach(genre => {
       if (genreMap.has(genre)) {
         const stats = genreMap.get(genre)!;
@@ -494,17 +472,29 @@ export const calculateTopArtistsStats = (
 
 
 /**
+ * Server-only fields attached by enhanceArtistsWithLastFm. Stripped from API responses;
+ * only the dev genre debug panel reads them.
+ */
+export type LastFmEnhancedArtist = SpotifyApi.ArtistObjectFull & {
+  _spotifyGenres?: string[];
+  _lastFmData?: LastFmClassificationResult;
+};
+
+/**
  * Enhance artist data with Last.fm tags for artists with thin Spotify genres
  * Server-side only - uses Last.fm API with caching
  * 
+ * Matched Last.fm tags are merged into `genres`, so downstream code never needs to know
+ * where a genre came from.
+ * 
  * @param artists - Artists to enhance
  * @param apiKey - Last.fm API key (optional, degrades gracefully)
- * @returns Enhanced artists with Last.fm data stored in a new field
+ * @returns Artists with merged genres
  */
 export const enhanceArtistsWithLastFm = async (
-  artists: SpotifyApi.ArtistObjectFull[],
+  artists: LastFmEnhancedArtist[],
   apiKey?: string
-): Promise<SpotifyApi.ArtistObjectFull[]> => {
+): Promise<LastFmEnhancedArtist[]> => {
   // If no API key, return artists as-is
   if (!apiKey) {
     console.log('Last.fm API key not configured, skipping genre enhancement');
@@ -512,7 +502,9 @@ export const enhanceArtistsWithLastFm = async (
   }
 
   // Find artists with thin genres (0-2 genres)
-  const thinGenreArtists = artists.filter(artist => (artist.genres?.length || 0) <= 2);
+  const thinGenreArtists = artists.filter(artist =>
+    !artist._spotifyGenres && (artist.genres?.length || 0) <= 2
+  );
   
   if (thinGenreArtists.length === 0) {
     return artists;
@@ -525,17 +517,21 @@ export const enhanceArtistsWithLastFm = async (
     const artistNames = thinGenreArtists.map(artist => artist.name);
     const lastFmResults = await batchClassifyWithLastFm(artistNames, apiKey);
 
-    // Store Last.fm data in a way that can be used later
     return artists.map(artist => {
       const lastFmResult = lastFmResults.get(artist.name);
-      if (lastFmResult) {
-        // Add Last.fm data to artist object as a custom field
-        return {
-          ...artist,
-          _lastFmData: lastFmResult
-        } as SpotifyApi.ArtistObjectFull;
+      if (!lastFmResult || artist._spotifyGenres) {
+        return artist;
       }
-      return artist;
+      const spotifyGenres = artist.genres || [];
+      const lastFmGenres = lastFmResult.classifications
+        .filter(c => c.matchedGenre && c.scores)
+        .map(c => c.originalGenre);
+      return {
+        ...artist,
+        genres: Array.from(new Set([...spotifyGenres, ...lastFmGenres])),
+        _spotifyGenres: spotifyGenres,
+        _lastFmData: lastFmResult
+      };
     });
   } catch (error) {
     console.error('Error enhancing artists with Last.fm:', error);

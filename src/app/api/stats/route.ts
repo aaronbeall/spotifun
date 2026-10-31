@@ -5,8 +5,11 @@ import {
   calculateTopTracksStats, calculateTopArtistsStats, enhanceArtistsWithLastFm
 } from '@/lib/spotify';
 import { setAuthCookies, UnauthenticatedError, withSpotifyAccessToken } from '@/lib/auth';
+import type { LastFmEnhancedArtist } from '@/lib/spotify';
 import { Stats, TimeRange, DataMode, ArtistGenreDebugInfo, GenreTagDebugInfo } from '@/types';
-import type { LastFmClassificationResult } from '@/utils/lastfm';
+
+// Drops server-only fields (e.g. `_lastFmData`, `_spotifyGenres`) from the response
+const stripInternalFields = (key: string, value: unknown) => key.startsWith('_') ? undefined : value;
 
 export async function GET(request: NextRequest): Promise<NextResponse<Stats | { error: string }>> {
   try {
@@ -25,7 +28,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
       ]);
 
       // Enhance top artists with Last.fm data for artists with thin genres
-      // This is server-side only, cached 7 days, rate-limited
+      // This is server-side only, cached 7 days
       const topArtists = await enhanceArtistsWithLastFm(
         topArtistsRaw,
         lastFmApiKey
@@ -153,18 +156,12 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
           : process.env.LASTFM_API_KEY ? 'disabled' : 'no-api-key';
 
         const debugData: ArtistGenreDebugInfo[] = artistStats.map(({ artist }) => {
-          const spotifyGenres = artist.genres || [];
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const lastFmData: LastFmClassificationResult | undefined = (artist as any)._lastFmData;
-          const lastFmClassifications = lastFmData?.classifications ?? [];
-          // Must mirror getEffectiveGenres in lib/spotify.ts: Last.fm tags only count for
-          // thin-genre artists, and only when they resolve to a taxonomy node.
-          const lastFmTagsUsed = spotifyGenres.length <= 2
-            ? lastFmClassifications.filter(c => c.matchedGenre && c.scores).map(c => c.originalGenre)
-            : [];
-          const lastFmTagsUsedSet = new Set(lastFmTagsUsed);
+          const { genres = [], _spotifyGenres, _lastFmData: lastFmData } = artist as LastFmEnhancedArtist;
+          const spotifyGenres = _spotifyGenres ?? genres;
+          const spotifyGenresSet = new Set(spotifyGenres);
+          const lastFmTagsUsedSet = new Set(genres.filter(genre => !spotifyGenresSet.has(genre)));
 
-          const classifications = classifyGenresWithDetails([...spotifyGenres, ...lastFmTagsUsed]);
+          const classifications = classifyGenresWithDetails(genres);
 
           const spotifyTags: GenreTagDebugInfo[] = spotifyGenres.map(tag => {
             const explanation = explainGenreMatch(tag);
@@ -199,7 +196,9 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
       return stats;
     });
 
-    const response = NextResponse.json(stats);
+    const response = new NextResponse<Stats>(JSON.stringify(stats, stripInternalFields), {
+      headers: { 'content-type': 'application/json' }
+    });
     if (refreshedTokens) setAuthCookies(response, refreshedTokens);
     return response;
   } catch (error) {
