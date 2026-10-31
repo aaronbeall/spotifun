@@ -5,7 +5,22 @@
  * Uses Next.js/Vercel fetch caching for performance.
  */
 
+import { revalidateTag } from 'next/cache';
 import { scoreWeightedTags, WeightedClassificationResult } from './improvedClassification';
+
+// https://www.last.fm/api/errorcodes
+const RATE_LIMIT_ERROR_CODE = 29;
+const TRANSIENT_ERROR_CODES = new Set([8, 11, 16, RATE_LIMIT_ERROR_CODE]);
+const RATE_LIMIT_COOLDOWN_MS = 60 * 1000;
+
+let rateLimitedUntil = 0;
+
+function startRateLimitCooldown() {
+  if (Date.now() >= rateLimitedUntil) {
+    console.warn(`Last.fm rate limit hit; skipping Last.fm lookups for ${RATE_LIMIT_COOLDOWN_MS / 1000}s`);
+  }
+  rateLimitedUntil = Date.now() + RATE_LIMIT_COOLDOWN_MS;
+}
 
 /**
  * Last.fm artist tag with count
@@ -153,6 +168,12 @@ export async function fetchLastFmArtistTagsRaw(
     return null;
   }
   
+  if (Date.now() < rateLimitedUntil) {
+    return null;
+  }
+  
+  const cacheTag = `lastfm-tags-${artistName.toLowerCase()}`.slice(0, 256);
+  
   try {
     const url = new URL('https://ws.audioscrobbler.com/2.0/');
     url.searchParams.set('method', 'artist.getTopTags');
@@ -165,9 +186,14 @@ export async function fetchLastFmArtistTagsRaw(
     const response = await fetch(url.toString(), {
       next: { 
         revalidate: 60 * 60 * 24 * 7, // 7 days
-        tags: [`lastfm-tags-${artistName.toLowerCase()}`]
+        tags: [cacheTag]
       }
     });
+    
+    if (response.status === 429) {
+      startRateLimitCooldown();
+      return null;
+    }
     
     if (!response.ok) {
       console.warn(`Last.fm API error for artist "${artistName}": ${response.status} ${response.statusText}`);
@@ -177,7 +203,15 @@ export async function fetchLastFmArtistTagsRaw(
     const data: LastFmTopTagsResponse = await response.json();
     
     if (data.error) {
-      console.warn(`Last.fm API error for artist "${artistName}": ${data.message}`);
+      if (data.error === RATE_LIMIT_ERROR_CODE) {
+        startRateLimitCooldown();
+      } else {
+        console.warn(`Last.fm API error for artist "${artistName}": ${data.message}`);
+      }
+      // Last.fm reports errors with HTTP 200, which the fetch cache would keep for 7 days
+      if (TRANSIENT_ERROR_CODES.has(data.error)) {
+        revalidateTag(cacheTag, { expire: 0 });
+      }
       return null;
     }
     
@@ -306,65 +340,28 @@ export async function supplementGenresWithLastFm(
 }
 
 /**
- * Rate limit tracker for Last.fm API
- * Last.fm allows ~5 requests per second
- */
-class RateLimiter {
-  private requests: number[] = [];
-  private readonly maxRequestsPerSecond = 5;
-  
-  async waitIfNeeded(): Promise<void> {
-    const now = Date.now();
-    
-    // Remove requests older than 1 second
-    this.requests = this.requests.filter(time => now - time < 1000);
-    
-    // If we're at the limit, wait
-    if (this.requests.length >= this.maxRequestsPerSecond) {
-      const oldestRequest = Math.min(...this.requests);
-      const waitTime = 1000 - (now - oldestRequest) + 50; // Add 50ms buffer
-      
-      if (waitTime > 0) {
-        await new Promise(resolve => setTimeout(resolve, waitTime));
-      }
-    }
-    
-    // Track this request
-    this.requests.push(Date.now());
-  }
-}
-
-export const lastFmRateLimiter = new RateLimiter();
-
-/**
- * Batch classify artists with Last.fm, respecting rate limits
+ * Classify many artists with Last.fm concurrently.
+ * 
+ * There's no client-side throttle: cached lookups never reach Last.fm, so only
+ * never-seen artists cost a request. If Last.fm rate-limits us, lookups are
+ * skipped until the cooldown ends and those artists fall back to Spotify genres.
  * 
  * @param artistNames - Array of artist names
  * @param apiKey - Last.fm API key
- * @param concurrency - Max concurrent requests (default 3)
  * @returns Map of artist name to classification result
  */
 export async function batchClassifyWithLastFm(
   artistNames: string[],
-  apiKey: string,
-  concurrency = 3
+  apiKey: string
 ): Promise<Map<string, LastFmClassificationResult>> {
   const results = new Map<string, LastFmClassificationResult>();
   
-  // Process in batches with concurrency limit
-  for (let i = 0; i < artistNames.length; i += concurrency) {
-    const batch = artistNames.slice(i, i + concurrency);
-    
-    const batchPromises = batch.map(async (artistName) => {
-      await lastFmRateLimiter.waitIfNeeded();
-      const result = await classifyArtistWithLastFm(artistName, apiKey);
-      if (result) {
-        results.set(artistName, result);
-      }
-    });
-    
-    await Promise.all(batchPromises);
-  }
+  await Promise.all(artistNames.map(async (artistName) => {
+    const result = await classifyArtistWithLastFm(artistName, apiKey);
+    if (result) {
+      results.set(artistName, result);
+    }
+  }));
   
   return results;
 }

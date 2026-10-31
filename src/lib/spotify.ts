@@ -521,9 +521,9 @@ export const enhanceArtistsWithLastFm = async (
   console.log(`Enhancing ${thinGenreArtists.length} artists with thin genres using Last.fm`);
 
   try {
-    // Batch classify with Last.fm (rate-limited, cached 7 days)
+    // Cached 7 days, so repeat lookups don't hit Last.fm
     const artistNames = thinGenreArtists.map(artist => artist.name);
-    const lastFmResults = await batchClassifyWithLastFm(artistNames, apiKey, 3);
+    const lastFmResults = await batchClassifyWithLastFm(artistNames, apiKey);
 
     // Store Last.fm data in a way that can be used later
     return artists.map(artist => {
