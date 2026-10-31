@@ -9,6 +9,7 @@ import { revalidateTag } from 'next/cache';
 import { scoreWeightedTags, WeightedClassificationResult } from './improvedClassification';
 
 // https://www.last.fm/api/errorcodes
+const ARTIST_NOT_FOUND_ERROR_CODE = 6;
 const RATE_LIMIT_ERROR_CODE = 29;
 const TRANSIENT_ERROR_CODES = new Set([8, 11, 16, RATE_LIMIT_ERROR_CODE]);
 const RATE_LIMIT_COOLDOWN_MS = 60 * 1000;
@@ -202,6 +203,10 @@ export async function fetchLastFmArtistTagsRaw(
     
     const data: LastFmTopTagsResponse = await response.json();
     
+    if (data.error === ARTIST_NOT_FOUND_ERROR_CODE) {
+      return [];
+    }
+    
     if (data.error) {
       if (data.error === RATE_LIMIT_ERROR_CODE) {
         startRateLimitCooldown();
@@ -246,8 +251,11 @@ export async function classifyArtistWithLastFm(
   apiKey?: string
 ): Promise<LastFmClassificationResult | null> {
   const rawTags = await fetchLastFmArtistTagsRaw(artistName, apiKey);
-  
-  if (!rawTags || rawTags.length === 0) {
+  return rawTags && classifyLastFmTags(rawTags);
+}
+
+function classifyLastFmTags(rawTags: LastFmTag[]): LastFmClassificationResult | null {
+  if (rawTags.length === 0) {
     return null;
   }
   
@@ -348,20 +356,27 @@ export async function supplementGenresWithLastFm(
  * 
  * @param artistNames - Array of artist names
  * @param apiKey - Last.fm API key
- * @returns Map of artist name to classification result
+ * @returns Classification results by artist name, plus the artists whose lookup
+ *   failed (rate limit, API or network error) as opposed to having no tags
  */
 export async function batchClassifyWithLastFm(
   artistNames: string[],
   apiKey: string
-): Promise<Map<string, LastFmClassificationResult>> {
+): Promise<{ results: Map<string, LastFmClassificationResult>; unavailable: string[] }> {
   const results = new Map<string, LastFmClassificationResult>();
+  const unavailable: string[] = [];
   
   await Promise.all(artistNames.map(async (artistName) => {
-    const result = await classifyArtistWithLastFm(artistName, apiKey);
+    const rawTags = await fetchLastFmArtistTagsRaw(artistName, apiKey);
+    if (!rawTags) {
+      unavailable.push(artistName);
+      return;
+    }
+    const result = classifyLastFmTags(rawTags);
     if (result) {
       results.set(artistName, result);
     }
   }));
   
-  return results;
+  return { results, unavailable };
 }

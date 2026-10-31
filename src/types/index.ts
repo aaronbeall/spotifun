@@ -116,6 +116,8 @@ export interface Stats {
   timeRange: TimeRange;
   topGenres: TopGenre[];
   mode: DataMode;
+  /** Artists whose genres couldn't be enriched with Last.fm (rate limit or API error); omitted when 0 */
+  lastFmUnavailableCount?: number;
   debugGenreData?: ArtistGenreDebugInfo[]; // Dev-only: always returned when NODE_ENV=development
   debugLastFmStatus?: LastFmDebugStatus;
 }

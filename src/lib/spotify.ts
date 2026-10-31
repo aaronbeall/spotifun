@@ -489,16 +489,17 @@ export type LastFmEnhancedArtist = SpotifyApi.ArtistObjectFull & {
  * 
  * @param artists - Artists to enhance
  * @param apiKey - Last.fm API key (optional, degrades gracefully)
- * @returns Artists with merged genres
+ * @returns Artists with merged genres, plus the names of artists Last.fm couldn't be
+ *   reached for (rate limit, API or network error)
  */
 export const enhanceArtistsWithLastFm = async (
   artists: LastFmEnhancedArtist[],
   apiKey?: string
-): Promise<LastFmEnhancedArtist[]> => {
+): Promise<{ artists: LastFmEnhancedArtist[]; lastFmUnavailable: string[] }> => {
   // If no API key, return artists as-is
   if (!apiKey) {
     console.log('Last.fm API key not configured, skipping genre enhancement');
-    return artists;
+    return { artists, lastFmUnavailable: [] };
   }
 
   // Find artists with thin genres (0-2 genres)
@@ -507,17 +508,17 @@ export const enhanceArtistsWithLastFm = async (
   );
   
   if (thinGenreArtists.length === 0) {
-    return artists;
+    return { artists, lastFmUnavailable: [] };
   }
 
   console.log(`Enhancing ${thinGenreArtists.length} artists with thin genres using Last.fm`);
 
+  const artistNames = thinGenreArtists.map(artist => artist.name);
   try {
     // Cached 7 days, so repeat lookups don't hit Last.fm
-    const artistNames = thinGenreArtists.map(artist => artist.name);
-    const lastFmResults = await batchClassifyWithLastFm(artistNames, apiKey);
+    const { results: lastFmResults, unavailable } = await batchClassifyWithLastFm(artistNames, apiKey);
 
-    return artists.map(artist => {
+    const enhanced = artists.map(artist => {
       const lastFmResult = lastFmResults.get(artist.name);
       if (!lastFmResult || artist._spotifyGenres) {
         return artist;
@@ -533,9 +534,10 @@ export const enhanceArtistsWithLastFm = async (
         _lastFmData: lastFmResult
       };
     });
+    return { artists: enhanced, lastFmUnavailable: unavailable };
   } catch (error) {
     console.error('Error enhancing artists with Last.fm:', error);
     // Degrade gracefully - return original artists
-    return artists;
+    return { artists, lastFmUnavailable: artistNames };
   }
 };

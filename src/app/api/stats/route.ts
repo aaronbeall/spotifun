@@ -27,12 +27,16 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
         getTopArtists(timeRange, 50)
       ]);
 
+      const lastFmUnavailable = new Set<string>();
+      const enhanceWithLastFm = async (artists: SpotifyApi.ArtistObjectFull[]) => {
+        const result = await enhanceArtistsWithLastFm(artists, lastFmApiKey);
+        result.lastFmUnavailable.forEach(name => lastFmUnavailable.add(name));
+        return result.artists;
+      };
+
       // Enhance top artists with Last.fm data for artists with thin genres
       // This is server-side only, cached 7 days
-      const topArtists = await enhanceArtistsWithLastFm(
-        topArtistsRaw,
-        lastFmApiKey
-      );
+      const topArtists = await enhanceWithLastFm(topArtistsRaw);
       
       const topTracks = topTracksRaw;
 
@@ -50,10 +54,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
           const topTracksArtistsByIdRaw = await fetchArtistsInBatches(artistIds);
           
           // Enhance these artists with Last.fm too
-          const topTracksArtistsArray = await enhanceArtistsWithLastFm(
-            Object.values(topTracksArtistsByIdRaw),
-            lastFmApiKey
-          );
+          const topTracksArtistsArray = await enhanceWithLastFm(Object.values(topTracksArtistsByIdRaw));
           const topTracksArtistsById = Object.fromEntries(
             topTracksArtistsArray.map(artist => [artist.id, artist])
           );
@@ -93,10 +94,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
           const recentlyPlayedArtistsByIdRaw = await fetchArtistsInBatches(artistIds);
           
           // Enhance these artists with Last.fm too
-          const recentlyPlayedArtistsArray = await enhanceArtistsWithLastFm(
-            Object.values(recentlyPlayedArtistsByIdRaw),
-            lastFmApiKey
-          );
+          const recentlyPlayedArtistsArray = await enhanceWithLastFm(Object.values(recentlyPlayedArtistsByIdRaw));
           const recentlyPlayedArtistsById = Object.fromEntries(
             recentlyPlayedArtistsArray.map(artist => [artist.id, artist])
           );
@@ -135,7 +133,8 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
         topArtists,
         topGenres,
         timeRange,
-        mode
+        mode,
+        ...(lastFmUnavailable.size > 0 && { lastFmUnavailableCount: lastFmUnavailable.size })
       };
 
       // Compute genre coverage using the improved classification system

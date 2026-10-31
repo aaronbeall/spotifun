@@ -1,4 +1,4 @@
-import { Headphones, Users, Music, Clock, Sparkles, Palette, Disc, Disc3, Disc2, TrendingUp, Star, RefreshCw } from 'lucide-react';
+import { Headphones, Users, Music, Clock, Sparkles, Palette, Disc, Disc3, Disc2, TrendingUp, Star, RefreshCw, CloudAlert } from 'lucide-react';
 import { useMemo } from 'react';
 import { Stats, TimeRange, DataMode } from '@/types';
 import { formatNumber, formatDuration, formatRelativeTime, getGenreColorClass, cn } from "@/utils";
@@ -158,6 +158,16 @@ export default function MusicProfile({
             </span>
 
             <div className="flex items-center gap-3 ml-auto">
+              {stats.lastFmUnavailableCount ? (
+                <span
+                  className="flex items-center gap-1.5 text-xs text-amber-400/60 cursor-help"
+                  title={`Last.fm couldn't be reached for ${stats.lastFmUnavailableCount} artist${stats.lastFmUnavailableCount === 1 ? '' : 's'} (likely rate limited), so their genres are Spotify-only. Refresh in a minute to fill them in.`}
+                >
+                  <CloudAlert className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Genres partially enriched</span>
+                </span>
+              ) : null}
+
               <button
                 onClick={onRefresh}
                 disabled={isRefreshing}
