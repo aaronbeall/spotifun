@@ -5,7 +5,7 @@ import {
   calculateTopTracksStats, calculateTopArtistsStats, enhanceArtistsWithLastFm
 } from '@/lib/spotify';
 import { setAuthCookies, UnauthenticatedError, withSpotifyAccessToken } from '@/lib/auth';
-import { Stats, TimeRange, DataMode } from '@/types';
+import { Stats, TimeRange, DataMode, ArtistGenreDebugInfo, GenreTagDebugInfo } from '@/types';
 
 export async function GET(request: NextRequest): Promise<NextResponse<Stats | { error: string }>> {
   try {
@@ -13,6 +13,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
     const timeRange = (searchParams.get('timeRange') as TimeRange) || 'medium_term';
     const limit = Math.min(50, Math.max(5, parseInt(searchParams.get('limit') || '50', 10))); // Ensure limit is between 5 and 50
     const mode = (searchParams.get('mode') as DataMode) || 'recent';
+    const lastFmApiKey = searchParams.get('lastfm') === '0' ? undefined : process.env.LASTFM_API_KEY;
 
     const { result: stats, refreshedTokens } = await withSpotifyAccessToken(request, async () => {
       // Fetch initial data in parallel
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
       // This is server-side only, cached 7 days, rate-limited
       const topArtists = await enhanceArtistsWithLastFm(
         topArtistsRaw,
-        process.env.LASTFM_API_KEY
+        lastFmApiKey
       );
       
       const topTracks = topTracksRaw;
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
           // Enhance these artists with Last.fm too
           const topTracksArtistsArray = await enhanceArtistsWithLastFm(
             Object.values(topTracksArtistsByIdRaw),
-            process.env.LASTFM_API_KEY
+            lastFmApiKey
           );
           const topTracksArtistsById = Object.fromEntries(
             topTracksArtistsArray.map(artist => [artist.id, artist])
@@ -90,7 +91,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
           // Enhance these artists with Last.fm too
           const recentlyPlayedArtistsArray = await enhanceArtistsWithLastFm(
             Object.values(recentlyPlayedArtistsByIdRaw),
-            process.env.LASTFM_API_KEY
+            lastFmApiKey
           );
           const recentlyPlayedArtistsById = Object.fromEntries(
             recentlyPlayedArtistsArray.map(artist => [artist.id, artist])
@@ -142,95 +143,43 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
       // Dev-only debug data: include per-artist genre classification details
       if (process.env.NODE_ENV === 'development' && searchParams.get('debugGenres') === '1') {
         const { classifyGenresWithDetails } = await import('@/utils/musicClassification');
-        
-        // Fetch audio features for tracks
-        const tracksByArtist = new Map<string, Array<{ trackId: string; trackName: string }>>();
-        console.log('[Debug] trackStats length:', trackStats.length);
-        trackStats.slice(0, 50).forEach(({ track, artists }) => {
-          artists.forEach(artist => {
-            if (!tracksByArtist.has(artist.id)) {
-              tracksByArtist.set(artist.id, []);
-            }
-            const artistTracks = tracksByArtist.get(artist.id)!;
-            if (artistTracks.length < 3) { // Max 3 tracks per artist for debug
-              artistTracks.push({ trackId: track.id, trackName: track.name });
-            }
-          });
-        });
-        
-        console.log('[Debug] tracksByArtist size:', tracksByArtist.size);
-        console.log('[Debug] Total tracks to fetch features for:', Array.from(tracksByArtist.values()).flatMap(t => t).length);
-        
-        // Fetch audio features in batches
-        const audioFeaturesMap = new Map<string, SpotifyApi.AudioFeaturesResponse>();
-        const trackIds = Array.from(tracksByArtist.values()).flatMap(tracks => tracks.map(t => t.trackId));
-        
-        try {
-          // Spotify allows up to 100 tracks per request
-          for (let i = 0; i < trackIds.length; i += 100) {
-            const batch = trackIds.slice(i, i + 100);
-            const { getAudioFeaturesForTracks } = await import('@/lib/spotify');
-            const features = await getAudioFeaturesForTracks(batch);
-            console.log('[Debug] Fetched features batch:', batch.length, 'got:', features.filter(f => f !== null).length, 'non-null');
-            features.forEach((feature, idx) => {
-              if (feature) {
-                audioFeaturesMap.set(batch[idx], feature);
-              }
-            });
-          }
-          console.log('[Debug] Total audio features fetched:', audioFeaturesMap.size);
-        } catch (error) {
-          console.error('Error fetching audio features for debug:', error);
-        }
-        
-        const debugData = artistStats.map(({ artist }) => {
+        const { explainGenreMatch } = await import('@/utils/improvedClassification');
+
+        const debugData: ArtistGenreDebugInfo[] = artistStats.map(({ artist }) => {
           const spotifyGenres = artist.genres || [];
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const lastFmData = (artist as any)._lastFmData;
-          const lastFmTagsUsed = lastFmData?.classifications
+          const lastFmClassifications: Array<{ originalGenre: string; matchedGenre: string | null; scores: unknown }> =
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ?.filter((c: any) => c.matchedGenre && c.scores)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ?.map((c: any) => c.originalGenre) || [];
-          
-          const effectiveGenres = [...spotifyGenres, ...lastFmTagsUsed];
-          const classifications = classifyGenresWithDetails(effectiveGenres);
-          
-          // Get audio features for this artist's tracks
-          const artistTracks = tracksByArtist.get(artist.id) || [];
-          const audioFeatures = artistTracks
-            .map(({ trackId, trackName }) => {
-              const features = audioFeaturesMap.get(trackId);
-              if (!features) return null;
-              return {
-                trackName,
-                valence: features.valence,
-                energy: features.energy,
-                danceability: features.danceability,
-                acousticness: features.acousticness,
-                instrumentalness: features.instrumentalness,
-                speechiness: features.speechiness,
-                tempo: features.tempo
-              };
-            })
-            .filter((f): f is NonNullable<typeof f> => f !== null);
-          
-          if (audioFeatures.length > 0) {
-            console.log('[Debug] Artist', artist.name, 'has', audioFeatures.length, 'audio features');
-          }
-          
+            (artist as any)._lastFmData?.classifications || [];
+          // Must mirror getEffectiveGenres in lib/spotify.ts: Last.fm tags only count for
+          // thin-genre artists, and only when they resolve to a taxonomy node.
+          const lastFmUsable = spotifyGenres.length <= 2;
+          const lastFmTagsUsed = lastFmUsable
+            ? lastFmClassifications.filter(c => c.matchedGenre && c.scores).map(c => c.originalGenre)
+            : [];
+
+          const classifications = classifyGenresWithDetails([...spotifyGenres, ...lastFmTagsUsed]);
+
+          const tags: GenreTagDebugInfo[] = [
+            ...spotifyGenres.map(tag => ({ tag, source: 'spotify' as const })),
+            ...lastFmClassifications.map(c => ({ tag: c.originalGenre, source: 'lastfm' as const }))
+          ].map(({ tag, source }) => {
+            const explanation = explainGenreMatch(tag);
+            const isTaxonomyMatch = explanation.node !== null && explanation.scoresFrom !== null;
+            return {
+              tag,
+              source,
+              ...explanation,
+              usedInScoring: isTaxonomyMatch && (source === 'spotify' || lastFmUsable)
+            };
+          });
+
           return {
             artistName: artist.name,
-            spotifyGenres,
-            lastFmTagsUsed,
-            matchedNodes: classifications.matchedGenres,
-            matchType: classifications.matchType,
+            tags,
             vacrsScores: classifications.scores,
-            coverage: classifications.coverage,
-            audioFeatures: audioFeatures.length > 0 ? audioFeatures : undefined
+            coverage: classifications.coverage
           };
         });
-        console.log('[Debug] Debug data with audio features:', debugData.filter(d => d.audioFeatures).length, '/', debugData.length);
         stats.debugGenreData = debugData;
       }
 

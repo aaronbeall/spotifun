@@ -10,7 +10,7 @@
  * - Descriptor-based mood/tag scoring
  */
 
-import { VACRSScore } from '@/types';
+import { VACRSScore, GenreMatchKind } from '@/types';
 import { GENRE_TAXONOMY, GenreTaxonomyEntry } from './genreTaxonomy';
 import { DESCRIPTOR_VOCABULARY } from './descriptorVocabulary';
 import { 
@@ -81,11 +81,13 @@ function getGenreScores(genreKey: string): VACRSScore | null {
  * @param normalizedGenre - Normalized genre string
  * @returns Matched genre key and entry, or null
  */
-function findGenreInTaxonomy(normalizedGenre: string): { key: string; entry: GenreTaxonomyEntry } | null {
+function findGenreInTaxonomy(
+  normalizedGenre: string
+): { key: string; entry: GenreTaxonomyEntry; exactAlias: boolean } | null {
   // First pass: exact match on any alias
   for (const [key, entry] of Object.entries(GENRE_TAXONOMY)) {
     if (entry.aliases.some(alias => alias === normalizedGenre)) {
-      return { key, entry };
+      return { key, entry, exactAlias: true };
     }
   }
   
@@ -107,7 +109,51 @@ function findGenreInTaxonomy(normalizedGenre: string): { key: string; entry: Gen
   // Prefer the longest (most specific) match
   candidates.sort((a, b) => b.alias.length - a.alias.length);
   const best = candidates[0];
-  return { key: best.key, entry: best.entry };
+  return { key: best.key, entry: best.entry, exactAlias: false };
+}
+
+function findScoresSource(genreKey: string): string | null {
+  const entry = GENRE_TAXONOMY[genreKey];
+  if (!entry) return null;
+  if (entry.scores) return genreKey;
+  return entry.parent ? findScoresSource(entry.parent) : null;
+}
+
+/**
+ * Explain how a single tag resolves, for debugging. Mirrors classifySingleGenre's
+ * matching order, then falls back to the descriptor (mood) vocabulary.
+ */
+export function explainGenreMatch(tag: string): {
+  kind: GenreMatchKind;
+  node: string | null;
+  scoresFrom: string | null;
+} {
+  const normalized = normalizeGenre(tag);
+  if (!normalized) {
+    return { kind: 'unknown', node: null, scoresFrom: null };
+  }
+
+  const match = findGenreInTaxonomy(normalized);
+  if (match) {
+    const kind: GenreMatchKind = !match.exactAlias
+      ? 'partial'
+      : match.key === tag.toLowerCase().trim() ? 'exact' : 'alias';
+    return { kind, node: match.key, scoresFrom: findScoresSource(match.key) };
+  }
+
+  const lastWord = getLastWord(normalized);
+  if (lastWord && lastWord !== normalized) {
+    const lastWordMatch = findGenreInTaxonomy(lastWord);
+    if (lastWordMatch) {
+      return { kind: 'keyword', node: lastWordMatch.key, scoresFrom: findScoresSource(lastWordMatch.key) };
+    }
+  }
+
+  if (scoreDescriptor(tag)) {
+    return { kind: 'descriptor', node: null, scoresFrom: null };
+  }
+
+  return { kind: 'unknown', node: null, scoresFrom: null };
 }
 
 /**

@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { BarChart3, ChevronDown, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User } from 'lucide-react';
+import { BarChart3, ChevronDown, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User, Bug, Tags, Check } from 'lucide-react';
 import { formatDuration, formatNumber, getGenreColorMap, getGenreColorClass } from '@/utils';
 import Image from 'next/image';
 import FunStats from '@/components/features/FunStats';
@@ -15,6 +15,7 @@ import MusicProfile from '@/components/features/MusicProfile';
 import { SpotifyPlayOverlay } from '@/components/SpotifyPlayOverlay';
 import { NowPlayingWidget } from '@/components/NowPlayingWidget';
 import { GenreDebugPanel } from '@/components/GenreDebugPanel';
+import { usePersistedToggle } from '@/hooks/usePersistedToggle';
 
 import { UserProfile, Stats, TimeRange, DataMode } from '@/types';
 
@@ -39,14 +40,30 @@ export default function DashboardContent() {
   const TRACKS_TO_SHOW = 16;
   const GENRES_TO_SHOW = 12;
 
-  // Read debug flag from URL
-  const debugGenres = searchParams.get('debugGenres');
+  const isDev = process.env.NODE_ENV === 'development';
+  const [debugPanelEnabled, setDebugPanelEnabled] = usePersistedToggle('spotifun.debugPanel', false);
+  const [lastFmEnabled, setLastFmEnabled] = usePersistedToggle('spotifun.lastFmEnrichment', true);
+  const urlForcesDebug = searchParams.get('debugGenres') === '1';
+
+  const buildStatsUrl = useCallback((
+    range: TimeRange,
+    limit: number,
+    mode: DataMode,
+    options: { debug: boolean; lastFm: boolean } = {
+      debug: isDev && (debugPanelEnabled || urlForcesDebug),
+      lastFm: lastFmEnabled
+    }
+  ) => {
+    const params = new URLSearchParams({ timeRange: range, limit: String(limit), mode });
+    if (options.debug) params.set('debugGenres', '1');
+    if (!options.lastFm) params.set('lastfm', '0');
+    return `/api/stats?${params}`;
+  }, [isDev, debugPanelEnabled, urlForcesDebug, lastFmEnabled]);
 
   const fetchAll = useCallback(async (range: TimeRange, limit: number, mode: DataMode) => {
-    const debugParam = debugGenres === '1' ? '&debugGenres=1' : '';
     const [userResponse, statsResponse] = await Promise.all([
       fetch('/api/user'),
-      fetch(`/api/stats?timeRange=${range}&limit=${limit}&mode=${mode}${debugParam}`)
+      fetch(buildStatsUrl(range, limit, mode))
     ]);
 
     if (userResponse.ok) {
@@ -60,7 +77,7 @@ export default function DashboardContent() {
     }
 
     setLastFetched(new Date());
-  }, [debugGenres]);
+  }, [buildStatsUrl]);
 
   useEffect(() => {
     fetchAll(timeRange, playLimit, dataMode)
@@ -91,8 +108,7 @@ export default function DashboardContent() {
     setIsLoadingTimeRange(true);
 
     try {
-      const debugParam = debugGenres === '1' ? '&debugGenres=1' : '';
-      const response = await fetch(`/api/stats?timeRange=${newTimeRange}&limit=${playLimit}&mode=${dataMode}${debugParam}`);
+      const response = await fetch(buildStatsUrl(newTimeRange, playLimit, dataMode));
       if (response.ok) {
         const data = await response.json();
         setStats(data);
@@ -112,8 +128,7 @@ export default function DashboardContent() {
     setIsLoadingTimeRange(true);
 
     try {
-      const debugParam = debugGenres === '1' ? '&debugGenres=1' : '';
-      const response = await fetch(`/api/stats?timeRange=${timeRange}&limit=${playLimit}&mode=${newMode}${debugParam}`);
+      const response = await fetch(buildStatsUrl(timeRange, playLimit, newMode));
       if (response.ok) {
         const data = await response.json();
         setStats(data);
@@ -124,6 +139,31 @@ export default function DashboardContent() {
     } finally {
       setIsLoadingTimeRange(false);
     }
+  };
+
+  const refetchStatsWith = async (options: { debug: boolean; lastFm: boolean }) => {
+    setIsLoadingTimeRange(true);
+    try {
+      const response = await fetch(buildStatsUrl(timeRange, playLimit, dataMode, options));
+      if (response.ok) {
+        setStats(await response.json());
+        setLastFetched(new Date());
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    } finally {
+      setIsLoadingTimeRange(false);
+    }
+  };
+
+  const handleDebugPanelToggle = (enabled: boolean) => {
+    setDebugPanelEnabled(enabled);
+    refetchStatsWith({ debug: isDev && (enabled || urlForcesDebug), lastFm: lastFmEnabled });
+  };
+
+  const handleLastFmToggle = (enabled: boolean) => {
+    setLastFmEnabled(enabled);
+    refetchStatsWith({ debug: isDev && (debugPanelEnabled || urlForcesDebug), lastFm: enabled });
   };
 
   // Format number and duration functions are now imported from @/utils
@@ -267,11 +307,38 @@ export default function DashboardContent() {
                   <DropdownMenu.Content
                     align="end"
                     sideOffset={8}
-                    className="min-w-[180px] bg-gray-800 border border-gray-700 rounded-lg shadow-xl py-1 z-50"
+                    className="min-w-[240px] bg-gray-800 border border-gray-700 rounded-lg shadow-xl py-1 z-50"
                   >
                     <div className="px-3 py-2 text-sm text-gray-300 border-b border-gray-700">
                       Welcome, {user.display_name}
                     </div>
+                    <DropdownMenu.CheckboxItem
+                      checked={lastFmEnabled}
+                      onCheckedChange={handleLastFmToggle}
+                      onSelect={e => e.preventDefault()}
+                      className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer outline-none"
+                    >
+                      <Tags className="w-4 h-4" />
+                      <span className="flex-1">Enrich genres with Last.fm</span>
+                      <DropdownMenu.ItemIndicator>
+                        <Check className="w-4 h-4 text-green-400" />
+                      </DropdownMenu.ItemIndicator>
+                    </DropdownMenu.CheckboxItem>
+                    {isDev && (
+                      <DropdownMenu.CheckboxItem
+                        checked={debugPanelEnabled}
+                        onCheckedChange={handleDebugPanelToggle}
+                        onSelect={e => e.preventDefault()}
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer outline-none"
+                      >
+                        <Bug className="w-4 h-4" />
+                        <span className="flex-1">Genre debug panel</span>
+                        <DropdownMenu.ItemIndicator>
+                          <Check className="w-4 h-4 text-green-400" />
+                        </DropdownMenu.ItemIndicator>
+                      </DropdownMenu.CheckboxItem>
+                    )}
+                    <DropdownMenu.Separator className="h-px bg-gray-700 my-1" />
                     <DropdownMenu.Item
                       onSelect={handleSettings}
                       className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer outline-none"
@@ -312,8 +379,7 @@ export default function DashboardContent() {
               setPlayLimit(newLimit);
               setIsLoadingTimeRange(true);
               try {
-                const debugParam = debugGenres === '1' ? '&debugGenres=1' : '';
-                const response = await fetch(`/api/stats?timeRange=${timeRange}&limit=${newLimit}&mode=${dataMode}${debugParam}`);
+                const response = await fetch(buildStatsUrl(timeRange, newLimit, dataMode));
                 if (response.ok) {
                   const data = await response.json();
                   setStats(data);

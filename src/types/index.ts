@@ -119,6 +119,28 @@ export interface Stats {
   debugGenreData?: ArtistGenreDebugInfo[]; // Dev-only: available when NODE_ENV=development and ?debugGenres=1
 }
 
+/**
+ * How a single genre/tag string was resolved:
+ * - exact: string is a taxonomy node name
+ * - alias: string is a listed alias of a node
+ * - partial: a node alias appears as whole words inside the string
+ * - keyword: only the last word matched a node
+ * - descriptor: not a genre, but a mood/descriptor in the descriptor vocabulary
+ * - unknown: nothing matched
+ */
+export type GenreMatchKind = 'exact' | 'alias' | 'partial' | 'keyword' | 'descriptor' | 'unknown';
+
+export interface GenreTagDebugInfo {
+  tag: string;
+  source: 'spotify' | 'lastfm';
+  kind: GenreMatchKind;
+  /** Taxonomy node the tag resolved to */
+  node: string | null;
+  /** Node whose scores were actually used (differs from `node` when inherited from a parent) */
+  scoresFrom: string | null;
+  usedInScoring: boolean;
+}
+
 interface TopGenre {
   genre: string;
   count: number;
@@ -126,22 +148,9 @@ interface TopGenre {
 
 export interface ArtistGenreDebugInfo {
   artistName: string;
-  spotifyGenres: string[];
-  lastFmTagsUsed: string[];
-  matchedNodes: string[];
-  matchType: string;
+  tags: GenreTagDebugInfo[];
   vacrsScores: VACRSScore | null;
   coverage: number; // 0-1 scale
-  audioFeatures?: {
-    trackName: string;
-    valence: number;
-    energy: number;
-    danceability: number;
-    acousticness: number;
-    instrumentalness: number;
-    speechiness: number;
-    tempo: number;
-  }[];
 }
 
 export interface VACRSScore {

@@ -280,8 +280,15 @@ This runs the validation suite which:
 
 4. **Machine Learning** (future)
    - Train on classified artists → predict unknown genres
-   - Use audio features if genre coverage poor
    - Keep current system as baseline
+
+### Not viable: Spotify Audio Features
+
+Spotify's `audio-features` / `audio-analysis` endpoints (valence, energy, danceability, tempo, …)
+return 403 for apps registered after 2024-11-27 unless the app was already granted extended access.
+We tried wiring them into the debug panel and every track came back empty, so all audio-feature code
+was removed. Per-track mood/energy needs a different source (e.g. Last.fm `track.getTopTags`,
+or analyzing the 30s `preview_url` audio ourselves where previews are still available).
 
 ## Files Changed/Added
 

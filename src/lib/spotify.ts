@@ -47,38 +47,6 @@ export const getTopArtists = async (timeRange: 'short_term' | 'medium_term' | 'l
   }
 };
 
-// Get track details with audio features
-export const getTrackDetails = async (trackId: string): Promise<{
-  track: SpotifyApi.SingleTrackResponse;
-  audioFeatures: SpotifyApi.AudioFeaturesResponse;
-}> => {
-  try {
-    const [track, audioFeatures] = await Promise.all([
-      spotifyApi.getTrack(trackId),
-      spotifyApi.getAudioFeaturesForTrack(trackId)
-    ]);
-
-    return {
-      track: track.body,
-      audioFeatures: audioFeatures.body
-    };
-  } catch (error) {
-    console.error('Error fetching track details:', error);
-    throw error;
-  }
-};
-
-// Get audio features for multiple tracks (batch)
-export const getAudioFeaturesForTracks = async (trackIds: string[]): Promise<Array<SpotifyApi.AudioFeaturesResponse | null>> => {
-  try {
-    const response = await spotifyApi.getAudioFeaturesForTracks(trackIds);
-    return response.body.audio_features;
-  } catch (error) {
-    console.error('Error fetching batch audio features:', error);
-    return trackIds.map(() => null);
-  }
-};
-
 // Get artist details (includes genres)
 export const getArtistDetails = async (artistId: string): Promise<SpotifyApi.SingleArtistResponse> => {
   try {
