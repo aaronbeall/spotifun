@@ -145,6 +145,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
         
         // Fetch audio features for tracks
         const tracksByArtist = new Map<string, Array<{ trackId: string; trackName: string }>>();
+        console.log('[Debug] trackStats length:', trackStats.length);
         trackStats.slice(0, 50).forEach(({ track, artists }) => {
           artists.forEach(artist => {
             if (!tracksByArtist.has(artist.id)) {
@@ -157,6 +158,9 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
           });
         });
         
+        console.log('[Debug] tracksByArtist size:', tracksByArtist.size);
+        console.log('[Debug] Total tracks to fetch features for:', Array.from(tracksByArtist.values()).flatMap(t => t).length);
+        
         // Fetch audio features in batches
         const audioFeaturesMap = new Map<string, SpotifyApi.AudioFeaturesResponse>();
         const trackIds = Array.from(tracksByArtist.values()).flatMap(tracks => tracks.map(t => t.trackId));
@@ -167,12 +171,14 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
             const batch = trackIds.slice(i, i + 100);
             const { getAudioFeaturesForTracks } = await import('@/lib/spotify');
             const features = await getAudioFeaturesForTracks(batch);
+            console.log('[Debug] Fetched features batch:', batch.length, 'got:', features.filter(f => f !== null).length, 'non-null');
             features.forEach((feature, idx) => {
               if (feature) {
                 audioFeaturesMap.set(batch[idx], feature);
               }
             });
           }
+          console.log('[Debug] Total audio features fetched:', audioFeaturesMap.size);
         } catch (error) {
           console.error('Error fetching audio features for debug:', error);
         }
@@ -209,6 +215,10 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
             })
             .filter((f): f is NonNullable<typeof f> => f !== null);
           
+          if (audioFeatures.length > 0) {
+            console.log('[Debug] Artist', artist.name, 'has', audioFeatures.length, 'audio features');
+          }
+          
           return {
             artistName: artist.name,
             spotifyGenres,
@@ -220,6 +230,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
             audioFeatures: audioFeatures.length > 0 ? audioFeatures : undefined
           };
         });
+        console.log('[Debug] Debug data with audio features:', debugData.filter(d => d.audioFeatures).length, '/', debugData.length);
         stats.debugGenreData = debugData;
       }
 

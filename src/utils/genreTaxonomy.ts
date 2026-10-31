@@ -467,6 +467,20 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
     description: 'Fast, aggressive metal'
   },
   
+  'alternative metal': {
+    scores: { valence: 0.4, arousal: 0.8, complexity: 0.65, rawness: 0.75, socialPresence: 0.65 },
+    aliases: ['alternative metal', 'alt metal', 'alt-metal'],
+    parent: 'metal',
+    description: 'Metal with alternative rock influences'
+  },
+  
+  'modern metal': {
+    scores: { valence: 0.4, arousal: 0.85, complexity: 0.7, rawness: 0.7, socialPresence: 0.7 },
+    aliases: ['modern metal', 'modern heavy metal'],
+    parent: 'metal',
+    description: 'Contemporary metal with diverse influences'
+  },
+  
   // ========== JAZZ SUB-GENRES ==========
   
   bebop: {
@@ -670,6 +684,20 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
     aliases: ['pop punk', 'pop-punk', 'poppunk'],
     parent: 'punk',
     description: 'Melodic punk with pop hooks'
+  },
+  
+  'skate punk': {
+    scores: { valence: 0.5, arousal: 0.9, complexity: 0.3, rawness: 0.8, socialPresence: 0.8 },
+    aliases: ['skate punk', 'skate-punk', 'skatepunk'],
+    parent: 'punk',
+    description: 'Fast, energetic punk associated with skateboard culture'
+  },
+  
+  'indie punk': {
+    scores: { valence: 0.4, arousal: 0.8, complexity: 0.5, rawness: 0.7, socialPresence: 0.6 },
+    aliases: ['indie punk', 'indie-punk', 'indiepunk'],
+    parent: 'punk',
+    description: 'Independent punk with alternative sensibilities'
   },
   
   'dark ambient': {
