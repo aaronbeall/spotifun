@@ -169,9 +169,9 @@ export async function fetchLastFmArtistTagsRaw(
     return null;
   }
   
-  if (Date.now() < rateLimitedUntil) {
-    return null;
-  }
+  // While rate limited, only serve cache hits. Next's fetch cache lookup ignores the signal,
+  // but a cache miss passes it to the network fetch, which then rejects without a request.
+  const cacheOnly = Date.now() < rateLimitedUntil;
   
   const cacheTag = `lastfm-tags-${artistName.toLowerCase()}`.slice(0, 256);
   
@@ -188,7 +188,8 @@ export async function fetchLastFmArtistTagsRaw(
       next: { 
         revalidate: 60 * 60 * 24 * 7, // 7 days
         tags: [cacheTag]
-      }
+      },
+      signal: cacheOnly ? AbortSignal.abort() : undefined
     });
     
     if (response.status === 429) {
@@ -234,7 +235,9 @@ export async function fetchLastFmArtistTagsRaw(
     
     return tags;
   } catch (error) {
-    console.error(`Error fetching Last.fm tags for artist "${artistName}":`, error);
+    if (!cacheOnly) {
+      console.error(`Error fetching Last.fm tags for artist "${artistName}":`, error);
+    }
     return null;
   }
 }
@@ -351,8 +354,9 @@ export async function supplementGenresWithLastFm(
  * Classify many artists with Last.fm concurrently.
  * 
  * There's no client-side throttle: cached lookups never reach Last.fm, so only
- * never-seen artists cost a request. If Last.fm rate-limits us, lookups are
- * skipped until the cooldown ends and those artists fall back to Spotify genres.
+ * never-seen artists cost a request. If Last.fm rate-limits us, further lookups
+ * are served from the cache only until the cooldown ends; artists with no cached
+ * tags fall back to Spotify genres.
  * 
  * @param artistNames - Array of artist names
  * @param apiKey - Last.fm API key
