@@ -42,13 +42,13 @@
 - [ ] Genre images (lookup genre top artists and use their pictures)
 - [ ] Extract artist/theme colors (can also be used for genres)
 - [ ] Full music story share (include everything on one card)
-- [x] Supplement track/artist genres with external APIs (Last.fm, MusicBrainz)
-  - [x] Last.fm artist tags integration with rate limiting
+- [x] Supplement track/artist genres with external APIs (Last.fm)
+  - [x] Last.fm artist tags integration with rate-limit back-off
   - [x] Tag filtering (remove junk tags like "seen live", nationalities, years)
   - [x] Weighted tag scoring against genre taxonomy and descriptor vocabulary
   - [x] Next.js fetch caching with long revalidation (7 days)
   - [x] Graceful degradation when API key is missing
-  - [ ] MusicBrainz integration (optional, background only)
+- [ ] MusicBrainz genre enrichment (artist genres/tags merged into `artist.genres` like Last.fm; 1 req/s limit, needs a User-Agent)
 - [ ] Supplement reccomendations with external APIs (Last.fm)
 - [x] Add song moods with external APIs (Last.fm) - via descriptor vocabulary scoring
 
