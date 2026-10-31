@@ -127,7 +127,8 @@ export function computePersonaInput(stats: Stats): PersonaInput {
   const { genreDiversity, averagePopularity, artistDiversity } = stats.overview;
   const weighted = calculateWeightedVACRSScore(stats.genres);
 
-  const releaseYears = stats.topTracks
+  const eraTracks = stats.mode === 'playlist' ? stats.tracks.map(t => t.track) : stats.topTracks;
+  const releaseYears = eraTracks
     .map(t => t.album?.release_date ? parseInt(t.album.release_date.slice(0, 4), 10) : NaN)
     .filter(year => !isNaN(year));
   const currentYear = new Date().getFullYear();

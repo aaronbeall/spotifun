@@ -35,6 +35,8 @@ interface StatCardProps {
   listLabel?: string;
   /** When false, list entries are names only. Used where count is not a play count. */
   showCounts?: boolean;
+  /** Noun after a count in tooltips. Defaults to "plays". */
+  countLabel?: string;
   children?: React.ReactNode;
 }
 
@@ -54,6 +56,7 @@ export const StatCard = ({
                         mostPlayed = [],
                         listLabel,
                         showCounts = true,
+                        countLabel = 'plays',
                         children
                       }: StatCardProps) => {
   const [showAllPills, setShowAllPills] = useState(false);
@@ -62,6 +65,10 @@ export const StatCard = ({
     [showAllPills, mostPlayed]
   );
   const hasMorePills = mostPlayed.length > 3;
+  const countText = (count: number) => {
+    const noun = count === 1 && countLabel.endsWith('s') ? countLabel.slice(0, -1) : countLabel;
+    return `${count} ${noun}`;
+  };
   
   // Auto-lookup tooltip if metricKey provided
   const finalScoreTooltip = scoreTooltip || (scoreMetricKey ? getMetricDescription(scoreMetricKey) : undefined);
@@ -159,7 +166,7 @@ export const StatCard = ({
                       zIndex: 3 - i,
                       boxShadow: '0 4px 12px -2px rgba(0,0,0,0.2)'
                     }}
-                    title={showCounts ? `${item.name} • ${item.count} plays` : item.name}
+                    title={showCounts ? `${item.name} • ${countText(item.count)}` : item.name}
                   >
                     {item.image ? (
                       <img
@@ -258,7 +265,7 @@ export const StatCard = ({
                     title={
                       !showCounts
                         ? item.name
-                        : `${item.name} • ${title === 'Popularity' ? `${item.count}%` : `${item.count} plays`}`
+                        : `${item.name} • ${title === 'Popularity' ? `${item.count}%` : countText(item.count)}`
                     }
                   >
                     <div className="relative w-5 h-5 rounded-full overflow-hidden shrink-0 bg-black/20">

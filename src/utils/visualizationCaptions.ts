@@ -1,5 +1,11 @@
-import { Stats, GenreStats, DataMode, TimeRange } from '@/types';
+import { Stats, DataMode } from '@/types';
 import { FlowTrack, getTopGenres } from '@/components/features/FlowStreamChart';
+
+function byMode(mode: DataMode, copy: { recent: string; top: string; playlist: string }): string {
+  if (mode === 'playlist') return copy.playlist;
+  if (mode === 'recent') return copy.recent;
+  return copy.top;
+}
 
 /**
  * Generate a dynamic caption for the Flow visualization based on actual data trends
@@ -56,7 +62,11 @@ function generateGenreFlowCaption(tracks: FlowTrack[], mode: DataMode): string {
   const lateDominant = lateGenres[0];
 
   if (earlyDominant && lateDominant && earlyDominant !== lateDominant) {
-    return `${capitalize(earlyDominant)} dominated early, then ${lateDominant} took over in your ${mode === 'recent' ? 'last plays' : 'top tracks'}.`;
+    return `${capitalize(earlyDominant)} dominated early, then ${lateDominant} took over ${byMode(mode, {
+      recent: 'in your last plays',
+      top: 'in your top tracks',
+      playlist: 'in this playlist',
+    })}.`;
   }
 
   // Check for consistency
@@ -64,7 +74,11 @@ function generateGenreFlowCaption(tracks: FlowTrack[], mode: DataMode): string {
   const secondCount = genreCounts.get(secondGenre || '') || 0;
   
   if (topGenres.length === 1 || (topCount > secondCount * 2)) {
-    return `Heavily focused on ${dominantGenre}, showing strong consistency ${mode === 'recent' ? 'recently' : 'in this period'}.`;
+    return `Heavily focused on ${dominantGenre}, showing strong consistency ${byMode(mode, {
+      recent: 'recently',
+      top: 'in this period',
+      playlist: 'in this playlist',
+    })}.`;
   }
 
   // Check for diversity
@@ -76,10 +90,18 @@ function generateGenreFlowCaption(tracks: FlowTrack[], mode: DataMode): string {
   // Default to two-genre split
   if (secondGenre) {
     const ratio = Math.round((topCount / (topCount + secondCount)) * 100);
-    return `Split ${ratio}% ${dominantGenre}, ${100 - ratio}% ${secondGenre} ${mode === 'recent' ? 'recently' : 'in your top plays'}.`;
+    return `Split ${ratio}% ${dominantGenre}, ${100 - ratio}% ${secondGenre} ${byMode(mode, {
+      recent: 'recently',
+      top: 'in your top plays',
+      playlist: 'in this playlist',
+    })}.`;
   }
 
-  return `Your genre flow ${mode === 'recent' ? 'over recent plays' : 'across top tracks'}.`;
+  return `Your genre flow ${byMode(mode, {
+    recent: 'over recent plays',
+    top: 'across top tracks',
+    playlist: 'across this playlist',
+  })}.`;
 }
 
 /**
@@ -90,31 +112,38 @@ export function generateVibeCaption(
   topGenre: string | undefined
 ): string {
   const mode = stats.mode;
-  const isTopMode = mode !== 'recent';
-  
+
   if (!topGenre) {
-    return isTopMode 
-      ? 'Your musical personality based on top listening patterns.'
-      : 'Your current musical personality based on recent listening.';
+    return byMode(mode, {
+      top: 'Your musical personality based on top listening patterns.',
+      recent: 'Your current musical personality based on recent listening.',
+      playlist: 'Your musical personality based on this playlist.',
+    });
   }
 
   const genreCount = stats.genres.length;
   
   if (genreCount <= 2) {
-    return isTopMode
-      ? `Focused listening centered on ${topGenre}.`
-      : `Your recent plays are centered on ${topGenre}.`;
+    return byMode(mode, {
+      top: `Focused listening centered on ${topGenre}.`,
+      recent: `Your recent plays are centered on ${topGenre}.`,
+      playlist: `This playlist is centered on ${topGenre}.`,
+    });
   }
 
   if (genreCount >= 8) {
-    return isTopMode
-      ? `Eclectic taste spanning ${genreCount} genres, with ${topGenre} leading.`
-      : `Wide-ranging recent listening across ${genreCount} genres, led by ${topGenre}.`;
+    return byMode(mode, {
+      top: `Eclectic taste spanning ${genreCount} genres, with ${topGenre} leading.`,
+      recent: `Wide-ranging recent listening across ${genreCount} genres, led by ${topGenre}.`,
+      playlist: `This playlist spans ${genreCount} genres, with ${topGenre} leading.`,
+    });
   }
 
-  return isTopMode
-    ? `${capitalize(topGenre)} leads your top genres, alongside ${genreCount - 1} others.`
-    : `${capitalize(topGenre)} is trending in your recent plays, mixed with ${genreCount - 1} other genres.`;
+  return byMode(mode, {
+    top: `${capitalize(topGenre)} leads your top genres, alongside ${genreCount - 1} others.`,
+    recent: `${capitalize(topGenre)} is trending in your recent plays, mixed with ${genreCount - 1} other genres.`,
+    playlist: `${capitalize(topGenre)} leads this playlist, alongside ${genreCount - 1} other genres.`,
+  });
 }
 
 /**
@@ -123,10 +152,11 @@ export function generateVibeCaption(
  */
 export function generateSpectrumCaption(stats: Stats): string {
   const mode = stats.mode;
-  const isTopMode = mode !== 'recent';
-  
+
   if (stats.genres.length === 0) {
-    return 'Your music spectrum across emotional and sonic dimensions.';
+    return mode === 'playlist'
+      ? 'This playlist has no genres to place on the spectrum.'
+      : 'Your music spectrum across emotional and sonic dimensions.';
   }
 
   // Analyze the trait spreads from the stats
@@ -134,27 +164,35 @@ export function generateSpectrumCaption(stats: Stats): string {
   const genreCount = stats.genres.length;
   
   if (genreCount === 1) {
-    return isTopMode
-      ? 'Single genre shows focused trait profile.'
-      : 'Recent plays show a focused trait profile.';
+    return byMode(mode, {
+      top: 'Single genre shows focused trait profile.',
+      recent: 'Recent plays show a focused trait profile.',
+      playlist: 'This playlist shows a focused trait profile.',
+    });
   }
 
   if (genreCount === 2) {
-    return isTopMode
-      ? 'Two genres create contrast across valence and energy dimensions.'
-      : 'Recent genres show contrasting emotional and sonic traits.';
+    return byMode(mode, {
+      top: 'Two genres create contrast across valence and energy dimensions.',
+      recent: 'Recent genres show contrasting emotional and sonic traits.',
+      playlist: 'Two genres in this playlist contrast across valence and energy.',
+    });
   }
 
   if (genreCount >= 10) {
-    return isTopMode
-      ? `Wide trait variation: ${genreCount} genres span from calm to energetic, simple to complex, creating rich sonic diversity.`
-      : `Recent listening spans a wide sonic range: ${genreCount} genres vary from mellow to intense, raw to polished.`;
+    return byMode(mode, {
+      top: `Wide trait variation: ${genreCount} genres span from calm to energetic, simple to complex, creating rich sonic diversity.`,
+      recent: `Recent listening spans a wide sonic range: ${genreCount} genres vary from mellow to intense, raw to polished.`,
+      playlist: `This playlist spans a wide sonic range: ${genreCount} genres vary from mellow to intense, raw to polished.`,
+    });
   }
 
   // Medium genre count (3-9)
-  return isTopMode
-    ? `${genreCount} genres spread across valence, energy, and complexity dimensions, showing balanced sonic exploration.`
-    : `Recent ${genreCount} genres vary across mood, energy, and production style, creating moderate trait range.`;
+  return byMode(mode, {
+    top: `${genreCount} genres spread across valence, energy, and complexity dimensions, showing balanced sonic exploration.`,
+    recent: `Recent ${genreCount} genres vary across mood, energy, and production style, creating moderate trait range.`,
+    playlist: `${genreCount} genres in this playlist vary across mood, energy, and production style.`,
+  });
 }
 
 /**
@@ -164,10 +202,11 @@ export function generatePopularityCaption(stats: Stats): string {
   const avg = stats.overview.averagePopularity;
   const trackCount = stats.tracks.length;
   const mode = stats.mode;
-  const isTopMode = mode !== 'recent';
 
   if (trackCount === 0) {
-    return 'Your balance between mainstream and niche tracks.';
+    return mode === 'playlist'
+      ? 'This playlist has no songs to place on the popularity scale.'
+      : 'Your balance between mainstream and niche tracks.';
   }
 
   // Get popularity distribution
@@ -177,32 +216,42 @@ export function generatePopularityCaption(stats: Stats): string {
   const mainstreamPercent = Math.round((mainstreamTracks / trackCount) * 100);
 
   if (avg >= 70) {
-    return isTopMode
-      ? `${mainstreamPercent}% mainstream hits dominate your top tracks.`
-      : `${mainstreamPercent}% mainstream tracks in your recent plays.`;
+    return byMode(mode, {
+      top: `${mainstreamPercent}% mainstream hits dominate your top tracks.`,
+      recent: `${mainstreamPercent}% mainstream tracks in your recent plays.`,
+      playlist: `${mainstreamPercent}% of this playlist is mainstream.`,
+    });
   }
 
   if (avg <= 35) {
-    return isTopMode
-      ? `Deep dive into niche music: ${nichePercent}% of top tracks are under the radar.`
-      : `Underground focus: ${nichePercent}% of recent plays are niche tracks.`;
+    return byMode(mode, {
+      top: `Deep dive into niche music: ${nichePercent}% of top tracks are under the radar.`,
+      recent: `Underground focus: ${nichePercent}% of recent plays are niche tracks.`,
+      playlist: `Underground focus: ${nichePercent}% of this playlist is under the radar.`,
+    });
   }
 
   if (mainstreamPercent > nichePercent + 20) {
-    return isTopMode
-      ? `Mainstream-leaning (${avg}% avg) with ${mainstreamPercent}% popular tracks.`
-      : `Leaning mainstream recently: ${mainstreamPercent}% popular, ${nichePercent}% niche.`;
+    return byMode(mode, {
+      top: `Mainstream-leaning (${avg}% avg) with ${mainstreamPercent}% popular tracks.`,
+      recent: `Leaning mainstream recently: ${mainstreamPercent}% popular, ${nichePercent}% niche.`,
+      playlist: `Mainstream-leaning playlist (${avg}% avg): ${mainstreamPercent}% popular, ${nichePercent}% niche.`,
+    });
   }
 
   if (nichePercent > mainstreamPercent + 20) {
-    return isTopMode
-      ? `Niche-leaning (${avg}% avg) with ${nichePercent}% underground picks.`
-      : `Digging deeper recently: ${nichePercent}% niche vs ${mainstreamPercent}% mainstream.`;
+    return byMode(mode, {
+      top: `Niche-leaning (${avg}% avg) with ${nichePercent}% underground picks.`,
+      recent: `Digging deeper recently: ${nichePercent}% niche vs ${mainstreamPercent}% mainstream.`,
+      playlist: `Niche-leaning playlist (${avg}% avg): ${nichePercent}% underground, ${mainstreamPercent}% mainstream.`,
+    });
   }
 
-  return isTopMode
-    ? `Balanced mix: ${mainstreamPercent}% mainstream, ${nichePercent}% niche (${avg}% avg).`
-    : `Even split recently: ${mainstreamPercent}% mainstream, ${nichePercent}% niche.`;
+  return byMode(mode, {
+    top: `Balanced mix: ${mainstreamPercent}% mainstream, ${nichePercent}% niche (${avg}% avg).`,
+    recent: `Even split recently: ${mainstreamPercent}% mainstream, ${nichePercent}% niche.`,
+    playlist: `Even split in this playlist: ${mainstreamPercent}% mainstream, ${nichePercent}% niche.`,
+  });
 }
 
 /**
@@ -210,33 +259,44 @@ export function generatePopularityCaption(stats: Stats): string {
  */
 export function generatePersonaCaption(stats: Stats): string {
   const mode = stats.mode;
-  const isTopMode = mode !== 'recent';
   const artistCount = stats.artists.length;
   const trackCount = stats.tracks.length;
   const artistDiversity = Math.round(stats.overview.artistDiversity * 100);
 
+  if (mode === 'playlist' && trackCount === 0) {
+    return 'This playlist has no songs to analyze.';
+  }
+
   if (artistDiversity >= 80) {
-    return isTopMode
-      ? `Explorer: wide-ranging taste across ${artistCount} artists in your top listening.`
-      : `Explorer mindset: sampling ${artistCount} different artists recently.`;
+    return byMode(mode, {
+      top: `Explorer: wide-ranging taste across ${artistCount} artists in your top listening.`,
+      recent: `Explorer mindset: sampling ${artistCount} different artists recently.`,
+      playlist: `Explorer: this playlist ranges across ${artistCount} artists.`,
+    });
   }
 
   if (artistDiversity <= 30) {
-    return isTopMode
-      ? `Loyalist: focused dedication to ${artistCount} core artists.`
-      : `Loyalist: sticking with ${artistCount} favorite artists recently.`;
+    return byMode(mode, {
+      top: `Loyalist: focused dedication to ${artistCount} core artists.`,
+      recent: `Loyalist: sticking with ${artistCount} favorite artists recently.`,
+      playlist: `Loyalist: this playlist stays with ${artistCount} artists.`,
+    });
   }
 
-  const avgTracksPerArtist = trackCount / artistCount;
+  const avgTracksPerArtist = artistCount > 0 ? trackCount / artistCount : 0;
   if (avgTracksPerArtist >= 3) {
-    return isTopMode
-      ? `Deep listener: averaging ${Math.round(avgTracksPerArtist)} tracks per artist in your top ${artistCount}.`
-      : `Album diver: averaging ${Math.round(avgTracksPerArtist)} tracks per artist recently.`;
+    return byMode(mode, {
+      top: `Deep listener: averaging ${Math.round(avgTracksPerArtist)} tracks per artist in your top ${artistCount}.`,
+      recent: `Album diver: averaging ${Math.round(avgTracksPerArtist)} tracks per artist recently.`,
+      playlist: `Deep playlist: averaging ${Math.round(avgTracksPerArtist)} songs per artist.`,
+    });
   }
 
-  return isTopMode
-    ? `Balanced curation across ${artistCount} artists with ${trackCount} tracks.`
-    : `Varied rotation: ${artistCount} artists across ${trackCount} recent plays.`;
+  return byMode(mode, {
+    top: `Balanced curation across ${artistCount} artists with ${trackCount} tracks.`,
+    recent: `Varied rotation: ${artistCount} artists across ${trackCount} recent plays.`,
+    playlist: `Balanced playlist: ${artistCount} artists across ${trackCount} songs.`,
+  });
 }
 
 function capitalize(str: string): string {

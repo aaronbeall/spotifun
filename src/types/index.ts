@@ -92,7 +92,35 @@ export interface StatsOverview {
 }
 
 export type TimeRange = 'short_term' | 'medium_term' | 'long_term';
-export type DataMode = 'recent' | 'topArtists' | 'topTracks';
+export type DataMode = 'recent' | 'topArtists' | 'topTracks' | 'playlist';
+
+/** Saved-tracks library, which Spotify does not return from the playlists endpoint. */
+export const LIKED_SONGS_ID = 'liked';
+
+/** How many songs from a playlist are included in profile stats. */
+export const PLAYLIST_ANALYSIS_CAP = 500;
+
+export interface PlaylistSelection {
+  id: string;
+  name: string;
+  image?: string;
+}
+
+export interface PlaylistSummary extends PlaylistSelection {
+  trackCount: number;
+}
+
+export interface PlaylistsResponse {
+  likedSongs: PlaylistSummary | null;
+  likedSongsNeedsReconnect: boolean;
+  playlists: PlaylistSummary[];
+}
+
+/** The collection currently driving playlist mode, including how much of it was analyzed. */
+export interface PlaylistAnalysis extends PlaylistSelection {
+  total: number;
+  analyzed: number;
+}
 
 /** A Spotify top artist plus how many times they appear in the recent-plays window. */
 export interface TopArtistItem extends SpotifyApi.ArtistObjectFull {
@@ -128,6 +156,8 @@ export interface Stats {
   timeRange: TimeRange;
   topGenres: TopGenre[];
   mode: DataMode;
+  /** Present when `mode` is `playlist`. */
+  playlist?: PlaylistAnalysis;
   /** Artists whose genres couldn't be enriched with Last.fm (rate limit or API error); omitted when 0 */
   lastFmUnavailableCount?: number;
   debugGenreData?: ArtistGenreDebugInfo[]; // Dev-only: always returned when NODE_ENV=development

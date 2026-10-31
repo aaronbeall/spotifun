@@ -1,5 +1,5 @@
 import SpotifyWebApi from 'spotify-web-api-node';
-import { TrackStats, ArtistStats, GenreStats } from '@/types';
+import { TrackStats, ArtistStats, GenreStats, LIKED_SONGS_ID, PLAYLIST_ANALYSIS_CAP, PlaylistSummary } from '@/types';
 import { batchClassifyWithLastFm, supplementGenresWithLastFm, type LastFmClassificationResult } from '@/utils/lastfm';
 
 // Initialize Spotify API
@@ -46,6 +46,171 @@ export const getTopArtists = async (timeRange: 'short_term' | 'medium_term' | 'l
     throw error;
   }
 };
+
+export class MissingScopeError extends Error {
+  readonly scope: string;
+
+  constructor(scope: string) {
+    super(`Missing Spotify scope: ${scope}`);
+    this.name = 'MissingScopeError';
+    this.scope = scope;
+  }
+}
+
+export class InvalidPlaylistError extends Error {
+  constructor() {
+    super('Invalid playlist id');
+    this.name = 'InvalidPlaylistError';
+  }
+}
+
+const PLAYLIST_ID_PATTERN = /^[A-Za-z0-9]{10,32}$/;
+const SAVED_TRACK_PAGE = 50;
+const PLAYLIST_TRACK_PAGE = 100;
+const PLAYLIST_LIST_PAGE = 50;
+const PLAYLIST_LIST_CAP = 250;
+
+export interface CollectionTrack {
+  track: SpotifyApi.TrackObjectFull;
+  addedAt: string;
+}
+
+export interface PlaylistCollection {
+  id: string;
+  name: string;
+  image?: string;
+  total: number;
+  tracks: CollectionTrack[];
+}
+
+function statusCodeOf(error: unknown): number | undefined {
+  return (error as { statusCode?: number }).statusCode;
+}
+
+function isPlayableTrack(
+  track: SpotifyApi.TrackObjectFull | null | undefined,
+  isLocal = false
+): track is SpotifyApi.TrackObjectFull {
+  return !!track && !isLocal && !track.is_local && !!track.id && track.type === 'track';
+}
+
+interface PagedTracks {
+  items: Array<{
+    track: SpotifyApi.TrackObjectFull | null;
+    added_at: string | null;
+    is_local?: boolean;
+  }>;
+  total: number;
+}
+
+/** Reads up to PLAYLIST_ANALYSIS_CAP raw items, then keeps playable songs in that window. */
+async function collectTrackWindow(
+  pageSize: number,
+  fetchPage: (offset: number, limit: number) => Promise<PagedTracks>
+): Promise<{ tracks: CollectionTrack[]; total: number }> {
+  const tracks: CollectionTrack[] = [];
+  const seen = new Set<string>();
+  let offset = 0;
+  let total = Infinity;
+
+  while (offset < PLAYLIST_ANALYSIS_CAP && offset < total) {
+    const limit = Math.min(pageSize, PLAYLIST_ANALYSIS_CAP - offset);
+    const page = await fetchPage(offset, limit);
+    total = page.total;
+    if (page.items.length === 0) break;
+
+    for (const item of page.items) {
+      if (!isPlayableTrack(item.track, item.is_local) || seen.has(item.track.id)) continue;
+      seen.add(item.track.id);
+      tracks.push({ track: item.track, addedAt: item.added_at || '' });
+    }
+
+    offset += page.items.length;
+  }
+
+  return { tracks, total: Number.isFinite(total) ? total : tracks.length };
+}
+
+export async function getUserPlaylistSummaries(): Promise<PlaylistSummary[]> {
+  const summaries: PlaylistSummary[] = [];
+  let offset = 0;
+  let total = Infinity;
+
+  while (offset < total && summaries.length < PLAYLIST_LIST_CAP) {
+    const response = await spotifyApi.getUserPlaylists({ limit: PLAYLIST_LIST_PAGE, offset });
+    total = response.body.total;
+
+    for (const playlist of response.body.items) {
+      if (!playlist?.id) continue;
+      summaries.push({
+        id: playlist.id,
+        name: playlist.name,
+        image: playlist.images?.[0]?.url,
+        trackCount: playlist.tracks?.total ?? 0,
+      });
+    }
+
+    if (response.body.items.length === 0) break;
+    offset += response.body.items.length;
+  }
+
+  return summaries;
+}
+
+export async function getLikedSongsSummary(): Promise<PlaylistSummary> {
+  try {
+    const response = await spotifyApi.getMySavedTracks({ limit: 1 });
+    return {
+      id: LIKED_SONGS_ID,
+      name: 'Liked Songs',
+      trackCount: response.body.total,
+    };
+  } catch (error) {
+    if (statusCodeOf(error) === 403) throw new MissingScopeError('user-library-read');
+    throw error;
+  }
+}
+
+export async function getLikedSongsCollection(): Promise<PlaylistCollection> {
+  try {
+    const { tracks, total } = await collectTrackWindow(SAVED_TRACK_PAGE, async (offset, limit) => {
+      const response = await spotifyApi.getMySavedTracks({ limit, offset });
+      return { items: response.body.items, total: response.body.total };
+    });
+    return { id: LIKED_SONGS_ID, name: 'Liked Songs', total, tracks };
+  } catch (error) {
+    if (error instanceof MissingScopeError) throw error;
+    if (statusCodeOf(error) === 403) throw new MissingScopeError('user-library-read');
+    throw error;
+  }
+}
+
+export async function getPlaylistCollection(playlistId: string): Promise<PlaylistCollection> {
+  if (!PLAYLIST_ID_PATTERN.test(playlistId)) throw new InvalidPlaylistError();
+
+  const playlist = await spotifyApi.getPlaylist(playlistId, {
+    fields: 'id,name,images,tracks.total',
+  });
+  const { tracks, total } = await collectTrackWindow(PLAYLIST_TRACK_PAGE, async (offset, limit) => {
+    const response = await spotifyApi.getPlaylistTracks(playlistId, { limit, offset });
+    return {
+      items: response.body.items.map(item => ({
+        track: item.track,
+        added_at: item.added_at,
+        is_local: item.is_local,
+      })),
+      total: response.body.total,
+    };
+  });
+
+  return {
+    id: playlist.body.id,
+    name: playlist.body.name,
+    image: playlist.body.images?.[0]?.url,
+    total,
+    tracks,
+  };
+}
 
 // Get artist details (includes genres)
 export const getArtistDetails = async (artistId: string): Promise<SpotifyApi.SingleArtistResponse> => {

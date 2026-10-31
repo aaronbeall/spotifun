@@ -52,18 +52,40 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
   const [shareOpen, setShareOpen] = useState(false);
   const [flowChartMode, setFlowChartMode] = useState<FlowChartMode>('genres');
 
+  const showCollectionCounts = stats.mode === 'recent' || stats.mode === 'playlist';
+
   const recentlyPlayedGenres = useMemo(() => stats.recentlyPlayed.map(t => {
-    const fullArtist = stats.artists.find(a => a.artist.id === t.track.artists[0].id);
+    const artistId = t.track.artists[0]?.id;
+    const fullArtist = artistId ? stats.artists.find(a => a.artist.id === artistId) : undefined;
     return fullArtist ? fullArtist.genres : [];
   }), [stats]);
 
-  const flowTracks: FlowTrack[] = useMemo(() => stats.recentlyPlayed.map((t, i) => ({
-    playedAt: t.played_at,
-    genres: recentlyPlayedGenres[i] || [],
-    track: t.track.name,
-    artist: t.track.artists?.[0]?.name || "",
-    image: t.track.album?.images?.[0]?.url,
-  })), [stats, recentlyPlayedGenres]);
+  const flowTracks: FlowTrack[] = useMemo(() => {
+    if (stats.mode === 'playlist') {
+      return stats.tracks.map((t, index) => {
+        const artistId = t.track.artists[0]?.id;
+        const fullArtist = artistId ? stats.artists.find(a => a.artist.id === artistId) : undefined;
+        const addedAt = t.lastPlayed || t.firstPlayed;
+        return {
+          playedAt: addedAt && !Number.isNaN(Date.parse(addedAt))
+            ? addedAt
+            : new Date(Date.now() - index * 1000).toISOString(),
+          genres: fullArtist?.genres || [],
+          track: t.track.name,
+          artist: t.track.artists?.[0]?.name || "",
+          image: t.track.album?.images?.[0]?.url,
+        };
+      });
+    }
+
+    return stats.recentlyPlayed.map((t, i) => ({
+      playedAt: t.played_at,
+      genres: recentlyPlayedGenres[i] || [],
+      track: t.track.name,
+      artist: t.track.artists?.[0]?.name || "",
+      image: t.track.album?.images?.[0]?.url,
+    }));
+  }, [stats, recentlyPlayedGenres]);
 
   const genreImages = useMemo(() => {
     const genreMap = new Map<string, string>();
@@ -86,26 +108,30 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
   const topArtist = useMemo(() => stats.artists.length > 0 ? {
     name: stats.artists[0].artist.name,
     image: stats.artists[0].artist.images?.[0]?.url,
-    ...(stats.mode === 'recent' ? { count: stats.artists[0].playCount } : {}),
-  } : undefined, [stats]);
+    ...(showCollectionCounts ? { count: stats.artists[0].playCount } : {}),
+  } : undefined, [stats, showCollectionCounts]);
 
   const topGenre = useMemo(() => stats.genres.length > 0 ? {
     name: stats.genres[0].genre,
-    ...(stats.mode === 'recent' ? { count: stats.genres[0].playCount } : {}),
+    ...(showCollectionCounts ? { count: stats.genres[0].playCount } : {}),
     image: genreImages.get(stats.genres[0].genre),
-  } : undefined, [stats, genreImages]);
+  } : undefined, [stats, genreImages, showCollectionCounts]);
 
   // A purpose-built summary of whichever card is active, used to render the
   // shareable graphic (not a screenshot of the live interactive card). Each
   // case reuses the same visual component the live card renders, rather than
   // re-creating the chart/emblem.
   const shareContent = useMemo((): ShareContent => {
-    const isTopMode = stats.mode !== 'recent';
+    const vibeEyebrow = stats.mode === 'playlist'
+      ? 'Your Playlist Vibe'
+      : stats.mode === 'recent'
+      ? 'Your Current Vibe'
+      : 'Your Top Vibe';
     switch (currentCard) {
       case 0: {
         const { vibe, matchPercentage } = findBestMatchingVibe(stats.genres);
         return {
-          eyebrow: isTopMode ? 'Your Top Vibe' : 'Your Current Vibe',
+          eyebrow: vibeEyebrow,
           title: vibe.name,
           value: `${Math.round(matchPercentage)}% Match`,
           description: vibe.description,
@@ -147,14 +173,16 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
           value: `${Math.round(rangeScore)}%`,
           description: 'How your listening spreads across valence, arousal, complexity, rawness, and social presence.',
           color: CARD_THEMES.spectrum,
-          visual: <SpectrumDimensionBars genreStats={stats.genres} interactive={false} compact showPlayCounts={stats.mode === 'recent'} />,
+          visual: <SpectrumDimensionBars genreStats={stats.genres} interactive={false} compact showPlayCounts={showCollectionCounts} />,
         };
       }
       case 2: {
         return {
           eyebrow: 'Listening Flow',
           title: CHART_MODE_TITLES[flowChartMode],
-          description: CHART_MODE_DESCRIPTIONS[flowChartMode],
+          description: stats.mode === 'playlist'
+            ? 'How this playlist shifts as songs were added.'
+            : CHART_MODE_DESCRIPTIONS[flowChartMode],
           color: CARD_THEMES.flow,
           visual: (
             <div className="flex flex-col items-center gap-4">
@@ -166,6 +194,14 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
       }
       case 3: {
         const tracks = stats.tracks.map(t => t.track);
+        if (tracks.length === 0) {
+          return {
+            eyebrow: 'Track Popularity',
+            title: 'No tracks',
+            description: 'Not enough songs to analyze popularity.',
+            color: CARD_THEMES.popularity,
+          };
+        }
         const popularity = analyzePopularity(tracks);
         const { mostPopularTrack, leastPopularTrack, mostPopularCount, leastPopularCount } = getPopularityExtremes(tracks);
         return {
@@ -226,7 +262,7 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
         };
       }
     }
-  }, [currentCard, stats, flowTracks, topArtist, topGenre, flowChartMode]);
+  }, [currentCard, stats, flowTracks, topArtist, topGenre, flowChartMode, showCollectionCounts]);
 
   const openShare = () => setShareOpen(true);
 
@@ -239,26 +275,32 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
         className="mb-2"
       />
       <div>
-        {currentCard === 0 && (
-          <MusicVibes
-            genreStats={stats.genres}
-            topArtist={topArtist}
-            topGenre={topGenre}
-            onShare={openShare}
-            mode={stats.mode}
-          />
-        )}
-        {currentCard === 1 && (
-          <SpectrumCard genreStats={stats.genres} onShare={openShare} stats={stats} />
-        )}
-        {currentCard === 2 && (
-          <FlowCardD3 tracks={flowTracks} onShare={openShare} onChartModeChange={setFlowChartMode} mode={stats.mode} />
-        )}
-        {currentCard === 3 && (
-          <PopularityCard tracks={stats.tracks.map(t => t.track)} onShare={openShare} stats={stats} />
-        )}
-        {currentCard === 4 && (
-          <PersonaCard stats={stats} onShare={openShare} />
+        {stats.mode === 'playlist' && stats.tracks.length === 0 ? (
+          <p className="text-sm text-white/50 py-8 text-center">This playlist has no songs to analyze.</p>
+        ) : (
+          <>
+            {currentCard === 0 && (
+              <MusicVibes
+                genreStats={stats.genres}
+                topArtist={topArtist}
+                topGenre={topGenre}
+                onShare={openShare}
+                mode={stats.mode}
+              />
+            )}
+            {currentCard === 1 && (
+              <SpectrumCard genreStats={stats.genres} onShare={openShare} stats={stats} />
+            )}
+            {currentCard === 2 && (
+              <FlowCardD3 tracks={flowTracks} onShare={openShare} onChartModeChange={setFlowChartMode} mode={stats.mode} />
+            )}
+            {currentCard === 3 && (
+              <PopularityCard tracks={stats.tracks.map(t => t.track)} onShare={openShare} stats={stats} />
+            )}
+            {currentCard === 4 && (
+              <PersonaCard stats={stats} onShare={openShare} />
+            )}
+          </>
         )}
       </div>
 

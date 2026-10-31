@@ -251,9 +251,12 @@ export function MusicVibes({
     [genreStats]
   );
 
-  const isTopMode = mode !== 'recent';
-  const vibeLabel = isTopMode ? 'Top Vibe' : 'Current Vibe';
-  const vibeDescription = isTopMode 
+  const isPlaylistMode = mode === 'playlist';
+  const isTopMode = mode === 'topArtists' || mode === 'topTracks';
+  const vibeLabel = isPlaylistMode ? 'Playlist Vibe' : isTopMode ? 'Top Vibe' : 'Current Vibe';
+  const vibeDescription = isPlaylistMode
+    ? 'Your musical personality based on this playlist'
+    : isTopMode
     ? 'Your musical personality based on top listened genres'
     : 'Your musical personality based on recent listening patterns';
   
@@ -265,23 +268,28 @@ export function MusicVibes({
     if (!topGenreName) {
       return null;
     }
+
+    const name = topGenreName.charAt(0).toUpperCase() + topGenreName.slice(1);
     
     if (genreCount <= 2) {
+      if (isPlaylistMode) return `This playlist is centered on ${topGenreName}.`;
       return isTopMode
         ? `Focused listening centered on ${topGenreName}.`
         : `Your recent plays are centered on ${topGenreName}.`;
     }
     
     if (genreCount >= 8) {
+      if (isPlaylistMode) return `This playlist spans ${genreCount} genres, with ${topGenreName} leading.`;
       return isTopMode
         ? `Eclectic taste spanning ${genreCount} genres, with ${topGenreName} leading.`
         : `Wide-ranging recent listening across ${genreCount} genres, led by ${topGenreName}.`;
     }
     
+    if (isPlaylistMode) return `${name} leads this playlist, alongside ${genreCount - 1} other genres.`;
     return isTopMode
-      ? `${topGenreName.charAt(0).toUpperCase() + topGenreName.slice(1)} leads your top genres, alongside ${genreCount - 1} others.`
-      : `${topGenreName.charAt(0).toUpperCase() + topGenreName.slice(1)} is trending in your recent plays, mixed with ${genreCount - 1} other genres.`;
-  }, [genreStats, topGenre, isTopMode]);
+      ? `${name} leads your top genres, alongside ${genreCount - 1} others.`
+      : `${name} is trending in your recent plays, mixed with ${genreCount - 1} other genres.`;
+  }, [genreStats, topGenre, isTopMode, isPlaylistMode]);
 
   // vibe.color.dark is tuned for the share card's full-bleed hero background
   // (a vivid accent, not an actual dark tone) — darken it further for the
