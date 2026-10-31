@@ -136,11 +136,6 @@ export default function DashboardContent() {
     }
   };
 
-  const handleDebugPanelToggle = (enabled: boolean) => {
-    setDebugPanelEnabled(enabled);
-    setDebugPanelOpen(enabled);
-  };
-
   const handleLastFmToggle = async (enabled: boolean) => {
     setLastFmEnabled(enabled);
     setIsLoadingTimeRange(true);
