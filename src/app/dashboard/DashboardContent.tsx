@@ -396,7 +396,7 @@ export default function DashboardContent() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-4">
             {stats.topArtists.slice(0, showAllArtists ? stats.topArtists.length : ARTISTS_TO_SHOW).map((artist, index) => {
-              const recentPlays = stats.artists.find(a => a.artist.id === artist.id)?.playCount || 0;
+              const recentPlays = artist.recentPlays;
               const imageUrl = artist.images?.[0]?.url;
 
               return (
@@ -425,7 +425,9 @@ export default function DashboardContent() {
                       <div>
                         <h3 className="font-bold text-white text-lg">{artist.name}</h3>
                         {recentPlays > 0 && (
-                          <p className="text-sm text-gray-300">{recentPlays} recent plays</p>
+                          <p className="text-sm text-gray-300">
+                            {recentPlays} recent {recentPlays === 1 ? 'play' : 'plays'}
+                          </p>
                         )}
                       </div>
                       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-black/60 flex items-center justify-center text-white font-bold text-sm">
@@ -463,9 +465,8 @@ export default function DashboardContent() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
             {stats.topTracks.slice(0, showAllTracks ? stats.topTracks.length : TRACKS_TO_SHOW).map((track, index) => {
-              const trackStats = stats.tracks.find(t => t.track.id === track.id);
-              const recentPlays = trackStats?.playCount || 0;
-              const lastPlayed = trackStats?.lastPlayed ? new Date(trackStats.lastPlayed) : null;
+              const recentPlays = track.recentPlays;
+              const lastPlayed = track.lastPlayed ? new Date(track.lastPlayed) : null;
               const daysAgo = lastPlayed ? Math.floor((Date.now() - lastPlayed.getTime()) / (1000 * 60 * 60 * 24)) : null;
               const albumImage = track.album?.images?.[0]?.url;
 
@@ -499,7 +500,7 @@ export default function DashboardContent() {
                       <div className="flex items-center gap-2 mt-1">
                         {recentPlays > 0 && (
                           <span className="text-xs bg-green-900/50 text-green-300 px-2 py-0.5 rounded-full">
-                            {recentPlays} play{recentPlays !== 1 ? 's' : ''}
+                            {recentPlays} recent {recentPlays === 1 ? 'play' : 'plays'}
                           </span>
                         )}
                         {daysAgo !== null && (

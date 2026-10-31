@@ -15,7 +15,7 @@ export const METRIC_DESCRIPTIONS: Record<string, string> = {
   'social-presence': 'How communal or solitary the music feels. High means party, dance, or group-oriented music; low means introspective, solitary listening.',
   
   // Overview Metrics
-  'total-plays': 'Total number of tracks played in this view. In Top modes, this represents rank-based weight rather than actual play counts.',
+  'total-plays': 'Total number of tracks played in this view. Top modes have no play counts; they list Spotify\'s ranked artists and tracks.',
   'unique-artists': 'Number of different artists in this view. Higher means more diverse artist exploration.',
   'unique-tracks': 'Number of different songs in this view. Higher means varied listening rather than repeating the same tracks.',
   'unique-genres': 'Number of different genres represented. Higher means eclectic taste across musical styles.',
@@ -45,7 +45,6 @@ export const METRIC_DESCRIPTIONS: Record<string, string> = {
   
   // Stat Card Metrics (MusicProfile)
   'plays-per-day': 'Average number of plays per day over the past 30 days. Higher means more active listening.',
-  'avg-weight': 'Average rank-based weight per track in Top modes. Higher means more heavily weighted toward top items.',
   'track-uniqueness': 'What percentage of plays are unique tracks vs repeats. Higher means more variety; lower means more repetition.',
   'track-count-only': 'Total number of unique tracks without repetition context.',
   

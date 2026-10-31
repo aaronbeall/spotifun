@@ -3,7 +3,8 @@ interface ImageBadgeProps {
   name: string;
   subtitle?: string;
   image?: string;
-  count: number;
+  /** Shown as "N plays". Omit when there is no real play count. */
+  count?: number;
   color: string;
   icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   className?: string;
@@ -68,9 +69,11 @@ export const ImageBadge = ({ title, name, subtitle, image, count, color, icon: I
             {subtitle}
           </div>
         )}
-        <div className="text-xs text-white/60 mt-1 group-hover:text-white/70 transition-colors">
-          {count} {count === 1 ? 'play' : 'plays'}
-        </div>
+        {typeof count === 'number' && (
+          <div className="text-xs text-white/60 mt-1 group-hover:text-white/70 transition-colors">
+            {count} {count === 1 ? 'play' : 'plays'}
+          </div>
+        )}
       </div>
     </div>
   );

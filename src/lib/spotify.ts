@@ -243,7 +243,8 @@ export const calculateTopGenres = (artists: SpotifyApi.ArtistObjectFull[]): Arra
     .sort((a, b) => b.count - a.count);
 };
 
-// Calculate statistics for Top Tracks mode using rank-based weights
+// Top Tracks mode: each of Spotify's top tracks counts once, in Spotify's order.
+// Spotify does not provide play counts for this list.
 export const calculateTopTracksStats = (
   topTracks: SpotifyApi.TrackObjectFull[],
   artistDetails: Record<string, SpotifyApi.ArtistObjectFull> = {}
@@ -261,11 +262,8 @@ export const calculateTopTracksStats = (
   let totalWeight = 0;
   let totalDuration = 0;
 
-  // Process tracks with exponentially decreasing weights
-  topTracks.forEach((track, index) => {
-    // Exponential decay weight: earlier tracks have more weight
-    const weight = Math.pow(0.95, index) * 100;
-    totalWeight += weight;
+  topTracks.forEach((track) => {
+    totalWeight += 1;
     totalDuration += track.duration_ms;
 
     const artists = track.artists.map(artist => artistDetails[artist.id] || artist);
@@ -274,9 +272,9 @@ export const calculateTopTracksStats = (
     trackMap.set(track.id, {
       track,
       artists,
-      playCount: Math.round(weight),
-      firstPlayed: new Date().toISOString(),
-      lastPlayed: new Date().toISOString(),
+      playCount: 1,
+      firstPlayed: '',
+      lastPlayed: '',
       totalDuration: track.duration_ms
     });
 
@@ -287,14 +285,14 @@ export const calculateTopTracksStats = (
 
       if (artistMap.has(artistId)) {
         const stats = artistMap.get(artistId)!;
-        stats.playCount += weight;
+        stats.playCount += 1;
         stats.totalDuration += track.duration_ms;
         stats.trackIds.add(track.id);
         stats.uniqueTracks = stats.trackIds.size;
       } else {
         artistMap.set(artistId, {
           artist: fullArtist,
-          playCount: weight,
+          playCount: 1,
           uniqueTracks: 1,
           totalDuration: track.duration_ms,
           genres: fullArtist.genres || [],
@@ -302,21 +300,23 @@ export const calculateTopTracksStats = (
         });
       }
 
-      // Genre stats
-      const artistGenres = getGenres(fullArtist);
-      artistGenres.forEach(genre => {
-        if (genreMap.has(genre)) {
-          const stats = genreMap.get(genre)!;
-          stats.playCount += weight;
-          stats.totalDuration += track.duration_ms;
+      // Genre stats, once per top track even when several credited artists share it.
+      getGenres(fullArtist).forEach(genre => {
+        const stats = genreMap.get(genre);
+        if (stats) {
+          const seenTrack = stats.trackIds.has(track.id);
           stats.trackIds.add(track.id);
           stats.artistIds.add(artistId);
+          if (!seenTrack) {
+            stats.playCount += 1;
+            stats.totalDuration += track.duration_ms;
+          }
           stats.uniqueTracks = stats.trackIds.size;
           stats.uniqueArtists = stats.artistIds.size;
         } else {
           genreMap.set(genre, {
             genre,
-            playCount: weight,
+            playCount: 1,
             uniqueTracks: 1,
             uniqueArtists: 1,
             totalDuration: track.duration_ms,
@@ -349,8 +349,8 @@ export const calculateTopTracksStats = (
   };
 };
 
-// Calculate statistics for Top Artists mode using rank-based weights
-// Matches tracks from the user's own top tracks for the same time range
+// Top Artists mode: each of Spotify's top artists counts once, in Spotify's order.
+// Tracks are the ones from the user's top tracks that those artists appear on.
 export const calculateTopArtistsStats = (
   topArtists: SpotifyApi.ArtistObjectFull[],
   topTracks: SpotifyApi.TrackObjectFull[]
@@ -368,17 +368,8 @@ export const calculateTopArtistsStats = (
   let totalWeight = 0;
   let totalDuration = 0;
 
-  // Build a map of artist IDs with their weights
-  const artistWeights = new Map<string, number>();
-  topArtists.forEach((artist, index) => {
-    const weight = Math.pow(0.95, index) * 100;
-    artistWeights.set(artist.id, weight);
-  });
-
-  // Process each top artist
-  topArtists.forEach((artist, index) => {
-    const weight = Math.pow(0.95, index) * 100;
-    totalWeight += weight;
+  topArtists.forEach((artist) => {
+    totalWeight += 1;
 
     // Find tracks by this artist from the user's top tracks
     const artistTracks = topTracks.filter(track => 
@@ -392,45 +383,35 @@ export const calculateTopArtistsStats = (
     // Initialize artist stats
     artistMap.set(artist.id, {
       artist,
-      playCount: weight,
+      playCount: 1,
       uniqueTracks: artistTracks.length,
       totalDuration: artistTracks.reduce((sum, t) => sum + t.duration_ms, 0),
       genres: artist.genres || [],
       trackIds: new Set(artistTracks.map(t => t.id))
     });
 
-    // Process tracks for this artist
-    artistTracks.forEach((track, trackIndex) => {
-      // Distribute artist weight across their tracks
-      const trackWeight = weight / Math.max(artistTracks.length, 1);
+    artistTracks.forEach((track) => {
+      if (trackMap.has(track.id)) return;
+      const fullArtists = track.artists
+        .map(a => topArtists.find(ta => ta.id === a.id))
+        .filter((a): a is SpotifyApi.ArtistObjectFull => a !== undefined);
 
-      if (!trackMap.has(track.id)) {
-        // Map track artists to full artist objects where available
-        const fullArtists = track.artists
-          .map(a => topArtists.find(ta => ta.id === a.id))
-          .filter((a): a is SpotifyApi.ArtistObjectFull => a !== undefined);
-        
-        trackMap.set(track.id, {
-          track,
-          artists: fullArtists.length > 0 ? fullArtists : [artist],
-          playCount: Math.round(trackWeight),
-          firstPlayed: new Date().toISOString(),
-          lastPlayed: new Date().toISOString(),
-          totalDuration: track.duration_ms
-        });
-      } else {
-        const stats = trackMap.get(track.id)!;
-        stats.playCount += Math.round(trackWeight);
-      }
+      trackMap.set(track.id, {
+        track,
+        artists: fullArtists.length > 0 ? fullArtists : [artist],
+        playCount: 1,
+        firstPlayed: '',
+        lastPlayed: '',
+        totalDuration: track.duration_ms
+      });
     });
 
-    // Genre stats
-    const artistGenres = getGenres(artist);
-    artistGenres.forEach(genre => {
-      if (genreMap.has(genre)) {
-        const stats = genreMap.get(genre)!;
-        stats.playCount += weight;
-        stats.totalDuration += artistTracks.reduce((sum, t) => sum + t.duration_ms, 0);
+    getGenres(artist).forEach(genre => {
+      const duration = artistTracks.reduce((sum, t) => sum + t.duration_ms, 0);
+      const stats = genreMap.get(genre);
+      if (stats) {
+        stats.playCount += 1;
+        stats.totalDuration += duration;
         artistTracks.forEach(track => stats.trackIds.add(track.id));
         stats.artistIds.add(artist.id);
         stats.uniqueTracks = stats.trackIds.size;
@@ -438,10 +419,10 @@ export const calculateTopArtistsStats = (
       } else {
         genreMap.set(genre, {
           genre,
-          playCount: weight,
+          playCount: 1,
           uniqueTracks: artistTracks.length,
           uniqueArtists: 1,
-          totalDuration: artistTracks.reduce((sum, t) => sum + t.duration_ms, 0),
+          totalDuration: duration,
           trackIds: new Set(artistTracks.map(t => t.id)),
           artistIds: new Set([artist.id])
         });
@@ -470,6 +451,32 @@ export const calculateTopArtistsStats = (
   };
 };
 
+
+/**
+ * Count plays in a recently-played list. The list is newest first, so the first
+ * time a track appears is its latest play.
+ */
+export function countRecentPlays(playHistory: SpotifyApi.PlayHistoryObject[]): {
+  tracks: Map<string, { count: number; lastPlayed: string }>;
+  artists: Map<string, number>;
+} {
+  const tracks = new Map<string, { count: number; lastPlayed: string }>();
+  const artists = new Map<string, number>();
+
+  for (const item of playHistory) {
+    const existing = tracks.get(item.track.id);
+    if (existing) {
+      existing.count += 1;
+    } else {
+      tracks.set(item.track.id, { count: 1, lastPlayed: item.played_at });
+    }
+    for (const artist of item.track.artists) {
+      artists.set(artist.id, (artists.get(artist.id) ?? 0) + 1);
+    }
+  }
+
+  return { tracks, artists };
+}
 
 /**
  * Server-only fields attached by enhanceArtistsWithLastFm. Stripped from API responses;

@@ -94,6 +94,18 @@ export interface StatsOverview {
 export type TimeRange = 'short_term' | 'medium_term' | 'long_term';
 export type DataMode = 'recent' | 'topArtists' | 'topTracks';
 
+/** A Spotify top artist plus how many times they appear in the recent-plays window. */
+export interface TopArtistItem extends SpotifyApi.ArtistObjectFull {
+  recentPlays: number;
+}
+
+/** A Spotify top track plus how many times it appears in the recent-plays window. */
+export interface TopTrackItem extends SpotifyApi.TrackObjectFull {
+  recentPlays: number;
+  /** Latest play in that window. Absent when the track was not played recently. */
+  lastPlayed?: string;
+}
+
 export interface NowPlaying {
   isPlaying: boolean;
   track: {
@@ -111,8 +123,8 @@ export interface Stats {
   tracks: TrackStats[];
   artists: ArtistStats[];
   genres: GenreStats[];
-  topTracks: SpotifyApi.TrackObjectFull[];
-  topArtists: SpotifyApi.ArtistObjectFull[];
+  topTracks: TopTrackItem[];
+  topArtists: TopArtistItem[];
   timeRange: TimeRange;
   topGenres: TopGenre[];
   mode: DataMode;

@@ -63,10 +63,9 @@ export default function MusicProfile({
         totalListeningLabel: 'total listening'
       };
     } else {
-      // Top modes use rank-based weights
       return {
-        avgMetric: Math.round(stats.overview.totalPlays / Math.max(stats.overview.uniqueTracks, 1)),
-        avgMetricLabel: 'avg weight',
+        avgMetric: null,
+        avgMetricLabel: 'ranked by Spotify',
         uniquenessDescription: `${stats.overview.uniqueTracks} tracks`,
         totalListeningLabel: 'total duration'
       };
@@ -204,7 +203,7 @@ export default function MusicProfile({
             icon={Users}
             title="Artists"
             value={stats.overview.uniqueArtists}
-            description={`${avgMetric} ${avgMetricLabel}`}
+            description={avgMetric == null ? avgMetricLabel : `${avgMetric} ${avgMetricLabel}`}
             gradient="bg-gradient-to-br from-purple-900/80 to-indigo-900/80"
             iconColor="#a78bfa"
             items={stats.artists
@@ -217,6 +216,8 @@ export default function MusicProfile({
             score={stats.overview.artistDiversity}
             scoreLabel="Diversity"
             scoreMetricKey="artist-diversity"
+            listLabel={isTopMode ? 'Top' : undefined}
+            showCounts={!isTopMode}
             mostPlayed={stats.artists
               .sort((a, b) => b.playCount - a.playCount)
               .map(artist => ({
@@ -245,6 +246,8 @@ export default function MusicProfile({
             score={stats.overview.uniqueTracks / Math.max(stats.overview.totalPlays, 1)}
             scoreLabel="Uniqueness"
             scoreMetricKey="track-uniqueness"
+            listLabel={isTopMode ? 'Top' : undefined}
+            showCounts={!isTopMode}
             mostPlayed={stats.tracks
               .sort((a, b) => b.playCount - a.playCount)
               .map(track => ({
@@ -287,6 +290,8 @@ export default function MusicProfile({
             score={stats.overview.genreDiversity}
             scoreLabel="Diversity"
             scoreMetricKey="genre-diversity"
+            listLabel={isTopMode ? 'Top' : undefined}
+            showCounts={!isTopMode}
             mostPlayed={stats.genres
               .map(genre => ({
                 name: genre.genre,

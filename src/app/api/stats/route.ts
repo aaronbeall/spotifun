@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   getRecentlyPlayed, getTopTracks, getTopArtists, calculateTrackStats, calculateArtistStats,
   calculateGenreStats, calculateTopGenres, fetchArtistsInBatches,
-  calculateTopTracksStats, calculateTopArtistsStats, enhanceArtistsWithLastFm
+  calculateTopTracksStats, calculateTopArtistsStats, enhanceArtistsWithLastFm, countRecentPlays
 } from '@/lib/spotify';
 import { setAuthCookies, UnauthenticatedError, withSpotifyAccessToken } from '@/lib/auth';
 import type { LastFmEnhancedArtist } from '@/lib/spotify';
-import { Stats, TimeRange, DataMode, ArtistGenreDebugInfo, GenreTagDebugInfo } from '@/types';
+import { Stats, TimeRange, DataMode, ArtistGenreDebugInfo, GenreTagDebugInfo, TopArtistItem, TopTrackItem } from '@/types';
 
 // Drops server-only fields (e.g. `_lastFmData`, `_spotifyGenres`) from the response
 const stripInternalFields = (key: string, value: unknown) => key.startsWith('_') ? undefined : value;
@@ -34,11 +34,24 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
         return result.artists;
       };
 
-      // Enhance top artists with Last.fm data for artists with thin genres
-      // This is server-side only, cached 7 days
-      const topArtists = await enhanceWithLastFm(topArtistsRaw);
-      
-      const topTracks = topTracksRaw;
+      // Enhance top artists with Last.fm data for artists with thin genres.
+      // This is server-side only, cached 7 days.
+      const enhancedTopArtists = await enhanceWithLastFm(topArtistsRaw);
+
+      // Recent plays come from the same recently-played window, never from rank.
+      const recentPlays = countRecentPlays(recentlyPlayed);
+      const topArtists: TopArtistItem[] = enhancedTopArtists.map(artist => ({
+        ...artist,
+        recentPlays: recentPlays.artists.get(artist.id) ?? 0
+      }));
+      const topTracks: TopTrackItem[] = topTracksRaw.map(track => {
+        const plays = recentPlays.tracks.get(track.id);
+        return {
+          ...track,
+          recentPlays: plays?.count ?? 0,
+          ...(plays ? { lastPlayed: plays.lastPlayed } : {})
+        };
+      });
 
       // Calculate top genres from top artists
       const topGenres = calculateTopGenres(topArtists);
@@ -47,7 +60,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
 
       switch (mode) {
         case 'topTracks': {
-          // Top Tracks mode: use rank-based weights from top tracks
+          // Top Tracks mode: Spotify's ranked list, each track counted once
           const artistIds = Array.from(new Set(
             topTracks.flatMap(track => track.artists.map(artist => artist.id))
           ));
@@ -72,7 +85,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
           break;
         }
         case 'topArtists': {
-          // Top Artists mode: use rank-based weights, match tracks from user's top tracks
+          // Top Artists mode: Spotify's ranked list, each artist counted once
           const statsResult = calculateTopArtistsStats(topArtists, topTracks);
           trackStats = statsResult.trackStats;
           artistStats = statsResult.artistStats;
