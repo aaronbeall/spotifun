@@ -42,20 +42,18 @@ export default function DashboardContent() {
   const isDev = process.env.NODE_ENV === 'development';
   const [debugPanelEnabled, setDebugPanelEnabled] = usePersistedToggle('spotifun.debugPanel', false);
   const [lastFmEnabled, setLastFmEnabled] = usePersistedToggle('spotifun.lastFmEnrichment', true);
-  const debugEnabled = isDev && debugPanelEnabled;
   const [debugPanelOpen, setDebugPanelOpen] = useState(false);
 
   const buildStatsUrl = useCallback((
     range: TimeRange,
     limit: number,
     mode: DataMode,
-    options: { debug: boolean; lastFm: boolean } = { debug: debugEnabled, lastFm: lastFmEnabled }
+    lastFm: boolean = lastFmEnabled
   ) => {
     const params = new URLSearchParams({ timeRange: range, limit: String(limit), mode });
-    if (options.debug) params.set('debugGenres', '1');
-    if (!options.lastFm) params.set('lastfm', '0');
+    if (!lastFm) params.set('lastfm', '0');
     return `/api/stats?${params}`;
-  }, [debugEnabled, lastFmEnabled]);
+  }, [lastFmEnabled]);
 
   const fetchAll = useCallback(async (range: TimeRange, limit: number, mode: DataMode) => {
     const [userResponse, statsResponse] = await Promise.all([
@@ -138,10 +136,16 @@ export default function DashboardContent() {
     }
   };
 
-  const refetchStatsWith = async (options: { debug: boolean; lastFm: boolean }) => {
+  const handleDebugPanelToggle = (enabled: boolean) => {
+    setDebugPanelEnabled(enabled);
+    setDebugPanelOpen(enabled);
+  };
+
+  const handleLastFmToggle = async (enabled: boolean) => {
+    setLastFmEnabled(enabled);
     setIsLoadingTimeRange(true);
     try {
-      const response = await fetch(buildStatsUrl(timeRange, playLimit, dataMode, options));
+      const response = await fetch(buildStatsUrl(timeRange, playLimit, dataMode, enabled));
       if (response.ok) {
         setStats(await response.json());
         setLastFetched(new Date());
@@ -151,19 +155,6 @@ export default function DashboardContent() {
     } finally {
       setIsLoadingTimeRange(false);
     }
-  };
-
-  const handleDebugPanelToggle = (enabled: boolean) => {
-    setDebugPanelEnabled(enabled);
-    setDebugPanelOpen(enabled);
-    if (enabled && !stats?.debugGenreData) {
-      refetchStatsWith({ debug: true, lastFm: lastFmEnabled });
-    }
-  };
-
-  const handleLastFmToggle = (enabled: boolean) => {
-    setLastFmEnabled(enabled);
-    refetchStatsWith({ debug: debugEnabled, lastFm: enabled });
   };
 
   // Format number and duration functions are now imported from @/utils
@@ -649,7 +640,7 @@ export default function DashboardContent() {
         </div>
       </div>
 
-      {debugEnabled && (
+      {isDev && debugPanelEnabled && (
         <GenreDebugPanel
           debugData={stats.debugGenreData}
           overallCoverage={stats.overview.genreCoverage}

@@ -121,7 +121,7 @@ function TagSummary({ title, titleClassName, chipClassName, entries }: {
 }
 
 const LAST_FM_STATUS_TEXT: Record<LastFmDebugStatus, string> = {
-  'on': 'Last.fm: raw tags fetched for every artist',
+  'on': 'Last.fm: on (queried only for artists with 0–2 Spotify genres)',
   'disabled': 'Last.fm: enrichment turned off in the menu — no Last.fm tags',
   'no-api-key': 'Last.fm: LASTFM_API_KEY not set — no Last.fm tags'
 };
@@ -209,7 +209,7 @@ export function GenreDebugPanel({ debugData, overallCoverage, lastFmStatus, isLo
               <p className="text-gray-400 text-sm">
                 {isLoading
                   ? 'Loading genre debug data…'
-                  : 'No debug data in the last stats response. It is only returned by the dev server (NODE_ENV=development).'}
+                  : 'No debug data in the stats response. It is only returned by the dev server (NODE_ENV=development).'}
               </p>
             ) : (<>
             <div className="grid md:grid-cols-3 gap-4">
@@ -248,8 +248,16 @@ export function GenreDebugPanel({ debugData, overallCoverage, lastFmStatus, isLo
                     <td className="px-4 py-2 text-white font-medium whitespace-nowrap">{artist.artistName}</td>
                     <td className="px-4 py-2">
                       <div className="flex flex-wrap gap-1">
-                        {artist.tags.length === 0 && <span className="text-gray-500 text-xs">No genres or tags</span>}
                         {artist.tags.map((t, i) => <TagChip key={`${t.source}-${t.tag}-${i}`} tag={t} />)}
+                        {!artist.hasLastFmData && (
+                          <span className="text-gray-500 text-xs self-center">
+                            {lastFmStatus !== 'on'
+                              ? 'No Last.fm data'
+                              : artist.tags.length > 2
+                                ? 'Last.fm not queried (3+ Spotify genres)'
+                                : 'Last.fm returned no tags'}
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-2 text-gray-400 font-mono text-xs whitespace-nowrap">
@@ -288,7 +296,7 @@ export function GenreDebugPanel({ debugData, overallCoverage, lastFmStatus, isLo
                 <SpotifyIcon className="w-3 h-3 inline align-[-2px]" /> = Spotify genre,{' '}
                 <LastFmIcon className="w-3 h-3 inline align-[-2px]" /> = Last.fm tag. <b>→ node</b> shows the taxonomy node it resolved to;
                 a node in parentheses means scores were inherited from that parent.
-                Every raw tag is shown, whether or not it affects scoring. The small number on Last.fm chips is the
+                Every raw tag the pipeline received is shown, whether or not it affects scoring. The small number on Last.fm chips is the
                 tag&apos;s weight (0–100). Dashed chips are not used in VACRS scoring (mood tags, unmatched tags, and
                 Last.fm tags for artists with 3+ Spotify genres). Struck-through chips were dropped by the Last.fm
                 junk filter (nationality, decade, &quot;seen live&quot;, generic contexts like &quot;chill&quot;).

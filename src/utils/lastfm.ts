@@ -16,6 +16,13 @@ export interface LastFmTag {
 }
 
 /**
+ * Last.fm classification plus the unfiltered tags it was derived from (for debugging)
+ */
+export type LastFmClassificationResult = WeightedClassificationResult & {
+  rawTags: LastFmTag[];
+};
+
+/**
  * Last.fm API response for artist.getTopTags
  */
 interface LastFmTopTagsResponse {
@@ -203,20 +210,21 @@ export async function fetchLastFmArtistTagsRaw(
 export async function classifyArtistWithLastFm(
   artistName: string,
   apiKey?: string
-): Promise<WeightedClassificationResult | null> {
-  const tags = await fetchLastFmArtistTags(artistName, apiKey);
+): Promise<LastFmClassificationResult | null> {
+  const rawTags = await fetchLastFmArtistTagsRaw(artistName, apiKey);
   
-  if (!tags || tags.length === 0) {
+  if (!rawTags || rawTags.length === 0) {
     return null;
   }
   
-  // Score tags using the weighted tag scorer
-  const weightedTags = tags.map(tag => ({
-    tag: tag.name,
-    weight: tag.count
-  }));
+  const weightedTags = rawTags
+    .filter(tag => !isJunkTag(tag.name))
+    .map(tag => ({
+      tag: tag.name,
+      weight: tag.count
+    }));
   
-  return scoreWeightedTags(weightedTags);
+  return { ...scoreWeightedTags(weightedTags), rawTags };
 }
 
 /**
@@ -340,8 +348,8 @@ export async function batchClassifyWithLastFm(
   artistNames: string[],
   apiKey: string,
   concurrency = 3
-): Promise<Map<string, WeightedClassificationResult>> {
-  const results = new Map<string, WeightedClassificationResult>();
+): Promise<Map<string, LastFmClassificationResult>> {
+  const results = new Map<string, LastFmClassificationResult>();
   
   // Process in batches with concurrency limit
   for (let i = 0; i < artistNames.length; i += concurrency) {
@@ -358,29 +366,5 @@ export async function batchClassifyWithLastFm(
     await Promise.all(batchPromises);
   }
   
-  return results;
-}
-
-/**
- * Batch fetch raw (unfiltered) Last.fm tags, respecting rate limits. Used for debugging.
- */
-export async function batchFetchLastFmTagsRaw(
-  artistNames: string[],
-  apiKey: string,
-  concurrency = 3
-): Promise<Map<string, LastFmTag[]>> {
-  const results = new Map<string, LastFmTag[]>();
-
-  for (let i = 0; i < artistNames.length; i += concurrency) {
-    const batch = artistNames.slice(i, i + concurrency);
-    await Promise.all(batch.map(async (artistName) => {
-      await lastFmRateLimiter.waitIfNeeded();
-      const tags = await fetchLastFmArtistTagsRaw(artistName, apiKey);
-      if (tags) {
-        results.set(artistName, tags);
-      }
-    }));
-  }
-
   return results;
 }

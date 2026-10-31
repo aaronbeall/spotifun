@@ -116,7 +116,7 @@ export interface Stats {
   timeRange: TimeRange;
   topGenres: TopGenre[];
   mode: DataMode;
-  debugGenreData?: ArtistGenreDebugInfo[]; // Dev-only: returned when NODE_ENV=development and the dashboard's debug panel toggle is on
+  debugGenreData?: ArtistGenreDebugInfo[]; // Dev-only: always returned when NODE_ENV=development
   debugLastFmStatus?: LastFmDebugStatus;
 }
 
@@ -155,6 +155,8 @@ interface TopGenre {
 
 export interface ArtistGenreDebugInfo {
   artistName: string;
+  /** Last.fm returned tags for this artist (it is only queried for artists with 0-2 Spotify genres) */
+  hasLastFmData: boolean;
   tags: GenreTagDebugInfo[];
   vacrsScores: VACRSScore | null;
   coverage: number; // 0-1 scale

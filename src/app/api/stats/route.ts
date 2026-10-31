@@ -6,6 +6,7 @@ import {
 } from '@/lib/spotify';
 import { setAuthCookies, UnauthenticatedError, withSpotifyAccessToken } from '@/lib/auth';
 import { Stats, TimeRange, DataMode, ArtistGenreDebugInfo, GenreTagDebugInfo } from '@/types';
+import type { LastFmClassificationResult } from '@/utils/lastfm';
 
 export async function GET(request: NextRequest): Promise<NextResponse<Stats | { error: string }>> {
   try {
@@ -140,30 +141,22 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
       const coverageResult = calculateWeightedVACRSScoreWithCoverage(genreStats);
       stats.overview.genreCoverage = coverageResult.coverage;
 
-      // Dev-only debug data: include per-artist genre classification details
-      if (process.env.NODE_ENV === 'development' && searchParams.get('debugGenres') === '1') {
+      // Dev-only debug data, derived from what the pipeline above already fetched (no extra requests)
+      if (process.env.NODE_ENV === 'development') {
         const { classifyGenresWithDetails } = await import('@/utils/musicClassification');
         const { explainGenreMatch } = await import('@/utils/improvedClassification');
 
-        const { batchFetchLastFmTagsRaw, isJunkTag } = await import('@/utils/lastfm');
+        const { isJunkTag } = await import('@/utils/lastfm');
 
-        // Raw Last.fm tags for every artist, for display only. Scoring still uses the
-        // filtered tags attached by enhanceArtistsWithLastFm (thin-genre artists only).
-        const rawLastFmTags = lastFmApiKey
-          ? await batchFetchLastFmTagsRaw(
-              Array.from(new Set(artistStats.map(({ artist }) => artist.name))),
-              lastFmApiKey
-            )
-          : new Map<string, Array<{ name: string; count: number }>>();
         stats.debugLastFmStatus = lastFmApiKey
           ? 'on'
           : process.env.LASTFM_API_KEY ? 'disabled' : 'no-api-key';
 
         const debugData: ArtistGenreDebugInfo[] = artistStats.map(({ artist }) => {
           const spotifyGenres = artist.genres || [];
-          const lastFmClassifications: Array<{ originalGenre: string; matchedGenre: string | null; scores: unknown }> =
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (artist as any)._lastFmData?.classifications || [];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const lastFmData: LastFmClassificationResult | undefined = (artist as any)._lastFmData;
+          const lastFmClassifications = lastFmData?.classifications ?? [];
           // Must mirror getEffectiveGenres in lib/spotify.ts: Last.fm tags only count for
           // thin-genre artists, and only when they resolve to a taxonomy node.
           const lastFmTagsUsed = spotifyGenres.length <= 2
@@ -183,7 +176,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
             };
           });
 
-          const lastFmTags: GenreTagDebugInfo[] = (rawLastFmTags.get(artist.name) ?? []).map(({ name, count }) => ({
+          const lastFmTags: GenreTagDebugInfo[] = (lastFmData?.rawTags ?? []).map(({ name, count }) => ({
             tag: name,
             source: 'lastfm',
             ...explainGenreMatch(name),
@@ -194,6 +187,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
 
           return {
             artistName: artist.name,
+            hasLastFmData: lastFmData !== undefined,
             tags: [...spotifyTags, ...lastFmTags],
             vacrsScores: classifications.scores,
             coverage: classifications.coverage
