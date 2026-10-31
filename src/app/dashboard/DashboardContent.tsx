@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { BarChart3, ChevronDown, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User, Bug, Tags, Check } from 'lucide-react';
+import { BarChart3, ChevronDown, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User, Bug, Tags, Check, Info } from 'lucide-react';
 import { formatDuration, formatNumber, getGenreColorMap, getGenreColorClass } from '@/utils';
 import Image from 'next/image';
 import FunStats from '@/components/features/FunStats';
@@ -370,6 +370,15 @@ export default function DashboardContent() {
                       </DropdownMenu.CheckboxItem>
                     )}
                     <DropdownMenu.Separator className="h-px bg-gray-700 my-1" />
+                    <DropdownMenu.Item asChild>
+                      <Link
+                        href="/about"
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer outline-none"
+                      >
+                        <Info className="w-4 h-4" />
+                        About
+                      </Link>
+                    </DropdownMenu.Item>
                     <DropdownMenu.Item
                       onSelect={handleSettings}
                       className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer outline-none"
@@ -674,6 +683,8 @@ export default function DashboardContent() {
 
         {/* Attribution Footer */}
         <div className="mt-12 mb-4 text-center text-xs text-gray-500">
+          <Link href="/about" className="text-gray-400 hover:text-gray-300 underline">About</Link>
+          {' · '}
           Genre data enhanced with{' '}
           <a 
             href="https://www.last.fm" 

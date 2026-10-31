@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Music, BarChart3, Trophy, Users, Sparkles, ArrowRight } from 'lucide-react';
 
 export default function Home() {
@@ -97,8 +98,13 @@ export default function Home() {
         </div>
 
         {/* Footer */}
-        <div className="mt-16 text-center text-white/60">
+        <div className="mt-16 text-center text-white/60 space-y-2">
           <p>Made with ❤️ for music lovers everywhere</p>
+          <p className="text-sm">
+            <Link href="/about" className="underline underline-offset-2 hover:text-white">About</Link>
+            <span> · </span>
+            <Link href="/about/vacrs" className="underline underline-offset-2 hover:text-white">VACRS</Link>
+          </p>
         </div>
       </div>
     </div>
