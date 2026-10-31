@@ -68,6 +68,17 @@ export const getTrackDetails = async (trackId: string): Promise<{
   }
 };
 
+// Get audio features for multiple tracks (batch)
+export const getAudioFeaturesForTracks = async (trackIds: string[]): Promise<Array<SpotifyApi.AudioFeaturesResponse | null>> => {
+  try {
+    const response = await spotifyApi.getAudioFeaturesForTracks(trackIds);
+    return response.body.audio_features;
+  } catch (error) {
+    console.error('Error fetching batch audio features:', error);
+    return trackIds.map(() => null);
+  }
+};
+
 // Get artist details (includes genres)
 export const getArtistDetails = async (artistId: string): Promise<SpotifyApi.SingleArtistResponse> => {
   try {

@@ -74,6 +74,7 @@ export function GenreDebugPanel({ debugData, overallCoverage }: GenreDebugPanelP
                     <th className="px-4 py-3 text-yellow-400 font-semibold border-b border-gray-700">Match Type</th>
                     <th className="px-4 py-3 text-yellow-400 font-semibold border-b border-gray-700">VACRS Traits</th>
                     <th className="px-4 py-3 text-yellow-400 font-semibold border-b border-gray-700">Coverage</th>
+                    <th className="px-4 py-3 text-yellow-400 font-semibold border-b border-gray-700">Audio Features</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -145,6 +146,35 @@ Social Presence: ${debug.vacrsScores.socialPresence.toFixed(3)} (communal vs sol
                             </div>
                           </div>
                         </td>
+                        <td className="px-4 py-3 text-gray-400 font-mono text-xs">
+                          {debug.audioFeatures && debug.audioFeatures.length > 0 ? (
+                            <div className="space-y-1">
+                              {debug.audioFeatures.slice(0, 2).map((af, j) => (
+                                <div 
+                                  key={j}
+                                  className="cursor-help border-l-2 border-pink-500/30 pl-2"
+                                  title={`${af.trackName}
+Valence: ${af.valence.toFixed(3)} (mood: 0=sad, 1=happy)
+Energy: ${af.energy.toFixed(3)} (intensity)
+Danceability: ${af.danceability.toFixed(3)}
+Acousticness: ${af.acousticness.toFixed(3)}
+Instrumentalness: ${af.instrumentalness.toFixed(3)}
+Speechiness: ${af.speechiness.toFixed(3)}
+Tempo: ${Math.round(af.tempo)} BPM`}
+                                >
+                                  <div className="text-pink-300 text-[10px] truncate max-w-[120px]">{af.trackName}</div>
+                                  <div>V:{af.valence.toFixed(2)} E:{af.energy.toFixed(2)}</div>
+                                  <div>D:{af.danceability.toFixed(2)} T:{Math.round(af.tempo)}</div>
+                                </div>
+                              ))}
+                              {debug.audioFeatures.length > 2 && (
+                                <div className="text-gray-500 text-[10px]">+{debug.audioFeatures.length - 2} more</div>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-gray-600">—</span>
+                          )}
+                        </td>
                       </tr>
                     );
                   })}
@@ -162,6 +192,7 @@ Social Presence: ${debug.vacrsScores.socialPresence.toFixed(3)} (communal vs sol
                 <div><span className="text-orange-400 font-semibold">Unmatched:</span> Genres not in taxonomy</div>
                 <div><span className="text-cyan-300 font-semibold">Match Type:</span> exact, parent, keyword, or unknown</div>
                 <div><span className="text-gray-400 font-semibold">VACRS:</span> Valence, Arousal, Complexity, Rawness, Social Presence (0-1)</div>
+                <div><span className="text-pink-300 font-semibold">Audio Features:</span> Spotify audio analysis per track (V=valence, E=energy, D=danceability, T=tempo BPM)</div>
               </div>
             </div>
           </div>

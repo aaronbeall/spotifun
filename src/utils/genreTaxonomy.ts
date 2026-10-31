@@ -253,6 +253,13 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
     description: '80s-inspired synthesizer music'
   },
   
+  chillwave: {
+    scores: { valence: 0.6, arousal: 0.3, complexity: 0.5, rawness: 0.4, socialPresence: 0.4 },
+    aliases: ['chillwave', 'chill wave'],
+    parent: 'electronic',
+    description: 'Dreamy, lo-fi electronic music'
+  },
+  
   // ========== HIP-HOP SUB-GENRES ==========
   
   rap: {
@@ -305,16 +312,24 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
   },
   
   'indie rock': {
-    aliases: ['indie rock'],
+    scores: { valence: 0.5, arousal: 0.6, complexity: 0.65, rawness: 0.55, socialPresence: 0.5 },
+    aliases: ['indie rock', 'indie-rock', 'indierock'],
     parent: 'indie',
     description: 'Independent rock music'
   },
   
   'indie pop': {
     scores: { valence: 0.7, arousal: 0.6, complexity: 0.4, rawness: 0.5, socialPresence: 0.6 },
-    aliases: ['indie pop', 'indiepop'],
+    aliases: ['indie pop', 'indiepop', 'indie-pop'],
     parent: 'indie',
     description: 'Melodic independent pop music'
+  },
+  
+  'blues rock': {
+    scores: { valence: 0.45, arousal: 0.65, complexity: 0.6, rawness: 0.7, socialPresence: 0.55 },
+    aliases: ['blues rock', 'blues-rock', 'bluesrock'],
+    parent: 'rock',
+    description: 'Rock music with blues influences'
   },
   
   grunge: {
@@ -408,6 +423,13 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
     aliases: ['black metal', 'blackmetal'],
     parent: 'metal',
     description: 'Dark, atmospheric extreme metal'
+  },
+  
+  'industrial metal': {
+    scores: { valence: 0.2, arousal: 0.85, complexity: 0.75, rawness: 0.8, socialPresence: 0.4 },
+    aliases: ['industrial metal', 'industrial-metal', 'industrialmetal'],
+    parent: 'metal',
+    description: 'Metal with electronic/industrial elements'
   },
   
   'doom metal': {

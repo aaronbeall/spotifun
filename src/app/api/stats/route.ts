@@ -142,6 +142,41 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
       // Dev-only debug data: include per-artist genre classification details
       if (process.env.NODE_ENV === 'development' && searchParams.get('debugGenres') === '1') {
         const { classifyGenresWithDetails } = await import('@/utils/musicClassification');
+        
+        // Fetch audio features for tracks
+        const tracksByArtist = new Map<string, Array<{ trackId: string; trackName: string }>>();
+        trackStats.slice(0, 50).forEach(({ track, artists }) => {
+          artists.forEach(artist => {
+            if (!tracksByArtist.has(artist.id)) {
+              tracksByArtist.set(artist.id, []);
+            }
+            const artistTracks = tracksByArtist.get(artist.id)!;
+            if (artistTracks.length < 3) { // Max 3 tracks per artist for debug
+              artistTracks.push({ trackId: track.id, trackName: track.name });
+            }
+          });
+        });
+        
+        // Fetch audio features in batches
+        const audioFeaturesMap = new Map<string, SpotifyApi.AudioFeaturesResponse>();
+        const trackIds = Array.from(tracksByArtist.values()).flatMap(tracks => tracks.map(t => t.trackId));
+        
+        try {
+          // Spotify allows up to 100 tracks per request
+          for (let i = 0; i < trackIds.length; i += 100) {
+            const batch = trackIds.slice(i, i + 100);
+            const { getAudioFeaturesForTracks } = await import('@/lib/spotify');
+            const features = await getAudioFeaturesForTracks(batch);
+            features.forEach((feature, idx) => {
+              if (feature) {
+                audioFeaturesMap.set(batch[idx], feature);
+              }
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching audio features for debug:', error);
+        }
+        
         const debugData = artistStats.map(({ artist }) => {
           const spotifyGenres = artist.genres || [];
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -155,6 +190,25 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
           const effectiveGenres = [...spotifyGenres, ...lastFmTagsUsed];
           const classifications = classifyGenresWithDetails(effectiveGenres);
           
+          // Get audio features for this artist's tracks
+          const artistTracks = tracksByArtist.get(artist.id) || [];
+          const audioFeatures = artistTracks
+            .map(({ trackId, trackName }) => {
+              const features = audioFeaturesMap.get(trackId);
+              if (!features) return null;
+              return {
+                trackName,
+                valence: features.valence,
+                energy: features.energy,
+                danceability: features.danceability,
+                acousticness: features.acousticness,
+                instrumentalness: features.instrumentalness,
+                speechiness: features.speechiness,
+                tempo: features.tempo
+              };
+            })
+            .filter((f): f is NonNullable<typeof f> => f !== null);
+          
           return {
             artistName: artist.name,
             spotifyGenres,
@@ -162,7 +216,8 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
             matchedNodes: classifications.matchedGenres,
             matchType: classifications.matchType,
             vacrsScores: classifications.scores,
-            coverage: classifications.coverage
+            coverage: classifications.coverage,
+            audioFeatures: audioFeatures.length > 0 ? audioFeatures : undefined
           };
         });
         stats.debugGenreData = debugData;

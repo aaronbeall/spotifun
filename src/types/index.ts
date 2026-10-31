@@ -132,6 +132,16 @@ export interface ArtistGenreDebugInfo {
   matchType: string;
   vacrsScores: VACRSScore | null;
   coverage: number; // 0-1 scale
+  audioFeatures?: {
+    trackName: string;
+    valence: number;
+    energy: number;
+    danceability: number;
+    acousticness: number;
+    instrumentalness: number;
+    speechiness: number;
+    tempo: number;
+  }[];
 }
 
 export interface VACRSScore {
