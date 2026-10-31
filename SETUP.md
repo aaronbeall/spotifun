@@ -102,6 +102,37 @@ src/
 - Mock global leaderboard with competitive elements
 - Real-time user ranking updates
 
+## 🧪 Testing
+
+### Running Tests
+
+```bash
+# Run all tests once
+npm test
+
+# Run tests in watch mode (auto-rerun on file changes)
+npm run test:watch
+
+# Run typecheck
+npm run typecheck
+
+# Run linter
+npm run lint
+```
+
+### Test Coverage
+
+The test suite covers core calculation logic:
+
+- **Popularity Analysis** (`src/utils/popularity.test.ts`) - Track popularity metrics, diversity scoring, and extremes
+- **VACRS Traits** (`src/utils/vacrs.test.ts`) - Music trait classification (Valence, Arousal, Complexity, Rawness, Social Presence)
+- **Genre Classification** (`src/utils/musicClassification.test.ts`) - Genre-to-VACRS mapping, weighted scoring, and distance calculations
+- **Stats Calculations** (`src/lib/spotify.test.ts`) - Track/artist/genre aggregation from play history
+- **Persona Detection** (`src/utils/musicPersonas.test.ts`) - Music listening personality classification
+- **Diversity Metrics** (`src/utils/statsHelpers.test.ts`) - Genre/artist diversity and session statistics
+
+All tests use small hand-built fixtures and do not require network access or Spotify credentials.
+
 ## 🔧 Technical Stack
 
 - **Frontend**: Next.js 15, React, TypeScript
@@ -111,3 +142,4 @@ src/
 - **Authentication**: Spotify Web API OAuth
 - **Backend**: Next.js API Routes
 - **State Management**: React hooks and local state
+- **Testing**: Vitest for unit testing
