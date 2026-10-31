@@ -75,7 +75,7 @@ const JUNK_TAGS = new Set([
 /**
  * Check if a tag should be filtered out
  */
-function isJunkTag(tag: string): boolean {
+export function isJunkTag(tag: string): boolean {
   const normalized = tag.toLowerCase().trim();
   
   // Check against junk set
@@ -112,16 +112,27 @@ function normalizeLastFmTag(tag: string): string {
 }
 
 /**
- * Fetch artist tags from Last.fm
- * 
- * Uses Next.js fetch caching with long revalidation period.
- * Can be upgraded to KV store (e.g., Upstash Redis) for better persistence.
+ * Fetch artist tags from Last.fm, with junk tags (nationality, decade, "seen live", ...) removed.
  * 
  * @param artistName - The artist name to fetch tags for
  * @param apiKey - Last.fm API key (optional, degrades gracefully if missing)
  * @returns Array of tags with counts, or null on error
  */
 export async function fetchLastFmArtistTags(
+  artistName: string,
+  apiKey?: string
+): Promise<LastFmTag[] | null> {
+  const tags = await fetchLastFmArtistTagsRaw(artistName, apiKey);
+  return tags && tags.filter(tag => !isJunkTag(tag.name));
+}
+
+/**
+ * Fetch all non-zero-weight artist tags from Last.fm, without junk filtering.
+ * 
+ * Uses Next.js fetch caching with long revalidation period.
+ * Can be upgraded to KV store (e.g., Upstash Redis) for better persistence.
+ */
+export async function fetchLastFmArtistTagsRaw(
   artistName: string,
   apiKey?: string
 ): Promise<LastFmTag[] | null> {
@@ -167,17 +178,8 @@ export async function fetchLastFmArtistTags(
       return [];
     }
     
-    // Filter and normalize tags
     const tags = data.toptags.tag
-      .filter(tag => {
-        if (!tag.name || typeof tag.count !== 'number') {
-          return false;
-        }
-        if (isJunkTag(tag.name)) {
-          return false;
-        }
-        return true;
-      })
+      .filter(tag => tag.name && typeof tag.count === 'number')
       .map(tag => ({
         name: normalizeLastFmTag(tag.name),
         count: tag.count
@@ -356,5 +358,29 @@ export async function batchClassifyWithLastFm(
     await Promise.all(batchPromises);
   }
   
+  return results;
+}
+
+/**
+ * Batch fetch raw (unfiltered) Last.fm tags, respecting rate limits. Used for debugging.
+ */
+export async function batchFetchLastFmTagsRaw(
+  artistNames: string[],
+  apiKey: string,
+  concurrency = 3
+): Promise<Map<string, LastFmTag[]>> {
+  const results = new Map<string, LastFmTag[]>();
+
+  for (let i = 0; i < artistNames.length; i += concurrency) {
+    const batch = artistNames.slice(i, i + concurrency);
+    await Promise.all(batch.map(async (artistName) => {
+      await lastFmRateLimiter.waitIfNeeded();
+      const tags = await fetchLastFmArtistTagsRaw(artistName, apiKey);
+      if (tags) {
+        results.set(artistName, tags);
+      }
+    }));
+  }
+
   return results;
 }

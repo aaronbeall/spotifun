@@ -659,6 +659,7 @@ export default function DashboardContent() {
         <GenreDebugPanel
           debugData={stats.debugGenreData}
           overallCoverage={stats.overview.genreCoverage}
+          lastFmStatus={stats.debugLastFmStatus}
           isLoading={isLoadingTimeRange}
           isOpen={debugPanelOpen}
           onOpenChange={setDebugPanelOpen}

@@ -117,6 +117,7 @@ export interface Stats {
   topGenres: TopGenre[];
   mode: DataMode;
   debugGenreData?: ArtistGenreDebugInfo[]; // Dev-only: available when NODE_ENV=development and ?debugGenres=1
+  debugLastFmStatus?: LastFmDebugStatus;
 }
 
 /**
@@ -138,8 +139,14 @@ export interface GenreTagDebugInfo {
   node: string | null;
   /** Node whose scores were actually used (differs from `node` when inherited from a parent) */
   scoresFrom: string | null;
+  /** Last.fm tag weight (0-100, relative to the artist's top tag) */
+  weight?: number;
+  /** Dropped by the Last.fm junk-tag filter before classification */
+  filteredAsJunk?: boolean;
   usedInScoring: boolean;
 }
+
+export type LastFmDebugStatus = 'on' | 'disabled' | 'no-api-key';
 
 interface TopGenre {
   genre: string;

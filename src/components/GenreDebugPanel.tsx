@@ -2,11 +2,12 @@
 
 import { useMemo, useState } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { ArtistGenreDebugInfo, GenreMatchKind, GenreTagDebugInfo } from '@/types';
+import { ArtistGenreDebugInfo, GenreMatchKind, GenreTagDebugInfo, LastFmDebugStatus } from '@/types';
 
 interface GenreDebugPanelProps {
   debugData?: ArtistGenreDebugInfo[];
   overallCoverage?: number;
+  lastFmStatus?: LastFmDebugStatus;
   isLoading: boolean;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -49,9 +50,10 @@ const KIND_ORDER: GenreMatchKind[] = ['exact', 'alias', 'partial', 'keyword', 'd
 
 function tagTooltip(t: GenreTagDebugInfo): string {
   const lines = [
-    `"${t.tag}" (${t.source === 'spotify' ? 'Spotify' : 'Last.fm'})`,
+    `"${t.tag}" (${t.source === 'spotify' ? 'Spotify' : `Last.fm, weight ${t.weight ?? '?'}/100`})`,
     `Match: ${KIND_META[t.kind].label} — ${KIND_META[t.kind].description}`
   ];
+  if (t.filteredAsJunk) lines.push('Dropped by the Last.fm junk-tag filter before classification');
   if (t.node) lines.push(`Node: ${t.node}`);
   if (t.scoresFrom && t.scoresFrom !== t.node) lines.push(`Scores inherited from: ${t.scoresFrom}`);
   lines.push(t.usedInScoring ? 'Used in VACRS scoring' : 'NOT used in VACRS scoring');
@@ -82,12 +84,13 @@ function TagChip({ tag }: { tag: GenreTagDebugInfo }) {
       title={tagTooltip(tag)}
       className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-xs cursor-help ${meta.className} ${
         tag.usedInScoring ? '' : 'border-dashed opacity-70'
-      }`}
+      } ${tag.filteredAsJunk ? 'opacity-50' : ''}`}
     >
       {tag.source === 'spotify'
         ? <SpotifyIcon className="w-3.5 h-3.5 shrink-0 rounded-full bg-gray-950 p-[1px]" />
         : <LastFmIcon className="w-3.5 h-3.5 shrink-0 rounded-full bg-gray-950 p-[1.5px]" />}
-      <span>{tag.tag}</span>
+      <span className={tag.filteredAsJunk ? 'line-through' : ''}>{tag.tag}</span>
+      {tag.weight !== undefined && <span className="opacity-50 text-[10px]">{tag.weight}</span>}
       {showNode && <span className="opacity-70">→ {tag.node}</span>}
       {tag.scoresFrom && tag.scoresFrom !== tag.node && (
         <span className="opacity-50">({tag.scoresFrom})</span>
@@ -96,26 +99,56 @@ function TagChip({ tag }: { tag: GenreTagDebugInfo }) {
   );
 }
 
+function TagSummary({ title, titleClassName, chipClassName, entries }: {
+  title: string;
+  titleClassName: string;
+  chipClassName: string;
+  entries: Array<[string, number]>;
+}) {
+  return (
+    <div className="p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+      <h4 className={`font-semibold text-sm mb-2 ${titleClassName}`}>{title} ({entries.length})</h4>
+      <div className="flex flex-wrap gap-1 max-h-40 overflow-auto">
+        {entries.length === 0 && <span className="text-gray-500 text-xs">None</span>}
+        {entries.map(([tag, count]) => (
+          <span key={tag} className={`px-1.5 py-0.5 rounded border text-xs ${chipClassName}`}>
+            {tag}{count > 1 && <span className="opacity-60"> ×{count}</span>}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const LAST_FM_STATUS_TEXT: Record<LastFmDebugStatus, string> = {
+  'on': 'Last.fm: raw tags fetched for every artist',
+  'disabled': 'Last.fm: enrichment turned off in the menu — no Last.fm tags',
+  'no-api-key': 'Last.fm: LASTFM_API_KEY not set — no Last.fm tags'
+};
+
 /**
  * Dev-only debug panel for genre classification.
  * Shows how every Spotify genre and Last.fm tag resolved, per artist, as a bottom drawer.
  */
-export function GenreDebugPanel({ debugData, overallCoverage, isLoading, isOpen, onOpenChange }: GenreDebugPanelProps) {
+export function GenreDebugPanel({ debugData, overallCoverage, lastFmStatus, isLoading, isOpen, onOpenChange }: GenreDebugPanelProps) {
   const [onlyProblems, setOnlyProblems] = useState(false);
 
   const summary = useMemo(() => {
     const kindCounts = Object.fromEntries(KIND_ORDER.map(k => [k, 0])) as Record<GenreMatchKind, number>;
     const unmatched = new Map<string, number>();
     const moods = new Map<string, number>();
+    const junk = new Map<string, number>();
+    const bump = (m: Map<string, number>, tag: string) => m.set(tag, (m.get(tag) ?? 0) + 1);
     for (const artist of debugData ?? []) {
       for (const t of artist.tags) {
         kindCounts[t.kind]++;
-        if (t.kind === 'unknown') unmatched.set(t.tag, (unmatched.get(t.tag) ?? 0) + 1);
-        if (t.kind === 'descriptor') moods.set(t.tag, (moods.get(t.tag) ?? 0) + 1);
+        if (t.kind === 'descriptor') bump(moods, t.tag);
+        if (t.filteredAsJunk) bump(junk, t.tag);
+        else if (t.kind === 'unknown') bump(unmatched, t.tag);
       }
     }
     const byCount = (m: Map<string, number>) => Array.from(m.entries()).sort((a, b) => b[1] - a[1]);
-    return { kindCounts, unmatched: byCount(unmatched), moods: byCount(moods) };
+    return { kindCounts, unmatched: byCount(unmatched), moods: byCount(moods), junk: byCount(junk) };
   }, [debugData]);
 
   const data = debugData ?? [];
@@ -148,6 +181,7 @@ export function GenreDebugPanel({ debugData, overallCoverage, isLoading, isOpen,
                 Overall coverage: {overallCoverage !== undefined ? `${Math.round(overallCoverage * 100)}%` : 'N/A'}
                 {' • '}
                 {KIND_ORDER.map(k => `${KIND_META[k].label} ${summary.kindCounts[k]}`).join(' · ')}
+                {lastFmStatus && <>{' • '}{LAST_FM_STATUS_TEXT[lastFmStatus]}</>}
               </p>
             </div>
             <div className="flex items-center gap-4">
@@ -178,33 +212,25 @@ export function GenreDebugPanel({ debugData, overallCoverage, isLoading, isOpen,
                   : 'No debug data in the last stats response. It is only returned by the dev server (NODE_ENV=development).'}
               </p>
             ) : (<>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="p-3 bg-gray-800/50 rounded-lg border border-gray-700">
-                <h4 className="text-red-300 font-semibold text-sm mb-2">
-                  Unmatched tags ({summary.unmatched.length}) — candidates for the taxonomy
-                </h4>
-                <div className="flex flex-wrap gap-1">
-                  {summary.unmatched.length === 0 && <span className="text-gray-500 text-xs">None</span>}
-                  {summary.unmatched.map(([tag, count]) => (
-                    <span key={tag} className="px-1.5 py-0.5 rounded border text-xs bg-red-900/40 border-red-600 text-red-200">
-                      {tag}{count > 1 && <span className="opacity-60"> ×{count}</span>}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div className="p-3 bg-gray-800/50 rounded-lg border border-gray-700">
-                <h4 className="text-pink-300 font-semibold text-sm mb-2">
-                  Mood tags recognized ({summary.moods.length}) — currently NOT used in scoring
-                </h4>
-                <div className="flex flex-wrap gap-1">
-                  {summary.moods.length === 0 && <span className="text-gray-500 text-xs">None</span>}
-                  {summary.moods.map(([tag, count]) => (
-                    <span key={tag} className="px-1.5 py-0.5 rounded border text-xs bg-pink-900/40 border-pink-600 text-pink-200">
-                      {tag}{count > 1 && <span className="opacity-60"> ×{count}</span>}
-                    </span>
-                  ))}
-                </div>
-              </div>
+            <div className="grid md:grid-cols-3 gap-4">
+              <TagSummary
+                title="Unmatched tags — candidates for the taxonomy or mood vocabulary"
+                titleClassName="text-red-300"
+                chipClassName={KIND_META.unknown.className}
+                entries={summary.unmatched}
+              />
+              <TagSummary
+                title="Mood tags recognized — shown here, not used in scoring"
+                titleClassName="text-pink-300"
+                chipClassName={KIND_META.descriptor.className}
+                entries={summary.moods}
+              />
+              <TagSummary
+                title="Dropped by Last.fm junk filter"
+                titleClassName="text-gray-300"
+                chipClassName="bg-gray-800 border-gray-600 text-gray-400 line-through"
+                entries={summary.junk}
+              />
             </div>
 
             <table className="w-full text-sm text-left border-collapse">
@@ -262,8 +288,11 @@ export function GenreDebugPanel({ debugData, overallCoverage, isLoading, isOpen,
                 <SpotifyIcon className="w-3 h-3 inline align-[-2px]" /> = Spotify genre,{' '}
                 <LastFmIcon className="w-3 h-3 inline align-[-2px]" /> = Last.fm tag. <b>→ node</b> shows the taxonomy node it resolved to;
                 a node in parentheses means scores were inherited from that parent.
-                Dashed chips are not used in VACRS scoring (mood tags, unmatched tags, and Last.fm tags for artists
-                with 3+ Spotify genres). Hover any chip for details.
+                Every raw tag is shown, whether or not it affects scoring. The small number on Last.fm chips is the
+                tag&apos;s weight (0–100). Dashed chips are not used in VACRS scoring (mood tags, unmatched tags, and
+                Last.fm tags for artists with 3+ Spotify genres). Struck-through chips were dropped by the Last.fm
+                junk filter (nationality, decade, &quot;seen live&quot;, generic contexts like &quot;chill&quot;).
+                Hover any chip for details.
               </p>
             </div>
             </>)}
