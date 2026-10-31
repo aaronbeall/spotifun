@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion } from 'framer-motion';
 import { Activity, Sparkles, Share2, Tags, SlidersHorizontal } from 'lucide-react';
-import { VACRSScore } from '@/types';
+import { VACRSScore, DataMode } from '@/types';
 import { calculateGenreVACRSScore } from '@/utils/musicClassification';
 import { VACRS_DIMENSIONS, VACRS_COLORS, getDominantTrait } from '@/utils/vacrs';
 import { getGenreColor, formatRelativeTime } from '@/utils/format';
@@ -10,6 +10,7 @@ import { FlowStreamChart, FlowChartMode, FlowTrack, getFlowData, getFlowDimensio
 import { FlowLegend } from './FlowLegend';
 import { ThemedCardBackground } from '../ThemedCardBackground';
 import { CARD_THEMES } from '@/utils/cardThemes';
+import { generateFlowCaption } from '@/utils/visualizationCaptions';
 
 const CHART_MODES = ['genres', 'traits', 'vibes'] as const;
 
@@ -44,14 +45,17 @@ interface FlowCardProps {
   onShare?: () => void;
   /** Reports the active chart mode upward so a parent (e.g. the share card) can mirror it. */
   onChartModeChange?: (mode: FlowChartMode) => void;
+  mode: DataMode;
 }
 
-export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartModeChange }) => {
+export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartModeChange, mode }) => {
   const [chartMode, setChartMode] = useState<FlowChartMode>('genres');
 
   useEffect(() => {
     onChartModeChange?.(chartMode);
   }, [chartMode, onChartModeChange]);
+  
+  const caption = useMemo(() => generateFlowCaption(tracks, mode, chartMode), [tracks, mode, chartMode]);
   const [tooltip, setTooltip] = React.useState<{
     x: number;
     y: number;
@@ -77,7 +81,10 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
             <h2 className="text-2xl font-bold" style={{ color: CARD_THEMES.flow.light }}>Listening Flow</h2>
           </div>
           <p className="text-gray-400 text-sm mt-1">
-            Stream graph of your recent plays, by genre, trait, or vibe
+            {mode === 'recent' 
+              ? 'Stream graph of your recent plays, by genre, trait, or vibe'
+              : 'Stream graph of your top music, by genre, trait, or vibe'
+            }
           </p>
         </div>
         {onShare && (
@@ -306,7 +313,7 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
       </div>
       <div className="text-center mt-6">
         <h3 className="text-xl font-bold text-pink-400">{CHART_MODE_TITLES[chartMode]}</h3>
-        <p className="text-sm text-gray-400 mt-1 max-w-md mx-auto">{CHART_MODE_DESCRIPTIONS[chartMode]}</p>
+        <p className="text-sm text-gray-400 mt-1 max-w-md mx-auto">{caption}</p>
       </div>
     </ThemedCardBackground>
   );

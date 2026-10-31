@@ -1,5 +1,6 @@
 import SpotifyWebApi from 'spotify-web-api-node';
 import { TrackStats, ArtistStats, GenreStats } from '@/types';
+import { batchClassifyWithLastFm, supplementGenresWithLastFm, type LastFmClassificationResult } from '@/utils/lastfm';
 
 // Initialize Spotify API
 export const spotifyApi = new SpotifyWebApi({
@@ -46,27 +47,6 @@ export const getTopArtists = async (timeRange: 'short_term' | 'medium_term' | 'l
   }
 };
 
-// Get track details with audio features
-export const getTrackDetails = async (trackId: string): Promise<{
-  track: SpotifyApi.SingleTrackResponse;
-  audioFeatures: SpotifyApi.AudioFeaturesResponse;
-}> => {
-  try {
-    const [track, audioFeatures] = await Promise.all([
-      spotifyApi.getTrack(trackId),
-      spotifyApi.getAudioFeaturesForTrack(trackId)
-    ]);
-
-    return {
-      track: track.body,
-      audioFeatures: audioFeatures.body
-    };
-  } catch (error) {
-    console.error('Error fetching track details:', error);
-    throw error;
-  }
-};
-
 // Get artist details (includes genres)
 export const getArtistDetails = async (artistId: string): Promise<SpotifyApi.SingleArtistResponse> => {
   try {
@@ -98,6 +78,10 @@ export async function fetchArtistsInBatches(artistIds: string[]) {
     acc[artist.id] = artist;
     return acc;
   }, {});
+}
+
+function getGenres(artist: SpotifyApi.ArtistObjectFull | SpotifyApi.ArtistObjectSimplified): string[] {
+  return 'genres' in artist ? artist.genres || [] : [];
 }
 
 // Calculate track statistics from play history
@@ -200,7 +184,7 @@ export const calculateGenreStats = (
     item.track.artists.forEach(artist => {
       const artistId = artist.id;
       const fullArtist = artistDetails[artistId] || artist;
-      const artistGenres = 'genres' in fullArtist ? fullArtist.genres || [] : [];
+      const artistGenres = getGenres(fullArtist);
 
       // Process each genre of the artist
       artistGenres.forEach(genre => {
@@ -259,3 +243,308 @@ export const calculateTopGenres = (artists: SpotifyApi.ArtistObjectFull[]): Arra
     .sort((a, b) => b.count - a.count);
 };
 
+// Top Tracks mode: each of Spotify's top tracks counts once, in Spotify's order.
+// Spotify does not provide play counts for this list.
+export const calculateTopTracksStats = (
+  topTracks: SpotifyApi.TrackObjectFull[],
+  artistDetails: Record<string, SpotifyApi.ArtistObjectFull> = {}
+): {
+  trackStats: TrackStats[];
+  artistStats: ArtistStats[];
+  genreStats: GenreStats[];
+  totalWeight: number;
+  totalDuration: number;
+} => {
+  const trackMap = new Map<string, TrackStats>();
+  const artistMap = new Map<string, ArtistStats & { trackIds: Set<string> }>();
+  const genreMap = new Map<string, GenreStats & { trackIds: Set<string>; artistIds: Set<string> }>();
+  
+  let totalWeight = 0;
+  let totalDuration = 0;
+
+  topTracks.forEach((track) => {
+    totalWeight += 1;
+    totalDuration += track.duration_ms;
+
+    const artists = track.artists.map(artist => artistDetails[artist.id] || artist);
+
+    // Track stats
+    trackMap.set(track.id, {
+      track,
+      artists,
+      playCount: 1,
+      firstPlayed: '',
+      lastPlayed: '',
+      totalDuration: track.duration_ms
+    });
+
+    // Artist stats
+    track.artists.forEach(artist => {
+      const artistId = artist.id;
+      const fullArtist = artistDetails[artistId] || artist;
+
+      if (artistMap.has(artistId)) {
+        const stats = artistMap.get(artistId)!;
+        stats.playCount += 1;
+        stats.totalDuration += track.duration_ms;
+        stats.trackIds.add(track.id);
+        stats.uniqueTracks = stats.trackIds.size;
+      } else {
+        artistMap.set(artistId, {
+          artist: fullArtist,
+          playCount: 1,
+          uniqueTracks: 1,
+          totalDuration: track.duration_ms,
+          genres: fullArtist.genres || [],
+          trackIds: new Set([track.id])
+        });
+      }
+
+      // Genre stats, once per top track even when several credited artists share it.
+      getGenres(fullArtist).forEach(genre => {
+        const stats = genreMap.get(genre);
+        if (stats) {
+          const seenTrack = stats.trackIds.has(track.id);
+          stats.trackIds.add(track.id);
+          stats.artistIds.add(artistId);
+          if (!seenTrack) {
+            stats.playCount += 1;
+            stats.totalDuration += track.duration_ms;
+          }
+          stats.uniqueTracks = stats.trackIds.size;
+          stats.uniqueArtists = stats.artistIds.size;
+        } else {
+          genreMap.set(genre, {
+            genre,
+            playCount: 1,
+            uniqueTracks: 1,
+            uniqueArtists: 1,
+            totalDuration: track.duration_ms,
+            trackIds: new Set([track.id]),
+            artistIds: new Set([artistId])
+          });
+        }
+      });
+    });
+  });
+
+  return {
+    trackStats: Array.from(trackMap.values()).sort((a, b) => b.playCount - a.playCount),
+    artistStats: Array.from(artistMap.values())
+      .map(stats => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { trackIds: _, ...artistStats } = stats;
+        return { ...artistStats, playCount: Math.round(artistStats.playCount) };
+      })
+      .sort((a, b) => b.playCount - a.playCount),
+    genreStats: Array.from(genreMap.values())
+      .map(stats => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { trackIds: _, artistIds: __, ...genreStats } = stats;
+        return { ...genreStats, playCount: Math.round(genreStats.playCount) };
+      })
+      .sort((a, b) => b.playCount - a.playCount),
+    totalWeight: Math.round(totalWeight),
+    totalDuration
+  };
+};
+
+// Top Artists mode: each of Spotify's top artists counts once, in Spotify's order.
+// Tracks are the ones from the user's top tracks that those artists appear on.
+export const calculateTopArtistsStats = (
+  topArtists: SpotifyApi.ArtistObjectFull[],
+  topTracks: SpotifyApi.TrackObjectFull[]
+): {
+  trackStats: TrackStats[];
+  artistStats: ArtistStats[];
+  genreStats: GenreStats[];
+  totalWeight: number;
+  totalDuration: number;
+} => {
+  const artistMap = new Map<string, ArtistStats & { trackIds: Set<string> }>();
+  const trackMap = new Map<string, TrackStats>();
+  const genreMap = new Map<string, GenreStats & { trackIds: Set<string>; artistIds: Set<string> }>();
+  
+  let totalWeight = 0;
+  let totalDuration = 0;
+
+  topArtists.forEach((artist) => {
+    totalWeight += 1;
+
+    // Find tracks by this artist from the user's top tracks
+    const artistTracks = topTracks.filter(track => 
+      track.artists.some(a => a.id === artist.id)
+    );
+
+    artistTracks.forEach(track => {
+      totalDuration += track.duration_ms;
+    });
+
+    // Initialize artist stats
+    artistMap.set(artist.id, {
+      artist,
+      playCount: 1,
+      uniqueTracks: artistTracks.length,
+      totalDuration: artistTracks.reduce((sum, t) => sum + t.duration_ms, 0),
+      genres: artist.genres || [],
+      trackIds: new Set(artistTracks.map(t => t.id))
+    });
+
+    artistTracks.forEach((track) => {
+      if (trackMap.has(track.id)) return;
+      const fullArtists = track.artists
+        .map(a => topArtists.find(ta => ta.id === a.id))
+        .filter((a): a is SpotifyApi.ArtistObjectFull => a !== undefined);
+
+      trackMap.set(track.id, {
+        track,
+        artists: fullArtists.length > 0 ? fullArtists : [artist],
+        playCount: 1,
+        firstPlayed: '',
+        lastPlayed: '',
+        totalDuration: track.duration_ms
+      });
+    });
+
+    getGenres(artist).forEach(genre => {
+      const duration = artistTracks.reduce((sum, t) => sum + t.duration_ms, 0);
+      const stats = genreMap.get(genre);
+      if (stats) {
+        stats.playCount += 1;
+        stats.totalDuration += duration;
+        artistTracks.forEach(track => stats.trackIds.add(track.id));
+        stats.artistIds.add(artist.id);
+        stats.uniqueTracks = stats.trackIds.size;
+        stats.uniqueArtists = stats.artistIds.size;
+      } else {
+        genreMap.set(genre, {
+          genre,
+          playCount: 1,
+          uniqueTracks: artistTracks.length,
+          uniqueArtists: 1,
+          totalDuration: duration,
+          trackIds: new Set(artistTracks.map(t => t.id)),
+          artistIds: new Set([artist.id])
+        });
+      }
+    });
+  });
+
+  return {
+    trackStats: Array.from(trackMap.values()).sort((a, b) => b.playCount - a.playCount),
+    artistStats: Array.from(artistMap.values())
+      .map(stats => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { trackIds: _, ...artistStats } = stats;
+        return { ...artistStats, playCount: Math.round(artistStats.playCount) };
+      })
+      .sort((a, b) => b.playCount - a.playCount),
+    genreStats: Array.from(genreMap.values())
+      .map(stats => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { trackIds: _, artistIds: __, ...genreStats } = stats;
+        return { ...genreStats, playCount: Math.round(genreStats.playCount) };
+      })
+      .sort((a, b) => b.playCount - a.playCount),
+    totalWeight: Math.round(totalWeight),
+    totalDuration
+  };
+};
+
+
+/**
+ * Count plays in a recently-played list. The list is newest first, so the first
+ * time a track appears is its latest play.
+ */
+export function countRecentPlays(playHistory: SpotifyApi.PlayHistoryObject[]): {
+  tracks: Map<string, { count: number; lastPlayed: string }>;
+  artists: Map<string, number>;
+} {
+  const tracks = new Map<string, { count: number; lastPlayed: string }>();
+  const artists = new Map<string, number>();
+
+  for (const item of playHistory) {
+    const existing = tracks.get(item.track.id);
+    if (existing) {
+      existing.count += 1;
+    } else {
+      tracks.set(item.track.id, { count: 1, lastPlayed: item.played_at });
+    }
+    for (const artist of item.track.artists) {
+      artists.set(artist.id, (artists.get(artist.id) ?? 0) + 1);
+    }
+  }
+
+  return { tracks, artists };
+}
+
+/**
+ * Server-only fields attached by enhanceArtistsWithLastFm. Stripped from API responses;
+ * only the dev genre debug panel reads them.
+ */
+export type LastFmEnhancedArtist = SpotifyApi.ArtistObjectFull & {
+  _spotifyGenres?: string[];
+  _lastFmData?: LastFmClassificationResult;
+};
+
+/**
+ * Enhance artist data with Last.fm tags for artists with thin Spotify genres
+ * Server-side only - uses Last.fm API with caching
+ * 
+ * Matched Last.fm tags are merged into `genres`, so downstream code never needs to know
+ * where a genre came from.
+ * 
+ * @param artists - Artists to enhance
+ * @param apiKey - Last.fm API key (optional, degrades gracefully)
+ * @returns Artists with merged genres, plus the names of artists Last.fm couldn't be
+ *   reached for (rate limit, API or network error)
+ */
+export const enhanceArtistsWithLastFm = async (
+  artists: LastFmEnhancedArtist[],
+  apiKey?: string
+): Promise<{ artists: LastFmEnhancedArtist[]; lastFmUnavailable: string[] }> => {
+  // If no API key, return artists as-is
+  if (!apiKey) {
+    console.log('Last.fm API key not configured, skipping genre enhancement');
+    return { artists, lastFmUnavailable: [] };
+  }
+
+  // Find artists with thin genres (0-2 genres)
+  const thinGenreArtists = artists.filter(artist =>
+    !artist._spotifyGenres && (artist.genres?.length || 0) <= 2
+  );
+  
+  if (thinGenreArtists.length === 0) {
+    return { artists, lastFmUnavailable: [] };
+  }
+
+  console.log(`Enhancing ${thinGenreArtists.length} artists with thin genres using Last.fm`);
+
+  const artistNames = thinGenreArtists.map(artist => artist.name);
+  try {
+    // Cached 7 days, so repeat lookups don't hit Last.fm
+    const { results: lastFmResults, unavailable } = await batchClassifyWithLastFm(artistNames, apiKey);
+
+    const enhanced = artists.map(artist => {
+      const lastFmResult = lastFmResults.get(artist.name);
+      if (!lastFmResult || artist._spotifyGenres) {
+        return artist;
+      }
+      const spotifyGenres = artist.genres || [];
+      const lastFmGenres = lastFmResult.classifications
+        .filter(c => c.matchedGenre && c.scores)
+        .map(c => c.originalGenre);
+      return {
+        ...artist,
+        genres: Array.from(new Set([...spotifyGenres, ...lastFmGenres])),
+        _spotifyGenres: spotifyGenres,
+        _lastFmData: lastFmResult
+      };
+    });
+    return { artists: enhanced, lastFmUnavailable: unavailable };
+  } catch (error) {
+    console.error('Error enhancing artists with Last.fm:', error);
+    // Degrade gracefully - return original artists
+    return { artists, lastFmUnavailable: artistNames };
+  }
+};

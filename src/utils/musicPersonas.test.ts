@@ -5,7 +5,7 @@ import {
   personaToArtProfile,
   MUSIC_PERSONAS,
 } from './musicPersonas';
-import { Stats } from '@/types';
+import { Stats, TopTrackItem } from '@/types';
 
 describe('computePersonaInput', () => {
   it('classifies high genre diversity correctly', () => {
@@ -29,7 +29,8 @@ describe('computePersonaInput', () => {
           id: 'track1',
           name: 'Modern Song',
           album: { release_date: '2024-01-01' },
-        } as SpotifyApi.TrackObjectFull,
+          recentPlays: 1,
+        } as TopTrackItem,
       ],
       recentlyPlayed: [],
       tracks: [],
@@ -37,6 +38,7 @@ describe('computePersonaInput', () => {
       topArtists: [],
       topGenres: [],
       timeRange: 'medium_term',
+      mode: 'recent',
     };
     
     const result = computePersonaInput(stats);
@@ -65,7 +67,8 @@ describe('computePersonaInput', () => {
           id: 'track1',
           name: 'Modern Song',
           album: { release_date: '2024-01-01' },
-        } as SpotifyApi.TrackObjectFull,
+          recentPlays: 1,
+        } as TopTrackItem,
       ],
       recentlyPlayed: [],
       tracks: [],
@@ -73,6 +76,7 @@ describe('computePersonaInput', () => {
       topArtists: [],
       topGenres: [],
       timeRange: 'medium_term',
+      mode: 'recent',
     };
     
     const result = computePersonaInput(stats);
@@ -101,7 +105,8 @@ describe('computePersonaInput', () => {
           id: 'track1',
           name: 'Modern Song',
           album: { release_date: '2024-01-01' },
-        } as SpotifyApi.TrackObjectFull,
+          recentPlays: 1,
+        } as TopTrackItem,
       ],
       recentlyPlayed: [],
       tracks: [],
@@ -109,6 +114,7 @@ describe('computePersonaInput', () => {
       topArtists: [],
       topGenres: [],
       timeRange: 'medium_term',
+      mode: 'recent',
     };
     
     const result = computePersonaInput(stats);
@@ -137,7 +143,8 @@ describe('computePersonaInput', () => {
           id: 'track1',
           name: 'Modern Song',
           album: { release_date: '2024-01-01' },
-        } as SpotifyApi.TrackObjectFull,
+          recentPlays: 1,
+        } as TopTrackItem,
       ],
       recentlyPlayed: [],
       tracks: [],
@@ -145,6 +152,7 @@ describe('computePersonaInput', () => {
       topArtists: [],
       topGenres: [],
       timeRange: 'medium_term',
+      mode: 'recent',
     };
     
     const result = computePersonaInput(stats);
@@ -173,7 +181,8 @@ describe('computePersonaInput', () => {
           id: 'track1',
           name: 'Modern Song',
           album: { release_date: '2024-01-01' },
-        } as SpotifyApi.TrackObjectFull,
+          recentPlays: 1,
+        } as TopTrackItem,
       ],
       recentlyPlayed: [],
       tracks: [],
@@ -181,6 +190,7 @@ describe('computePersonaInput', () => {
       topArtists: [],
       topGenres: [],
       timeRange: 'medium_term',
+      mode: 'recent',
     };
     
     const result = computePersonaInput(stats);
@@ -209,7 +219,8 @@ describe('computePersonaInput', () => {
           id: 'track1',
           name: 'Modern Song',
           album: { release_date: '2024-01-01' },
-        } as SpotifyApi.TrackObjectFull,
+          recentPlays: 1,
+        } as TopTrackItem,
       ],
       recentlyPlayed: [],
       tracks: [],
@@ -217,6 +228,7 @@ describe('computePersonaInput', () => {
       topArtists: [],
       topGenres: [],
       timeRange: 'medium_term',
+      mode: 'recent',
     };
     
     const result = computePersonaInput(stats);
@@ -246,7 +258,8 @@ describe('computePersonaInput', () => {
           id: 'track1',
           name: 'Recent Song',
           album: { release_date: `${currentYear - 2}-01-01` }, // 2 years ago
-        } as SpotifyApi.TrackObjectFull,
+          recentPlays: 1,
+        } as TopTrackItem,
       ],
       recentlyPlayed: [],
       tracks: [],
@@ -254,6 +267,7 @@ describe('computePersonaInput', () => {
       topArtists: [],
       topGenres: [],
       timeRange: 'medium_term',
+      mode: 'recent',
     };
     
     const result = computePersonaInput(stats);
@@ -283,7 +297,8 @@ describe('computePersonaInput', () => {
           id: 'track1',
           name: 'Old Song',
           album: { release_date: `${currentYear - 10}-01-01` }, // 10 years ago
-        } as SpotifyApi.TrackObjectFull,
+          recentPlays: 1,
+        } as TopTrackItem,
       ],
       recentlyPlayed: [],
       tracks: [],
@@ -291,6 +306,7 @@ describe('computePersonaInput', () => {
       topArtists: [],
       topGenres: [],
       timeRange: 'medium_term',
+      mode: 'recent',
     };
     
     const result = computePersonaInput(stats);
@@ -319,7 +335,8 @@ describe('computePersonaInput', () => {
           id: 'track1',
           name: 'Song',
           album: { release_date: undefined },
-        } as unknown as SpotifyApi.TrackObjectFull,
+          recentPlays: 1,
+        } as unknown as TopTrackItem,
       ],
       recentlyPlayed: [],
       tracks: [],
@@ -327,6 +344,7 @@ describe('computePersonaInput', () => {
       topArtists: [],
       topGenres: [],
       timeRange: 'medium_term',
+      mode: 'recent',
     };
     
     const result = computePersonaInput(stats);
@@ -357,7 +375,8 @@ describe('computePersonaInput', () => {
           id: 'track1',
           name: 'Song',
           album: { release_date: '2024-01-01' },
-        } as SpotifyApi.TrackObjectFull,
+          recentPlays: 1,
+        } as TopTrackItem,
       ],
       recentlyPlayed: [],
       tracks: [],
@@ -365,6 +384,7 @@ describe('computePersonaInput', () => {
       topArtists: [],
       topGenres: [],
       timeRange: 'medium_term',
+      mode: 'recent',
     };
     
     const result = computePersonaInput(stats);
@@ -393,7 +413,8 @@ describe('computePersonaInput', () => {
           id: 'track1',
           name: 'Song',
           album: { release_date: '2024-01-01' },
-        } as SpotifyApi.TrackObjectFull,
+          recentPlays: 1,
+        } as TopTrackItem,
       ],
       recentlyPlayed: [],
       tracks: [],
@@ -401,6 +422,7 @@ describe('computePersonaInput', () => {
       topArtists: [],
       topGenres: [],
       timeRange: 'medium_term',
+      mode: 'recent',
     };
     
     const result = computePersonaInput(stats);
@@ -429,7 +451,8 @@ describe('computePersonaInput', () => {
           id: 'track1',
           name: 'Song',
           album: { release_date: '2024-01-01' },
-        } as SpotifyApi.TrackObjectFull,
+          recentPlays: 1,
+        } as TopTrackItem,
       ],
       recentlyPlayed: [],
       tracks: [],
@@ -437,6 +460,7 @@ describe('computePersonaInput', () => {
       topArtists: [],
       topGenres: [],
       timeRange: 'medium_term',
+      mode: 'recent',
     };
     
     const result = computePersonaInput(stats);
@@ -465,7 +489,8 @@ describe('computePersonaInput', () => {
           id: 'track1',
           name: 'Song',
           album: { release_date: '2024-01-01' },
-        } as SpotifyApi.TrackObjectFull,
+          recentPlays: 1,
+        } as TopTrackItem,
       ],
       recentlyPlayed: [],
       tracks: [],
@@ -473,6 +498,7 @@ describe('computePersonaInput', () => {
       topArtists: [],
       topGenres: [],
       timeRange: 'medium_term',
+      mode: 'recent',
     };
     
     const result = computePersonaInput(stats);

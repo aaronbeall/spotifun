@@ -59,7 +59,7 @@ function useDimensionColumnGeometry(deps: unknown[]) {
   return { containerRef, boxRefs, geometry };
 }
 
-export function getVACRSDiversity(genreStats: GenreStats[]) {
+export function getVACRSRange(genreStats: GenreStats[]) {
   // Calculate VACRS scores for each genre
   const scores = genreStats.map(g => calculateGenreVACRSScore(g.genre));
   // For each dimension, collect all values
@@ -76,9 +76,9 @@ export function getVACRSDiversity(genreStats: GenreStats[]) {
     const variance = values[dim].reduce((a, b) => a + Math.pow(b.score - mean, 2), 0) / values[dim].length;
     spread[dim] = Math.sqrt(variance);
   });
-  // Diversity score: average spread
-  const diversityScore = (Object.values(spread).reduce((a, b) => a + b, 0) / VACRS_DIMENSIONS.length) * 100;
-  return { spread, values, diversityScore };
+  // Range score: average spread across all dimensions
+  const rangeScore = (Object.values(spread).reduce((a, b) => a + b, 0) / VACRS_DIMENSIONS.length) * 100;
+  return { spread, values, rangeScore };
 }
 
 interface SpectrumDimensionBarsProps {
@@ -87,15 +87,17 @@ interface SpectrumDimensionBarsProps {
   interactive?: boolean;
   /** Renders the same bubble scatter at a smaller fixed size, without axis labels/spread tags (fits the fixed-width share graphic) */
   compact?: boolean;
+  /** Tooltip play counts. Off in top modes, where the number is not a play count. */
+  showPlayCounts?: boolean;
 }
 
 // The core Spectrum visual, extracted so it can be reused both in the live
 // interactive Spectrum card and in the static share graphic.
-export function SpectrumDimensionBars({ genreStats, interactive = true, compact = false }: SpectrumDimensionBarsProps) {
+export function SpectrumDimensionBars({ genreStats, interactive = true, compact = false, showPlayCounts = true }: SpectrumDimensionBarsProps) {
   const tooltip = useTooltip();
   const waveClipId = useId();
   const { spread, values, weightedScore } = useMemo(() => {
-    const { spread, values } = getVACRSDiversity(genreStats);
+    const { spread, values } = getVACRSRange(genreStats);
     return { spread, values, weightedScore: calculateWeightedVACRSScore(genreStats) };
   }, [genreStats]);
   const { containerRef, boxRefs, geometry } = useDimensionColumnGeometry([genreStats, compact]);
@@ -255,11 +257,13 @@ export function SpectrumDimensionBars({ genreStats, interactive = true, compact 
                                 <span className="text-xs text-slate-400 font-normal ml-1">{getDominantTrait(dim, v.score).label}</span>
                               </span>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs text-slate-400 whitespace-nowrap">
-                                {v.playCount} {v.playCount === 1 ? 'play' : 'plays'}
-                              </span>
-                            </div>
+                            {showPlayCounts && (
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs text-slate-400 whitespace-nowrap">
+                                  {v.playCount} {v.playCount === 1 ? 'play' : 'plays'}
+                                </span>
+                              </div>
+                            )}
                           </div>, e) : undefined}
                         onMouseMove={interactive ? tooltip.move : undefined}
                         onMouseLeave={interactive ? tooltip.hide : undefined}
