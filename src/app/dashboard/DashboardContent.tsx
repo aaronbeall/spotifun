@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { BarChart3, ChevronDown, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User, Bug, Tags, Check } from 'lucide-react';
+import { BarChart3, ChevronDown, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User, Bug, Tags, Check, Sparkles } from 'lucide-react';
 import { formatDuration, formatNumber, getGenreColorMap, getGenreColorClass } from '@/utils';
 import Image from 'next/image';
 import FunStats from '@/components/features/FunStats';
@@ -19,7 +19,13 @@ import { usePersistedToggle } from '@/hooks/usePersistedToggle';
 
 import { UserProfile, Stats, TimeRange, DataMode } from '@/types';
 
-export default function DashboardContent() {
+interface DashboardContentProps {
+  /** Render a made-up listener from the /api/demo endpoints instead of the signed-in Spotify account */
+  demo?: boolean;
+}
+
+export default function DashboardContent({ demo = false }: DashboardContentProps) {
+  const apiBase = demo ? '/api/demo' : '/api';
   const [user, setUser] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -52,12 +58,12 @@ export default function DashboardContent() {
   ) => {
     const params = new URLSearchParams({ timeRange: range, limit: String(limit), mode });
     if (!lastFm) params.set('lastfm', '0');
-    return `/api/stats?${params}`;
-  }, [lastFmEnabled]);
+    return `${apiBase}/stats?${params}`;
+  }, [apiBase, lastFmEnabled]);
 
   const fetchAll = useCallback(async (range: TimeRange, limit: number, mode: DataMode) => {
     const [userResponse, statsResponse] = await Promise.all([
-      fetch('/api/user'),
+      fetch(`${apiBase}/user`),
       fetch(buildStatsUrl(range, limit, mode))
     ]);
 
@@ -72,7 +78,7 @@ export default function DashboardContent() {
     }
 
     setLastFetched(new Date());
-  }, [buildStatsUrl]);
+  }, [apiBase, buildStatsUrl]);
 
   useEffect(() => {
     fetchAll(timeRange, playLimit, dataMode)
@@ -258,7 +264,7 @@ export default function DashboardContent() {
             </div>
 
             <div className="flex-1 flex justify-center min-w-0">
-              <NowPlayingWidget />
+              <NowPlayingWidget endpoint={`${apiBase}/player/current`} />
             </div>
 
             <div className="flex items-center bg-gray-900/60 border border-gray-700/50 rounded-full p-1.5 shrink-0">
@@ -298,6 +304,7 @@ export default function DashboardContent() {
                     <div className="px-3 py-2 text-sm text-gray-300 border-b border-gray-700">
                       Welcome, {user.display_name}
                     </div>
+                    {!demo && (
                     <DropdownMenu.CheckboxItem
                       checked={lastFmEnabled}
                       onCheckedChange={handleLastFmToggle}
@@ -310,6 +317,7 @@ export default function DashboardContent() {
                         <Check className="w-4 h-4 text-green-400" />
                       </DropdownMenu.ItemIndicator>
                     </DropdownMenu.CheckboxItem>
+                    )}
                     {isDev && (
                       <DropdownMenu.CheckboxItem
                         checked={debugPanelEnabled}
@@ -337,7 +345,7 @@ export default function DashboardContent() {
                       className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer outline-none"
                     >
                       <LogOut className="w-4 h-4" />
-                      Logout
+                      {demo ? 'Exit demo' : 'Logout'}
                     </DropdownMenu.Item>
                   </DropdownMenu.Content>
                 </DropdownMenu.Portal>
@@ -346,6 +354,23 @@ export default function DashboardContent() {
           </div>
         </div>
       </div>
+
+      {demo && (
+        <div className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-green-500 text-white">
+          <div className="container mx-auto px-4 py-2.5 flex flex-col sm:flex-row items-center justify-center gap-x-4 gap-y-1.5 text-sm text-center">
+            <span className="flex items-center gap-2 font-medium">
+              <Sparkles className="w-4 h-4 shrink-0" />
+              You&apos;re snooping on {user.display_name}, a totally made-up listener. Every artist here is fictional.
+            </span>
+            <a
+              href="/api/auth/spotify"
+              className="shrink-0 rounded-full bg-white/95 text-gray-900 font-semibold px-3 py-1 hover:bg-white transition-colors"
+            >
+              See your own stats
+            </a>
+          </div>
+        </div>
+      )}
 
       <div className="container mx-auto px-4 py-8">
         {/* Recently Played Stats */}
