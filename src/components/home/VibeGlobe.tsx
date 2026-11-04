@@ -194,8 +194,9 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
         const sprite = sprites[p.sprite];
         if (!sprite) continue;
         const depth = (p.z + 1) / 2; // 0 = far side, 1 = facing us
-        // Scale by distance: badges facing us swell and overlap, the far side shrinks to specks
-        const size = baseSize * (camera / (camera - p.z)) * (0.35 + depth * 0.75);
+        // Scale by distance: badges facing us are biggest, the far side shrinks to specks.
+        // Even up front they stay a bit smaller than their spacing, so there's room between them.
+        const size = baseSize * (camera / (camera - p.z)) * (0.28 + depth * 0.47);
         ctx.globalAlpha = 0.15 + depth * 0.85;
         ctx.drawImage(sprite, p.x - size / 2, p.y - size / 2, size, size);
       }
