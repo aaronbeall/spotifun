@@ -6,8 +6,13 @@ import { cn } from '@/utils';
 
 interface VibeGlobeProps {
   className?: string;
-  /** How many icons cover the sphere */
-  count?: number;
+}
+
+/** Fewer, bigger icons on small screens: lighter to draw and easier to see */
+function iconCountFor(width: number): number {
+  if (width < 420) return 140;
+  if (width < 700) return 190;
+  return 240;
 }
 
 interface Point {
@@ -56,7 +61,7 @@ function makeSprite(image: HTMLImageElement, rim: string): HTMLCanvasElement {
  * A dense, slowly spinning sphere tiled with the vibe paintings. Drag to spin it.
  * Canvas 2D with a simple perspective projection: no WebGL or 3D library needed.
  */
-export function VibeGlobe({ className, count = 240 }: VibeGlobeProps) {
+export function VibeGlobe({ className }: VibeGlobeProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -73,6 +78,7 @@ export function VibeGlobe({ className, count = 240 }: VibeGlobeProps) {
       img.src = vibe.image!;
     });
 
+    const count = iconCountFor(canvas.getBoundingClientRect().width);
     const points = fibonacciSphere(count, vibes.length);
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -81,9 +87,10 @@ export function VibeGlobe({ className, count = 240 }: VibeGlobeProps) {
     let dpr = 1;
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
       width = rect.width;
       height = rect.height;
+      // Phones have dense screens but small GPUs; 1.5x is plenty for these icons
+      dpr = Math.min(window.devicePixelRatio || 1, width < 640 ? 1.5 : 2);
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
     };
@@ -147,10 +154,11 @@ export function VibeGlobe({ className, count = 240 }: VibeGlobeProps) {
         angle += velocity * dt;
       }
 
-      const radius = Math.min(width, height) * 0.4;
+      const radius = Math.min(width, height) * 0.38;
       const cx = width / 2;
       const cy = height / 2;
-      const camera = 3.2;
+      // Camera distance in sphere radii: closer means stronger perspective
+      const camera = 2.6;
       const cosA = Math.cos(angle), sinA = Math.sin(angle);
       const cosT = Math.cos(tilt), sinT = Math.sin(tilt);
       // Icon size that just about tiles the sphere surface
@@ -186,8 +194,9 @@ export function VibeGlobe({ className, count = 240 }: VibeGlobeProps) {
         const sprite = sprites[p.sprite];
         if (!sprite) continue;
         const depth = (p.z + 1) / 2; // 0 = far side, 1 = facing us
-        const size = baseSize * (camera / (camera - p.z)) * (0.75 + depth * 0.25);
-        ctx.globalAlpha = 0.18 + depth * 0.82;
+        // Scale by distance: badges facing us swell and overlap, the far side shrinks to specks
+        const size = baseSize * (camera / (camera - p.z)) * (0.35 + depth * 0.75);
+        ctx.globalAlpha = 0.15 + depth * 0.85;
         ctx.drawImage(sprite, p.x - size / 2, p.y - size / 2, size, size);
       }
       ctx.globalAlpha = 1;
@@ -203,7 +212,7 @@ export function VibeGlobe({ className, count = 240 }: VibeGlobeProps) {
       canvas.removeEventListener('pointerup', onPointerUp);
       canvas.removeEventListener('pointercancel', onPointerUp);
     };
-  }, [count]);
+  }, []);
 
   return (
     <canvas

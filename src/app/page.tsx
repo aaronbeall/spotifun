@@ -72,7 +72,7 @@ function ConnectButton({ isConnecting, onClick, className }: { isConnecting: boo
 
 function SectionTitle({ icon: Icon, iconClass, title, children }: { icon: typeof Sparkles; iconClass: string; title: string; children?: React.ReactNode }) {
   return (
-    <motion.div {...reveal} className="mx-auto mb-10 max-w-2xl text-center">
+    <motion.div {...reveal} className="mx-auto mb-8 max-w-2xl text-center sm:mb-10">
       <h2 className="flex flex-col items-center justify-center gap-2 font-display text-3xl font-extrabold tracking-tight text-white sm:flex-row sm:gap-3 sm:text-4xl">
         <Icon className={cn('h-7 w-7 shrink-0', iconClass)} />
         {title}
@@ -108,23 +108,23 @@ export default function Home() {
             <Image src="/logo.png" alt="" width={40} height={40} className="h-10 w-10" />
             <span className="text-2xl font-black italic lowercase tracking-tight text-violet-400">spotifun</span>
           </Link>
-          <Link href="/example" className="rounded-full px-4 py-2 text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white">
+          <Link href="/example" className="hidden rounded-full px-4 py-2 text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white sm:inline-flex">
             Peek at Sam&apos;s profile
           </Link>
         </header>
 
-        <div className="mx-auto grid w-full max-w-7xl flex-1 items-center gap-6 px-4 pb-16 sm:px-6 lg:grid-cols-[1fr_1.05fr] lg:gap-10">
+        <div className="mx-auto grid w-full max-w-7xl flex-1 items-center gap-6 px-4 pb-12 sm:px-6 sm:pb-16 lg:grid-cols-[1fr_1.05fr] lg:gap-10">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="order-2 lg:order-1">
-            <h1 className="font-display text-5xl font-extrabold leading-[0.95] tracking-tight sm:text-6xl xl:text-7xl">
+            <h1 className="font-display text-[2.6rem] font-extrabold leading-[0.95] tracking-tight sm:text-6xl xl:text-7xl">
               Get nerdy about
               <br />
               <span className="bg-gradient-to-r from-violet-300 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">your listening.</span>
             </h1>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-gray-300">
+            <p className="mt-4 max-w-xl text-base leading-relaxed text-gray-300 sm:mt-6 sm:text-lg">
               Spotifun digs through your Spotify history and turns it into vibes, genre maps, stream charts, a listener persona and a few silly badges.
               Poke around, see what turns up, and send the weird bits to your friends.
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="mt-6 flex flex-wrap items-center gap-3 sm:mt-8">
               <ConnectButton isConnecting={isConnecting} onClick={handleConnect} />
               <Link
                 href="/example"
@@ -142,7 +142,7 @@ export default function Home() {
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.1, ease: 'easeOut' }}
-            className="relative order-1 mx-auto aspect-square w-full max-w-[340px] sm:max-w-[460px] lg:order-2 lg:max-w-[620px]"
+            className="relative order-1 mx-auto aspect-square w-full max-w-[min(340px,40svh)] sm:max-w-[460px] lg:order-2 lg:max-w-[620px]"
           >
             <VibeGlobe className="h-full w-full" />
           </motion.div>
@@ -158,7 +158,7 @@ export default function Home() {
       {!failed && (
         <main className="relative">
           {/* Profile carousel, live */}
-          <section className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
+          <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-24">
             <SectionTitle icon={Sparkles} iconClass="text-fuchsia-400" title="Flip through Sam's profile">
               This is the real thing, running on Sam&apos;s listening. Click around. Every card has a share button.
             </SectionTitle>
@@ -172,7 +172,7 @@ export default function Home() {
           </section>
 
           {/* Top artists and tracks */}
-          <section className="py-20">
+          <section className="py-14 sm:py-20">
             <div className="px-4 sm:px-6">
               <SectionTitle icon={Repeat} iconClass="text-green-400" title="Who's on repeat">
                 Top artists, tracks and genres, for the last four weeks, six months or all time.
@@ -182,7 +182,7 @@ export default function Home() {
           </section>
 
           {/* Sharing */}
-          <section className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
+          <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-24">
             <div className="grid items-center gap-12 lg:grid-cols-2">
               <motion.div {...reveal} className="text-center lg:text-left">
                 <h2 className="flex flex-col items-center justify-center gap-2 font-display text-3xl font-extrabold tracking-tight sm:flex-row sm:gap-3 sm:text-4xl lg:justify-start">
@@ -198,7 +198,7 @@ export default function Home() {
           </section>
 
           {/* Fun stats and achievements */}
-          <section className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
+          <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-24">
             <SectionTitle icon={Trophy} iconClass="text-yellow-400" title="Odd little facts and badges">
               A story carousel of trivia about your listening, and achievements for things like trying ten genres.
             </SectionTitle>
@@ -206,7 +206,15 @@ export default function Home() {
               {stats ? (
                 <>
                   <FunStats stats={stats} />
-                  <Achievements stats={stats} />
+                  {/* Eight stacked badges is a lot of thumb-scrolling on a phone, so show a peek */}
+                  <div className="relative max-h-[560px] overflow-hidden sm:max-h-none sm:overflow-visible">
+                    <Achievements stats={stats} />
+                    <div className="absolute inset-x-0 bottom-0 flex h-40 items-end justify-center bg-gradient-to-t from-gray-950 via-gray-950/90 to-transparent pb-4 sm:hidden">
+                      <Link href="/example" className="rounded-full border border-white/15 bg-gray-800/90 px-5 py-2 text-sm font-medium text-gray-100">
+                        See all of Sam&apos;s badges
+                      </Link>
+                    </div>
+                  </div>
                 </>
               ) : (
                 <Placeholder className="h-96" />
@@ -220,7 +228,7 @@ export default function Home() {
       <section className="relative isolate overflow-hidden border-t border-white/5">
         <Image src="/home/art-spiral.webp" alt="" fill sizes="100vw" className="-z-10 object-cover opacity-25" />
         <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-gray-950 via-gray-950/70 to-gray-950" />
-        <motion.div {...reveal} className="mx-auto flex max-w-2xl flex-col items-center px-4 py-28 text-center">
+        <motion.div {...reveal} className="mx-auto flex max-w-2xl flex-col items-center px-4 py-20 text-center sm:py-28">
           <Image src="/logo.png" alt="" width={72} height={72} className="h-16 w-16" />
           <h2 className="mt-6 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">Curious what&apos;s in yours?</h2>
           <p className="mt-4 text-lg text-gray-400">It only reads your listening history. Your playlists stay exactly as they are.</p>

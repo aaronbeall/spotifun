@@ -17,11 +17,9 @@ const WAVES = [
   { hue: 45, amp: 0.06, freq: 4.6, speed: 1.6, width: 1, offset: 5.9 },
 ];
 
-const BAR_COUNT = 72;
-
-/** Smooth pseudo-audio level for bar `i` at time `t`: a few layered sines, 0..1 */
-function level(i: number, t: number): number {
-  const x = i / BAR_COUNT;
+/** Smooth pseudo-audio level for bar `i` of `bars` at time `t`: a few layered sines, 0..1 */
+function level(i: number, bars: number, t: number): number {
+  const x = i / bars;
   const v =
     Math.sin(x * 9 + t * 2.1) * 0.35 +
     Math.sin(x * 23 - t * 3.3 + 1.3) * 0.25 +
@@ -49,6 +47,7 @@ export function HeroWaves({ className, anchorRef }: HeroWavesProps) {
     let width = 0;
     let height = 0;
     let dpr = 1;
+    let small = false;
     let horizon = 0;
     let span = 0;
     const resize = () => {
@@ -57,9 +56,10 @@ export function HeroWaves({ className, anchorRef }: HeroWavesProps) {
       horizon = anchor ? anchor.top + anchor.height / 2 - rect.top : rect.height * 0.55;
       // Wave and bar heights follow the anchor's size so they hug the globe on any screen
       span = anchor ? anchor.height * 1.1 : rect.height * 0.6;
-      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       width = rect.width;
       height = rect.height;
+      small = width < 640;
+      dpr = small ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
       if (reducedMotion) draw(performance.now());
@@ -81,12 +81,13 @@ export function HeroWaves({ className, anchorRef }: HeroWavesProps) {
       ctx.globalCompositeOperation = 'lighter';
 
       // Equalizer, mirrored around the horizon line
-      const barGap = width / BAR_COUNT;
+      const bars = small ? 36 : 72;
+      const barGap = width / bars;
       const barWidth = barGap * 0.55;
-      for (let i = 0; i < BAR_COUNT; i++) {
-        const h = level(i, t) * span * 0.5;
+      for (let i = 0; i < bars; i++) {
+        const h = level(i, bars, t) * span * 0.5;
         const x = i * barGap + (barGap - barWidth) / 2;
-        const hue = (260 + (i / BAR_COUNT) * 120 + hueShift) % 360;
+        const hue = (260 + (i / bars) * 120 + hueShift) % 360;
         const up = ctx.createLinearGradient(0, horizon - h, 0, horizon);
         up.addColorStop(0, `hsla(${hue}, 95%, 65%, 0)`);
         up.addColorStop(1, `hsla(${hue}, 95%, 60%, 0.28)`);
@@ -100,8 +101,9 @@ export function HeroWaves({ className, anchorRef }: HeroWavesProps) {
       }
 
       // Sine ribbons: a wide faint pass for glow, then a thin bright line
-      const steps = Math.max(60, Math.round(width / 8));
-      for (const wave of WAVES) {
+      const steps = Math.max(48, Math.round(width / (small ? 10 : 8)));
+      const waves = small ? WAVES.slice(0, 3) : WAVES;
+      for (const wave of waves) {
         const hue = (wave.hue + hueShift) % 360;
         const breathe = 0.7 + 0.3 * Math.sin(t * 0.9 + wave.offset);
         const path = new Path2D();
@@ -132,9 +134,13 @@ export function HeroWaves({ className, anchorRef }: HeroWavesProps) {
     if (anchorRef?.current) resizeObserver.observe(anchorRef.current);
 
     if (!reducedMotion) {
+      let lastDraw = 0;
       const loop = (now: number) => {
         frame = requestAnimationFrame(loop);
-        if (visible) draw(now);
+        // ~30fps on phones is smooth enough for slow waves and saves battery
+        if (!visible || (small && now - lastDraw < 32)) return;
+        lastDraw = now;
+        draw(now);
       };
       frame = requestAnimationFrame(loop);
     }
