@@ -43,85 +43,30 @@ function rgba(hex: string, alpha: number): string {
   return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
 }
 
-/**
- * Wispy coiling strands from an emblem to the cursor: two or three smooth threads that twist
- * around a gently bowed path, like smoke or ribbon. Closeness (`strength`) sets how bright and
- * thick they are; `time` keeps the coils drifting. Strands taper and fade toward the cursor.
- */
-function drawWisps(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, mx: number, my: number, strength: number, color: string, time: number, seed: number) {
-  const rim = size * 0.45;
-  const dist = Math.hypot(mx - x, my - y);
-  if (dist <= rim) return;
-  const glow = Math.sqrt(strength);
-  const ux = (mx - x) / dist;
-  const uy = (my - y) / dist;
-  const nx = -uy;
-  const ny = ux;
-  const sx = x + ux * rim;
-  const sy = y + uy * rim;
-  const length = dist - rim;
+/** A mote of light that leaves an emblem and falls toward the cursor */
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  age: number;
+  size: number;
+  color: string;
+}
 
-  // Each emblem bows its path to one side so neighbouring wisps don't stack
-  const bow = length * (0.18 + (seed % 7) * 0.025) * (seed % 2 ? 1 : -1);
-  const cxp = (sx + mx) / 2 + nx * bow;
-  const cyp = (sy + my) / 2 + ny * bow;
-  const coils = 0.8 + Math.min(1.2, length / 180);
-  const amplitude = Math.min(size * 0.7, 8 + length * 0.14) * (0.6 + strength * 0.4);
-  const strands = strength > 0.45 ? 3 : 2;
-  const steps = Math.max(20, Math.min(44, Math.round(length / 5)));
-
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  for (let k = 0; k < strands; k++) {
-    const phase = time * 2.2 + (k * Math.PI * 2) / strands + seed;
-    let px = sx;
-    let py = sy;
-    for (let i = 1; i <= steps; i++) {
-      const u = i / steps;
-      const inv = 1 - u;
-      // Point on the bowed path (quadratic Bezier) and its local normal
-      const bx = inv * inv * sx + 2 * inv * u * cxp + u * u * mx;
-      const by = inv * inv * sy + 2 * inv * u * cyp + u * u * my;
-      const tx = 2 * inv * (cxp - sx) + 2 * u * (mx - cxp);
-      const ty = 2 * inv * (cyp - sy) + 2 * u * (my - cyp);
-      const tl = Math.hypot(tx, ty) || 1;
-      const angle = u * coils * Math.PI * 2 - phase;
-      // Coil wraps around the path, pinched at both ends
-      const envelope = Math.sin(Math.PI * u) ** 0.8;
-      const offset = Math.sin(angle) * amplitude * envelope;
-      const qx = bx + (-ty / tl) * offset;
-      const qy = by + (tx / tl) * offset;
-      // The side of the coil facing us is a little thicker and brighter, which sells the twist
-      const facing = 0.55 + 0.45 * Math.cos(angle);
-      const taper = 1 - 0.85 * u;
-      const fade = glow * (1 - 0.6 * u) * facing;
-
-      ctx.beginPath();
-      ctx.moveTo(px, py);
-      ctx.lineTo(qx, qy);
-      ctx.strokeStyle = rgba(color, 0.32 * fade);
-      ctx.lineWidth = (4 + strength * 7) * taper * facing;
-      ctx.stroke();
-      ctx.strokeStyle = rgba(color, Math.min(1, 0.95 * fade));
-      ctx.lineWidth = (1 + strength * 2) * taper * facing;
-      ctx.stroke();
-      px = qx;
-      py = qy;
-    }
-  }
-
-  // Soft glow on the emblem itself
-  const haloRadius = size * (0.75 + strength * 0.35);
-  const halo = ctx.createRadialGradient(x, y, rim, x, y, haloRadius);
+/** Soft glow on an emblem the cursor is near, in its own colour */
+function drawHalo(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, strength: number, color: string) {
+  const inner = size * 0.45;
+  const outer = size * (0.75 + strength * 0.35);
+  const halo = ctx.createRadialGradient(x, y, inner, x, y, outer);
   halo.addColorStop(0, rgba(color, 0.3 * strength));
   halo.addColorStop(1, rgba(color, 0));
   ctx.fillStyle = halo;
   ctx.beginPath();
-  ctx.arc(x, y, haloRadius, 0, Math.PI * 2);
+  ctx.arc(x, y, outer, 0, Math.PI * 2);
   ctx.fill();
 }
 
-/** Round icon with a soft colored rim, pre-rendered once so each frame is just drawImage calls */
 function makeSprite(image: HTMLImageElement, rim: string): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = SPRITE_SIZE;
@@ -144,17 +89,20 @@ function makeSprite(image: HTMLImageElement, rim: string): HTMLCanvasElement {
 /**
  * A dense, slowly spinning sphere tiled with the vibe paintings. Drag to spin it.
  * Emblems near the cursor (or a finger, while touching) lean toward it and throw
- * wispy coiling strands in their own colour, stronger the closer it gets.
+ * particles in their own colour that fall toward it, faster the closer it gets.
  * Canvas 2D with a simple perspective projection: no WebGL or 3D library needed.
  */
 export function VibeGlobe({ className }: VibeGlobeProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const overlayRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const overlay = overlayRef.current;
+    if (!canvas || !overlay) return;
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const octx = overlay.getContext('2d');
+    if (!ctx || !octx) return;
 
     const vibes = MUSIC_VIBES.filter(v => v.image);
     const sprites: (HTMLCanvasElement | null)[] = vibes.map(() => null);
@@ -170,6 +118,8 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
 
     let width = 0;
     let height = 0;
+    let overlayWidth = 0;
+    let overlayHeight = 0;
     let dpr = 1;
     const resize = () => {
       // Layout size, not getBoundingClientRect: the hero scales the globe in on load, and a
@@ -180,10 +130,17 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
       dpr = Math.min(window.devicePixelRatio || 1, width < 640 ? 1.5 : 2);
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
+      // Particles get their own larger, click-through canvas so they can follow the cursor
+      // past the globe's edges
+      overlayWidth = overlay.clientWidth;
+      overlayHeight = overlay.clientHeight;
+      overlay.width = Math.round(overlayWidth * dpr);
+      overlay.height = Math.round(overlayHeight * dpr);
     };
     resize();
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(canvas);
+    resizeObserver.observe(overlay);
 
     let angle = 0.6;
     let velocity = reducedMotion ? 0 : 0.22; // radians per second
@@ -253,7 +210,10 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
     const projected = points.map((_, index) => ({ x: 0, y: 0, z: 0, sprite: 0, index }));
     // Per-emblem cursor influence (0..1), eased so emblems glide in and out of the effect
     const influence = new Float32Array(points.length);
-    const maxWisps = width < 640 ? 4 : 8;
+    const small = width < 640;
+    const maxEmitters = small ? 5 : 10;
+    const maxParticles = small ? 140 : 320;
+    const particles: Particle[] = [];
     const charged: { x: number; y: number; size: number; strength: number; sprite: number; index: number }[] = [];
     let frame = 0;
     let last = performance.now();
@@ -338,14 +298,76 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
       }
       ctx.globalAlpha = 1;
 
-      if (charged.length > 0) {
+      // Nearby emblems shed particles around their rim, faster the closer the cursor is
+      if (pointer.active && !reducedMotion && charged.length > 0) {
         charged.sort((a, b) => b.strength - a.strength);
-        ctx.globalCompositeOperation = 'lighter';
-        for (let i = 0; i < Math.min(charged.length, maxWisps); i++) {
+        for (let i = 0; i < Math.min(charged.length, maxEmitters); i++) {
           const c = charged[i];
-          drawWisps(ctx, c.x, c.y, c.size, pointer.x, pointer.y, c.strength, vibes[c.sprite].color.light, now / 1000, c.index);
+          const color = vibes[c.sprite].color.light;
+          drawHalo(ctx, c.x, c.y, c.size, c.strength, color);
+          let spawn = c.strength * (small ? 22 : 38) * dt;
+          while (spawn > 0 && particles.length < maxParticles) {
+            if (spawn < 1 && Math.random() > spawn) break;
+            spawn -= 1;
+            const a = Math.random() * Math.PI * 2;
+            const r = c.size * (0.45 + Math.random() * 0.4);
+            // A little sideways drift so they swirl in instead of flying straight
+            const drift = (Math.random() - 0.5) * 70;
+            particles.push({
+              x: c.x + Math.cos(a) * r,
+              y: c.y + Math.sin(a) * r,
+              vx: -Math.sin(a) * drift,
+              vy: Math.cos(a) * drift,
+              age: 0,
+              size: 0.9 + Math.random() * 1.4 + c.strength * 1.2,
+              color,
+            });
+          }
         }
-        ctx.globalCompositeOperation = 'source-over';
+      }
+
+      // Gravity toward the live cursor: the pull grows as particles close in, and they vanish on arrival
+      const padX = (overlayWidth - width) / 2;
+      const padY = (overlayHeight - height) / 2;
+      octx.setTransform(dpr, 0, 0, dpr, padX * dpr, padY * dpr);
+      octx.clearRect(-padX, -padY, overlayWidth, overlayHeight);
+      if (particles.length > 0) {
+        octx.globalCompositeOperation = 'lighter';
+        octx.lineCap = 'round';
+        const drag = Math.exp(-dt * 1.6);
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const q = particles[i];
+          q.age += dt;
+          const dx = pointer.x - q.x;
+          const dy = pointer.y - q.y;
+          const dist = Math.hypot(dx, dy) || 1;
+          const pull = Math.min(9000, 260 + 2.2e6 / (dist * dist + 400));
+          q.vx = (q.vx + (dx / dist) * pull * dt) * drag;
+          q.vy = (q.vy + (dy / dist) * pull * dt) * drag;
+          const px = q.x;
+          const py = q.y;
+          const step = Math.hypot(q.vx, q.vy) * dt;
+          // Arrived (or would overshoot this frame), lost, or the cursor left
+          if (dist < 4 || step >= dist || q.age > 3 || !pointer.active) {
+            particles[i] = particles[particles.length - 1];
+            particles.pop();
+            continue;
+          }
+          q.x += q.vx * dt;
+          q.y += q.vy * dt;
+          const fade = Math.min(1, q.age * 6) * Math.min(1, dist / 28);
+          // A short streak along the motion reads as speed
+          octx.strokeStyle = rgba(q.color, 0.25 * fade);
+          octx.lineWidth = q.size * 3;
+          octx.beginPath();
+          octx.moveTo(px, py);
+          octx.lineTo(q.x, q.y);
+          octx.stroke();
+          octx.strokeStyle = rgba(q.color, 0.95 * fade);
+          octx.lineWidth = q.size;
+          octx.stroke();
+        }
+        octx.globalCompositeOperation = 'source-over';
       }
     };
     frame = requestAnimationFrame(draw);
@@ -364,11 +386,14 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      role="img"
-      aria-label="A spinning globe covered in Spotifun's fifteen vibe paintings"
-      className={cn('block touch-pan-y cursor-grab active:cursor-grabbing', className)}
-    />
+    <div className={cn('relative', className)}>
+      <canvas
+        ref={canvasRef}
+        role="img"
+        aria-label="A spinning globe covered in Spotifun's fifteen vibe paintings"
+        className="block h-full w-full touch-pan-y cursor-grab active:cursor-grabbing"
+      />
+      <canvas ref={overlayRef} aria-hidden className="pointer-events-none absolute -inset-[30%] h-[160%] w-[160%]" />
+    </div>
   );
 }
