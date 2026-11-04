@@ -75,58 +75,84 @@ function jaggedPath(path: Path2D, x1: number, y1: number, x2: number, y2: number
 }
 
 /**
- * Arcane lightning from an emblem toward the cursor: a main bolt that reaches further as the
- * cursor gets closer, a couple of forks off it, and small crackles around the emblem's rim.
+ * Arcane lightning from an emblem to the cursor. The main bolt always reaches the cursor and
+ * tapers to a thread as it gets there; closeness (`strength`) sets how bright and thick it is.
+ * Forks and rim crackles are much thinner and shorter than the main bolt.
  */
 function drawArc(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, mx: number, my: number, strength: number, color: string, rand: () => number) {
-  const path = new Path2D();
-  const dist = Math.hypot(mx - x, my - y);
-  const rim = size * 0.48;
-  if (dist > rim) {
-    const ux = (mx - x) / dist;
-    const uy = (my - y) / dist;
-    const reach = rim + (dist - rim) * Math.min(1, 0.3 + strength * 0.85);
-    const sx = x + ux * rim;
-    const sy = y + uy * rim;
-    const points = jaggedPath(path, sx, sy, x + ux * reach, y + uy * reach, Math.max(4, (reach - rim) * 0.14), rand);
-    // Forks branch off the main bolt and fizzle out
-    const forks = 1 + Math.floor(strength * 3);
-    for (let f = 0; f < forks; f++) {
-      const [fx, fy] = points[1 + Math.floor(rand() * (points.length - 2))] ?? points[0];
-      const angle = Math.atan2(uy, ux) + (rand() < 0.5 ? -1 : 1) * (0.5 + rand() * 0.7);
-      const forkLength = (reach - rim) * (0.2 + rand() * 0.3);
-      jaggedPath(path, fx, fy, fx + Math.cos(angle) * forkLength, fy + Math.sin(angle) * forkLength, forkLength * 0.2, rand, 4);
-    }
-  }
-  // Crackles hugging the rim
-  const crackles = 1 + Math.floor(strength * 4);
-  for (let c = 0; c < crackles; c++) {
-    const a = rand() * Math.PI * 2;
-    const r1 = rim * 0.95;
-    const r2 = rim * (1.15 + rand() * 0.35 * (0.5 + strength));
-    const a2 = a + (rand() - 0.5) * 0.9;
-    jaggedPath(path, x + Math.cos(a) * r1, y + Math.sin(a) * r1, x + Math.cos(a2) * r2, y + Math.sin(a2) * r2, size * 0.06, rand, 3);
-  }
   const glow = Math.sqrt(strength); // keeps faint arcs visible at the edge of the effect
+  const rim = size * 0.48;
+  const dist = Math.hypot(mx - x, my - y);
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  // Soft halo around the emblem, then a wide glow pass, a coloured bolt and a hot white core
-  const halo = ctx.createRadialGradient(x, y, rim * 0.8, x, y, rim * (1.6 + strength));
+
+  // Soft halo around the emblem
+  const haloRadius = rim * (1.5 + strength);
+  const halo = ctx.createRadialGradient(x, y, rim * 0.8, x, y, haloRadius);
   halo.addColorStop(0, rgba(color, 0.35 * strength));
   halo.addColorStop(1, rgba(color, 0));
   ctx.fillStyle = halo;
   ctx.beginPath();
-  ctx.arc(x, y, rim * (1.6 + strength), 0, Math.PI * 2);
+  ctx.arc(x, y, haloRadius, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = rgba(color, 0.3 * glow);
-  ctx.lineWidth = 4 + strength * 8;
-  ctx.stroke(path);
-  ctx.strokeStyle = rgba(color, Math.min(1, 1.1 * glow));
-  ctx.lineWidth = 1.4 + strength * 1.8;
-  ctx.stroke(path);
-  ctx.strokeStyle = `rgba(255, 255, 255, ${0.85 * glow})`;
-  ctx.lineWidth = 0.7 + strength * 0.7;
-  ctx.stroke(path);
+
+  const branches = new Path2D();
+  if (dist > rim) {
+    const ux = (mx - x) / dist;
+    const uy = (my - y) / dist;
+    const sx = x + ux * rim;
+    const sy = y + uy * rim;
+    const length = dist - rim;
+    const segments = Math.max(6, Math.min(16, Math.round(length / 14)));
+    const main = new Path2D();
+    const points = jaggedPath(main, sx, sy, mx, my, Math.max(3, length * 0.12), rand, segments);
+    points.unshift([sx, sy]);
+
+    // Main bolt, segment by segment so it tapers toward the cursor
+    const passes: [string, number][] = [
+      [rgba(color, 0.45 * glow), 4 + strength * 10],
+      [rgba(color, Math.min(1, 1.1 * glow)), 1.6 + strength * 3.2],
+      [`rgba(255, 255, 255, ${0.9 * glow})`, 0.6 + strength * 1.1],
+    ];
+    for (const [style, width] of passes) {
+      ctx.strokeStyle = style;
+      for (let i = 1; i < points.length; i++) {
+        const t = i / (points.length - 1);
+        ctx.lineWidth = width * (1 - 0.85 * t);
+        ctx.beginPath();
+        ctx.moveTo(points[i - 1][0], points[i - 1][1]);
+        ctx.lineTo(points[i][0], points[i][1]);
+        ctx.stroke();
+      }
+    }
+
+    // Short forks off the first two-thirds of the bolt
+    const forks = 1 + Math.floor(strength * 3);
+    for (let f = 0; f < forks; f++) {
+      const at = 1 + Math.floor(rand() * Math.max(1, Math.floor(points.length * 0.66) - 1));
+      const [fx, fy] = points[at];
+      const angle = Math.atan2(uy, ux) + (rand() < 0.5 ? -1 : 1) * (0.5 + rand() * 0.6);
+      const forkLength = Math.min(length * (0.08 + rand() * 0.12), size * 0.9);
+      jaggedPath(branches, fx, fy, fx + Math.cos(angle) * forkLength, fy + Math.sin(angle) * forkLength, forkLength * 0.25, rand, 3);
+    }
+  }
+
+  // Tiny crackles hugging the rim
+  const crackles = 1 + Math.floor(strength * 3);
+  for (let c = 0; c < crackles; c++) {
+    const a = rand() * Math.PI * 2;
+    const a2 = a + (rand() - 0.5) * 0.8;
+    const r2 = rim * (1.1 + rand() * 0.25);
+    jaggedPath(branches, x + Math.cos(a) * rim * 0.95, y + Math.sin(a) * rim * 0.95, x + Math.cos(a2) * r2, y + Math.sin(a2) * r2, size * 0.04, rand, 3);
+  }
+
+  // Branches: a fraction of the main bolt's weight
+  ctx.strokeStyle = rgba(color, 0.7 * glow);
+  ctx.lineWidth = 0.5 + strength * 0.8;
+  ctx.stroke(branches);
+  ctx.strokeStyle = `rgba(255, 255, 255, ${0.45 * glow})`;
+  ctx.lineWidth = 0.4 + strength * 0.3;
+  ctx.stroke(branches);
 }
 
 /** Round icon with a soft colored rim, pre-rendered once so each frame is just drawImage calls */
@@ -311,7 +337,7 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
       ctx.fillRect(0, 0, width, height);
 
       const reach = radius * 0.75;
-      const ease = Math.min(dt * 7, 1);
+      const ease = Math.min(dt * 12, 1);
       charged.length = 0;
 
       for (const p of projected) {
@@ -342,7 +368,7 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
       if (charged.length > 0) {
         charged.sort((a, b) => b.strength - a.strength);
         ctx.globalCompositeOperation = 'lighter';
-        const tick = Math.floor(now / 70); // re-strike the bolts ~14 times a second
+        const tick = Math.floor(now / 30); // re-strike the bolts ~33 times a second
         for (let i = 0; i < Math.min(charged.length, maxArcs); i++) {
           const c = charged[i];
           drawArc(ctx, c.x, c.y, c.size, pointer.x, pointer.y, c.strength, vibes[c.sprite].color.light, seeded(c.index * 7919 + tick));
