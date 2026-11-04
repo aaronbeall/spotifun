@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createDemoDataSource, DEMO_USER, getDemoNowPlaying } from './demoData';
+import { albumKey, createDemoDataSource, DEMO_USER, getArtworkQueries, getDemoNowPlaying } from './demoData';
 import { computeStats } from '@/lib/statsPipeline';
 import type { DataMode, TimeRange } from '@/types';
 
@@ -47,5 +47,33 @@ describe('demo data', () => {
   it('has a profile and a now-playing track', () => {
     expect(DEMO_USER.display_name).toBeTruthy();
     expect(getDemoNowPlaying().track?.name).toBeTruthy();
+  });
+});
+
+describe('example artwork', () => {
+  it('swaps in real artwork and links where the lookup found them, and keeps generated art elsewhere', async () => {
+    const realImage = [{ url: 'https://i.scdn.co/image/beach-house', width: 640, height: 640 }];
+    const albumImage = [{ url: 'https://i.scdn.co/image/depression-cherry', width: 640, height: 640 }];
+    const artwork = {
+      artists: { 'Beach House': { images: realImage, url: 'https://open.spotify.com/artist/beach-house' } },
+      albums: { [albumKey('Beach House', 'Depression Cherry')]: { images: albumImage, url: 'https://open.spotify.com/album/depression-cherry' } },
+    };
+    const source = createDemoDataSource(NOW, artwork);
+    const artists = await source.getTopArtists('long_term', 50);
+    const beachHouse = artists.find(a => a.name === 'Beach House')!;
+    expect(beachHouse.images).toEqual(realImage);
+    expect(beachHouse.external_urls.spotify).toBe('https://open.spotify.com/artist/beach-house');
+    expect(artists.find(a => a.name === 'Mitski')!.images[0].url).toMatch(/^data:image\/svg/);
+
+    const tracks = await source.getTopTracks('long_term', 50);
+    const spaceSong = tracks.find(t => t.name === 'Space Song')!;
+    expect(spaceSong.album.images).toEqual(albumImage);
+    expect(spaceSong.artists[0].external_urls.spotify).toBe('https://open.spotify.com/artist/beach-house');
+  });
+
+  it('lists every artist and album for the lookup', () => {
+    const { artists, albums } = getArtworkQueries();
+    expect(artists).toContain('Beach House');
+    expect(albums).toContainEqual({ artist: 'Beach House', album: 'Depression Cherry' });
   });
 });

@@ -62,35 +62,16 @@ button, a {
 }
 
 .animate-marquee {
-  animation: marquee 50s linear infinite;
+  animation: marquee 60s linear infinite;
 }
 
 .animate-marquee-reverse {
   animation: marquee 60s linear infinite reverse;
 }
 
-@keyframes wobble {
-  0%, 100% { transform: rotate(var(--tilt, -6deg)) translateY(0); }
-  50% { transform: rotate(calc(var(--tilt, -6deg) * -0.5)) translateY(-6px); }
-}
-
-.animate-wobble {
-  animation: wobble 4s ease-in-out infinite;
-}
-
-@keyframes spin-slow {
-  to { transform: rotate(360deg); }
-}
-
-.animate-spin-slow {
-  animation: spin-slow 14s linear infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee,
-  .animate-marquee-reverse,
-  .animate-wobble,
-  .animate-spin-slow {
+  .animate-marquee-reverse {
     animation: none;
   }
 }
