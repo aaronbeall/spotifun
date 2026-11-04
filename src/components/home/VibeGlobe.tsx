@@ -43,116 +43,82 @@ function rgba(hex: string, alpha: number): string {
   return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
 }
 
-/** Tiny seeded PRNG so each bolt holds its shape for a few frames instead of buzzing every frame */
-function seeded(seed: number) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(a ^ (a >>> 15), a | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-/** A jagged path from (x1, y1) to (x2, y2): bigger kinks in the middle, pinned at both ends */
-function jaggedPath(path: Path2D, x1: number, y1: number, x2: number, y2: number, jag: number, rand: () => number, segments = 8) {
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const len = Math.hypot(dx, dy) || 1;
-  const nx = -dy / len;
-  const ny = dx / len;
-  path.moveTo(x1, y1);
-  const points: [number, number][] = [];
-  for (let i = 1; i <= segments; i++) {
-    const t = i / segments;
-    const offset = i === segments ? 0 : (rand() - 0.5) * 2 * jag * Math.sin(Math.PI * t);
-    const x = x1 + dx * t + nx * offset;
-    const y = y1 + dy * t + ny * offset;
-    path.lineTo(x, y);
-    points.push([x, y]);
-  }
-  return points;
-}
-
 /**
- * Arcane lightning from an emblem to the cursor. The main bolt always reaches the cursor and
- * tapers to a thread as it gets there; closeness (`strength`) sets how bright and thick it is.
- * Forks and rim crackles are much thinner and shorter than the main bolt.
+ * Wispy coiling strands from an emblem to the cursor: two or three smooth threads that twist
+ * around a gently bowed path, like smoke or ribbon. Closeness (`strength`) sets how bright and
+ * thick they are; `time` keeps the coils drifting. Strands taper and fade toward the cursor.
  */
-function drawArc(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, mx: number, my: number, strength: number, color: string, rand: () => number) {
-  const glow = Math.sqrt(strength); // keeps faint arcs visible at the edge of the effect
-  const rim = size * 0.48;
+function drawWisps(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, mx: number, my: number, strength: number, color: string, time: number, seed: number) {
+  const rim = size * 0.45;
   const dist = Math.hypot(mx - x, my - y);
+  if (dist <= rim) return;
+  const glow = Math.sqrt(strength);
+  const ux = (mx - x) / dist;
+  const uy = (my - y) / dist;
+  const nx = -uy;
+  const ny = ux;
+  const sx = x + ux * rim;
+  const sy = y + uy * rim;
+  const length = dist - rim;
+
+  // Each emblem bows its path to one side so neighbouring wisps don't stack
+  const bow = length * (0.18 + (seed % 7) * 0.025) * (seed % 2 ? 1 : -1);
+  const cxp = (sx + mx) / 2 + nx * bow;
+  const cyp = (sy + my) / 2 + ny * bow;
+  const coils = 0.8 + Math.min(1.2, length / 180);
+  const amplitude = Math.min(size * 0.7, 8 + length * 0.14) * (0.6 + strength * 0.4);
+  const strands = strength > 0.45 ? 3 : 2;
+  const steps = Math.max(20, Math.min(44, Math.round(length / 5)));
+
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
+  for (let k = 0; k < strands; k++) {
+    const phase = time * 2.2 + (k * Math.PI * 2) / strands + seed;
+    let px = sx;
+    let py = sy;
+    for (let i = 1; i <= steps; i++) {
+      const u = i / steps;
+      const inv = 1 - u;
+      // Point on the bowed path (quadratic Bezier) and its local normal
+      const bx = inv * inv * sx + 2 * inv * u * cxp + u * u * mx;
+      const by = inv * inv * sy + 2 * inv * u * cyp + u * u * my;
+      const tx = 2 * inv * (cxp - sx) + 2 * u * (mx - cxp);
+      const ty = 2 * inv * (cyp - sy) + 2 * u * (my - cyp);
+      const tl = Math.hypot(tx, ty) || 1;
+      const angle = u * coils * Math.PI * 2 - phase;
+      // Coil wraps around the path, pinched at both ends
+      const envelope = Math.sin(Math.PI * u) ** 0.8;
+      const offset = Math.sin(angle) * amplitude * envelope;
+      const qx = bx + (-ty / tl) * offset;
+      const qy = by + (tx / tl) * offset;
+      // The side of the coil facing us is a little thicker and brighter, which sells the twist
+      const facing = 0.55 + 0.45 * Math.cos(angle);
+      const taper = 1 - 0.85 * u;
+      const fade = glow * (1 - 0.6 * u) * facing;
 
-  // Soft halo around the emblem
-  const haloRadius = rim * (1.5 + strength);
-  const halo = ctx.createRadialGradient(x, y, rim * 0.8, x, y, haloRadius);
-  halo.addColorStop(0, rgba(color, 0.35 * strength));
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.lineTo(qx, qy);
+      ctx.strokeStyle = rgba(color, 0.32 * fade);
+      ctx.lineWidth = (4 + strength * 7) * taper * facing;
+      ctx.stroke();
+      ctx.strokeStyle = rgba(color, Math.min(1, 0.95 * fade));
+      ctx.lineWidth = (1 + strength * 2) * taper * facing;
+      ctx.stroke();
+      px = qx;
+      py = qy;
+    }
+  }
+
+  // Soft glow on the emblem itself
+  const haloRadius = size * (0.75 + strength * 0.35);
+  const halo = ctx.createRadialGradient(x, y, rim, x, y, haloRadius);
+  halo.addColorStop(0, rgba(color, 0.3 * strength));
   halo.addColorStop(1, rgba(color, 0));
   ctx.fillStyle = halo;
   ctx.beginPath();
   ctx.arc(x, y, haloRadius, 0, Math.PI * 2);
   ctx.fill();
-
-  const branches = new Path2D();
-  if (dist > rim) {
-    const ux = (mx - x) / dist;
-    const uy = (my - y) / dist;
-    const sx = x + ux * rim;
-    const sy = y + uy * rim;
-    const length = dist - rim;
-    const segments = Math.max(6, Math.min(16, Math.round(length / 14)));
-    const main = new Path2D();
-    const points = jaggedPath(main, sx, sy, mx, my, Math.max(3, length * 0.12), rand, segments);
-    points.unshift([sx, sy]);
-
-    // Main bolt, segment by segment so it tapers toward the cursor
-    const passes: [string, number][] = [
-      [rgba(color, 0.45 * glow), 4 + strength * 10],
-      [rgba(color, Math.min(1, 1.1 * glow)), 1.6 + strength * 3.2],
-      [`rgba(255, 255, 255, ${0.9 * glow})`, 0.6 + strength * 1.1],
-    ];
-    for (const [style, width] of passes) {
-      ctx.strokeStyle = style;
-      for (let i = 1; i < points.length; i++) {
-        const t = i / (points.length - 1);
-        ctx.lineWidth = width * (1 - 0.85 * t);
-        ctx.beginPath();
-        ctx.moveTo(points[i - 1][0], points[i - 1][1]);
-        ctx.lineTo(points[i][0], points[i][1]);
-        ctx.stroke();
-      }
-    }
-
-    // Short forks off the first two-thirds of the bolt
-    const forks = 1 + Math.floor(strength * 3);
-    for (let f = 0; f < forks; f++) {
-      const at = 1 + Math.floor(rand() * Math.max(1, Math.floor(points.length * 0.66) - 1));
-      const [fx, fy] = points[at];
-      const angle = Math.atan2(uy, ux) + (rand() < 0.5 ? -1 : 1) * (0.5 + rand() * 0.6);
-      const forkLength = Math.min(length * (0.08 + rand() * 0.12), size * 0.9);
-      jaggedPath(branches, fx, fy, fx + Math.cos(angle) * forkLength, fy + Math.sin(angle) * forkLength, forkLength * 0.25, rand, 3);
-    }
-  }
-
-  // Tiny crackles hugging the rim
-  const crackles = 1 + Math.floor(strength * 3);
-  for (let c = 0; c < crackles; c++) {
-    const a = rand() * Math.PI * 2;
-    const a2 = a + (rand() - 0.5) * 0.8;
-    const r2 = rim * (1.1 + rand() * 0.25);
-    jaggedPath(branches, x + Math.cos(a) * rim * 0.95, y + Math.sin(a) * rim * 0.95, x + Math.cos(a2) * r2, y + Math.sin(a2) * r2, size * 0.04, rand, 3);
-  }
-
-  // Branches: a fraction of the main bolt's weight
-  ctx.strokeStyle = rgba(color, 0.7 * glow);
-  ctx.lineWidth = 0.5 + strength * 0.8;
-  ctx.stroke(branches);
-  ctx.strokeStyle = `rgba(255, 255, 255, ${0.45 * glow})`;
-  ctx.lineWidth = 0.4 + strength * 0.3;
-  ctx.stroke(branches);
 }
 
 /** Round icon with a soft colored rim, pre-rendered once so each frame is just drawImage calls */
@@ -178,7 +144,7 @@ function makeSprite(image: HTMLImageElement, rim: string): HTMLCanvasElement {
 /**
  * A dense, slowly spinning sphere tiled with the vibe paintings. Drag to spin it.
  * Emblems near the cursor (or a finger, while touching) lean toward it and throw
- * lightning in their own colour, stronger the closer it gets.
+ * wispy coiling strands in their own colour, stronger the closer it gets.
  * Canvas 2D with a simple perspective projection: no WebGL or 3D library needed.
  */
 export function VibeGlobe({ className }: VibeGlobeProps) {
@@ -281,7 +247,7 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
     const projected = points.map((_, index) => ({ x: 0, y: 0, z: 0, sprite: 0, index }));
     // Per-emblem cursor influence (0..1), eased so emblems glide in and out of the effect
     const influence = new Float32Array(points.length);
-    const maxArcs = width < 640 ? 5 : 10;
+    const maxWisps = width < 640 ? 4 : 8;
     const charged: { x: number; y: number; size: number; strength: number; sprite: number; index: number }[] = [];
     let frame = 0;
     let last = performance.now();
@@ -336,8 +302,8 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, width, height);
 
-      const reach = radius * 0.75;
-      const ease = Math.min(dt * 12, 1);
+      const reach = radius * 0.9;
+      const ease = Math.min(dt * 8, 1);
       charged.length = 0;
 
       for (const p of projected) {
@@ -368,10 +334,9 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
       if (charged.length > 0) {
         charged.sort((a, b) => b.strength - a.strength);
         ctx.globalCompositeOperation = 'lighter';
-        const tick = Math.floor(now / 30); // re-strike the bolts ~33 times a second
-        for (let i = 0; i < Math.min(charged.length, maxArcs); i++) {
+        for (let i = 0; i < Math.min(charged.length, maxWisps); i++) {
           const c = charged[i];
-          drawArc(ctx, c.x, c.y, c.size, pointer.x, pointer.y, c.strength, vibes[c.sprite].color.light, seeded(c.index * 7919 + tick));
+          drawWisps(ctx, c.x, c.y, c.size, pointer.x, pointer.y, c.strength, vibes[c.sprite].color.light, now / 1000, c.index);
         }
         ctx.globalCompositeOperation = 'source-over';
       }
