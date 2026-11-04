@@ -164,7 +164,7 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
       img.src = vibe.image!;
     });
 
-    const count = iconCountFor(canvas.getBoundingClientRect().width);
+    const count = iconCountFor(canvas.clientWidth);
     const points = fibonacciSphere(count, vibes.length);
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -172,9 +172,10 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
     let height = 0;
     let dpr = 1;
     const resize = () => {
-      const rect = canvas.getBoundingClientRect();
-      width = rect.width;
-      height = rect.height;
+      // Layout size, not getBoundingClientRect: the hero scales the globe in on load, and a
+      // transformed rect would leave the canvas drawn at the wrong size for good
+      width = canvas.clientWidth;
+      height = canvas.clientHeight;
       // Phones have dense screens but small GPUs; 1.5x is plenty for these icons
       dpr = Math.min(window.devicePixelRatio || 1, width < 640 ? 1.5 : 2);
       canvas.width = Math.round(width * dpr);
@@ -224,15 +225,20 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
     canvas.addEventListener('pointerup', onPointerUp);
     canvas.addEventListener('pointercancel', onPointerUp);
 
-    // Where the cursor is, in canvas coordinates. Tracked on the window so emblems react as the
-    // cursor approaches from outside the globe.
-    const pointer = { x: 0, y: 0, active: false };
+    // Where the cursor is. Tracked on the window so emblems react as the cursor approaches from
+    // outside the globe. Kept in viewport coordinates and mapped into the canvas every frame, so
+    // it stays put while the page scrolls or the globe's entrance animation scales it.
+    const pointer = { x: 0, y: 0, clientX: 0, clientY: 0, active: false };
     const onWindowPointerMove = (e: PointerEvent) => {
       if (e.pointerType !== 'mouse' && !dragging) return;
-      const rect = canvas.getBoundingClientRect();
-      pointer.x = e.clientX - rect.left;
-      pointer.y = e.clientY - rect.top;
+      pointer.clientX = e.clientX;
+      pointer.clientY = e.clientY;
       pointer.active = true;
+    };
+    const mapPointer = () => {
+      const rect = canvas.getBoundingClientRect();
+      pointer.x = (pointer.clientX - rect.left) * (width / (rect.width || 1));
+      pointer.y = (pointer.clientY - rect.top) * (height / (rect.height || 1));
     };
     const onWindowPointerOut = (e: PointerEvent) => {
       if (!e.relatedTarget) pointer.active = false; // cursor left the window
@@ -302,6 +308,7 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, width, height);
 
+      if (pointer.active) mapPointer();
       const reach = radius * 0.9;
       const ease = Math.min(dt * 8, 1);
       charged.length = 0;
