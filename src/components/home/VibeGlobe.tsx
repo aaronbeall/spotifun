@@ -37,6 +37,98 @@ function fibonacciSphere(count: number, spriteCount: number): Point[] {
   });
 }
 
+/** '#93c5fd' -> 'rgba(147, 197, 253, a)' */
+function rgba(hex: string, alpha: number): string {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+}
+
+/** Tiny seeded PRNG so each bolt holds its shape for a few frames instead of buzzing every frame */
+function seeded(seed: number) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), a | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** A jagged path from (x1, y1) to (x2, y2): bigger kinks in the middle, pinned at both ends */
+function jaggedPath(path: Path2D, x1: number, y1: number, x2: number, y2: number, jag: number, rand: () => number, segments = 8) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const len = Math.hypot(dx, dy) || 1;
+  const nx = -dy / len;
+  const ny = dx / len;
+  path.moveTo(x1, y1);
+  const points: [number, number][] = [];
+  for (let i = 1; i <= segments; i++) {
+    const t = i / segments;
+    const offset = i === segments ? 0 : (rand() - 0.5) * 2 * jag * Math.sin(Math.PI * t);
+    const x = x1 + dx * t + nx * offset;
+    const y = y1 + dy * t + ny * offset;
+    path.lineTo(x, y);
+    points.push([x, y]);
+  }
+  return points;
+}
+
+/**
+ * Arcane lightning from an emblem toward the cursor: a main bolt that reaches further as the
+ * cursor gets closer, a couple of forks off it, and small crackles around the emblem's rim.
+ */
+function drawArc(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, mx: number, my: number, strength: number, color: string, rand: () => number) {
+  const path = new Path2D();
+  const dist = Math.hypot(mx - x, my - y);
+  const rim = size * 0.48;
+  if (dist > rim) {
+    const ux = (mx - x) / dist;
+    const uy = (my - y) / dist;
+    const reach = rim + (dist - rim) * Math.min(1, 0.3 + strength * 0.85);
+    const sx = x + ux * rim;
+    const sy = y + uy * rim;
+    const points = jaggedPath(path, sx, sy, x + ux * reach, y + uy * reach, Math.max(4, (reach - rim) * 0.14), rand);
+    // Forks branch off the main bolt and fizzle out
+    const forks = 1 + Math.floor(strength * 3);
+    for (let f = 0; f < forks; f++) {
+      const [fx, fy] = points[1 + Math.floor(rand() * (points.length - 2))] ?? points[0];
+      const angle = Math.atan2(uy, ux) + (rand() < 0.5 ? -1 : 1) * (0.5 + rand() * 0.7);
+      const forkLength = (reach - rim) * (0.2 + rand() * 0.3);
+      jaggedPath(path, fx, fy, fx + Math.cos(angle) * forkLength, fy + Math.sin(angle) * forkLength, forkLength * 0.2, rand, 4);
+    }
+  }
+  // Crackles hugging the rim
+  const crackles = 1 + Math.floor(strength * 4);
+  for (let c = 0; c < crackles; c++) {
+    const a = rand() * Math.PI * 2;
+    const r1 = rim * 0.95;
+    const r2 = rim * (1.15 + rand() * 0.35 * (0.5 + strength));
+    const a2 = a + (rand() - 0.5) * 0.9;
+    jaggedPath(path, x + Math.cos(a) * r1, y + Math.sin(a) * r1, x + Math.cos(a2) * r2, y + Math.sin(a2) * r2, size * 0.06, rand, 3);
+  }
+  const glow = Math.sqrt(strength); // keeps faint arcs visible at the edge of the effect
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  // Soft halo around the emblem, then a wide glow pass, a coloured bolt and a hot white core
+  const halo = ctx.createRadialGradient(x, y, rim * 0.8, x, y, rim * (1.6 + strength));
+  halo.addColorStop(0, rgba(color, 0.35 * strength));
+  halo.addColorStop(1, rgba(color, 0));
+  ctx.fillStyle = halo;
+  ctx.beginPath();
+  ctx.arc(x, y, rim * (1.6 + strength), 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = rgba(color, 0.3 * glow);
+  ctx.lineWidth = 4 + strength * 8;
+  ctx.stroke(path);
+  ctx.strokeStyle = rgba(color, Math.min(1, 1.1 * glow));
+  ctx.lineWidth = 1.4 + strength * 1.8;
+  ctx.stroke(path);
+  ctx.strokeStyle = `rgba(255, 255, 255, ${0.85 * glow})`;
+  ctx.lineWidth = 0.7 + strength * 0.7;
+  ctx.stroke(path);
+}
+
 /** Round icon with a soft colored rim, pre-rendered once so each frame is just drawImage calls */
 function makeSprite(image: HTMLImageElement, rim: string): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
@@ -59,6 +151,8 @@ function makeSprite(image: HTMLImageElement, rim: string): HTMLCanvasElement {
 
 /**
  * A dense, slowly spinning sphere tiled with the vibe paintings. Drag to spin it.
+ * Emblems near the cursor (or a finger, while touching) lean toward it and throw
+ * lightning in their own colour, stronger the closer it gets.
  * Canvas 2D with a simple perspective projection: no WebGL or 3D library needed.
  */
 export function VibeGlobe({ className }: VibeGlobeProps) {
@@ -113,6 +207,7 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
       lastY = e.clientY;
       lastMoveTime = performance.now();
       canvas.setPointerCapture(e.pointerId);
+      onWindowPointerMove(e);
     };
     const onPointerMove = (e: PointerEvent) => {
       if (!dragging) return;
@@ -127,17 +222,41 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
       lastY = e.clientY;
       lastMoveTime = now;
     };
-    const onPointerUp = () => { dragging = false; };
+    const onPointerUp = (e: PointerEvent) => {
+      dragging = false;
+      // Fingers don't hover, so the effect ends when the finger lifts
+      if (e.pointerType !== 'mouse') pointer.active = false;
+    };
     canvas.addEventListener('pointerdown', onPointerDown);
     canvas.addEventListener('pointermove', onPointerMove);
     canvas.addEventListener('pointerup', onPointerUp);
     canvas.addEventListener('pointercancel', onPointerUp);
 
+    // Where the cursor is, in canvas coordinates. Tracked on the window so emblems react as the
+    // cursor approaches from outside the globe.
+    const pointer = { x: 0, y: 0, active: false };
+    const onWindowPointerMove = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse' && !dragging) return;
+      const rect = canvas.getBoundingClientRect();
+      pointer.x = e.clientX - rect.left;
+      pointer.y = e.clientY - rect.top;
+      pointer.active = true;
+    };
+    const onWindowPointerOut = (e: PointerEvent) => {
+      if (!e.relatedTarget) pointer.active = false; // cursor left the window
+    };
+    window.addEventListener('pointermove', onWindowPointerMove, { passive: true });
+    window.addEventListener('pointerout', onWindowPointerOut);
+
     let visible = true;
     const intersection = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; });
     intersection.observe(canvas);
 
-    const projected = points.map(() => ({ x: 0, y: 0, z: 0, sprite: 0 }));
+    const projected = points.map((_, index) => ({ x: 0, y: 0, z: 0, sprite: 0, index }));
+    // Per-emblem cursor influence (0..1), eased so emblems glide in and out of the effect
+    const influence = new Float32Array(points.length);
+    const maxArcs = width < 640 ? 5 : 10;
+    const charged: { x: number; y: number; size: number; strength: number; sprite: number; index: number }[] = [];
     let frame = 0;
     let last = performance.now();
 
@@ -176,6 +295,7 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
         out.y = cy + y2 * radius * scale;
         out.z = z2;
         out.sprite = p.sprite;
+        out.index = i;
       }
       projected.sort((a, b) => a.z - b.z);
 
@@ -190,17 +310,45 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, width, height);
 
+      const reach = radius * 0.75;
+      const ease = Math.min(dt * 7, 1);
+      charged.length = 0;
+
       for (const p of projected) {
+        const depth = (p.z + 1) / 2; // 0 = far side, 1 = facing us
+
+        // Cursor proximity: only emblems on the near side react
+        let target = 0;
+        if (pointer.active && depth > 0.45) {
+          const closeness = Math.max(0, 1 - Math.hypot(pointer.x - p.x, pointer.y - p.y) / reach);
+          target = closeness ** 1.4 * Math.min(1, (depth - 0.45) / 0.3);
+        }
+        const strength = (influence[p.index] += (target - influence[p.index]) * ease);
+        // Lean toward the cursor
+        const x = p.x + (pointer.x - p.x) * strength * 0.22;
+        const y = p.y + (pointer.y - p.y) * strength * 0.22;
+
         const sprite = sprites[p.sprite];
         if (!sprite) continue;
-        const depth = (p.z + 1) / 2; // 0 = far side, 1 = facing us
         // Scale by distance: badges facing us are biggest, the far side shrinks to specks.
         // Even up front they stay a bit smaller than their spacing, so there's room between them.
-        const size = baseSize * (camera / (camera - p.z)) * (0.28 + depth * 0.47);
+        const size = baseSize * (camera / (camera - p.z)) * (0.28 + depth * 0.47) * (1 + strength * 0.12);
         ctx.globalAlpha = 0.15 + depth * 0.85;
-        ctx.drawImage(sprite, p.x - size / 2, p.y - size / 2, size, size);
+        ctx.drawImage(sprite, x - size / 2, y - size / 2, size, size);
+        if (strength > 0.03) charged.push({ x, y, size, strength, sprite: p.sprite, index: p.index });
       }
       ctx.globalAlpha = 1;
+
+      if (charged.length > 0) {
+        charged.sort((a, b) => b.strength - a.strength);
+        ctx.globalCompositeOperation = 'lighter';
+        const tick = Math.floor(now / 70); // re-strike the bolts ~14 times a second
+        for (let i = 0; i < Math.min(charged.length, maxArcs); i++) {
+          const c = charged[i];
+          drawArc(ctx, c.x, c.y, c.size, pointer.x, pointer.y, c.strength, vibes[c.sprite].color.light, seeded(c.index * 7919 + tick));
+        }
+        ctx.globalCompositeOperation = 'source-over';
+      }
     };
     frame = requestAnimationFrame(draw);
 
@@ -212,6 +360,8 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
       canvas.removeEventListener('pointermove', onPointerMove);
       canvas.removeEventListener('pointerup', onPointerUp);
       canvas.removeEventListener('pointercancel', onPointerUp);
+      window.removeEventListener('pointermove', onWindowPointerMove);
+      window.removeEventListener('pointerout', onWindowPointerOut);
     };
   }, []);
 
