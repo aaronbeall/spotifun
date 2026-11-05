@@ -11,7 +11,8 @@ export async function GET() {
       'user-read-playback-state',
       'user-read-currently-playing',
       'playlist-read-private',
-      'playlist-read-collaborative'
+      'playlist-read-collaborative',
+      'user-library-read'
     ];
 
     const authURL = spotifyApi.createAuthorizeURL(scopes, 'state');

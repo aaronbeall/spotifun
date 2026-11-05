@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   getRecentlyPlayed, getTopTracks, getTopArtists, calculateTrackStats, calculateArtistStats,
   calculateGenreStats, calculateTopGenres, fetchArtistsInBatches,
-  calculateTopTracksStats, calculateTopArtistsStats, enhanceArtistsWithLastFm, countRecentPlays
+  calculateTopTracksStats, calculateTopArtistsStats, enhanceArtistsWithLastFm, countRecentPlays,
+  getLikedSongsCollection, getPlaylistCollection, MissingScopeError, InvalidPlaylistError
 } from '@/lib/spotify';
 import { setAuthCookies, UnauthenticatedError, withSpotifyAccessToken } from '@/lib/auth';
-import type { LastFmEnhancedArtist } from '@/lib/spotify';
-import { Stats, TimeRange, DataMode, ArtistGenreDebugInfo, GenreTagDebugInfo, TopArtistItem, TopTrackItem } from '@/types';
+import type { LastFmEnhancedArtist, PlaylistCollection } from '@/lib/spotify';
+import { Stats, TimeRange, DataMode, ArtistGenreDebugInfo, GenreTagDebugInfo, TopArtistItem, TopTrackItem, PlaylistAnalysis, LIKED_SONGS_ID } from '@/types';
 
 // Drops server-only fields (e.g. `_lastFmData`, `_spotifyGenres`) from the response
 const stripInternalFields = (key: string, value: unknown) => key.startsWith('_') ? undefined : value;
@@ -17,14 +18,20 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
     const timeRange = (searchParams.get('timeRange') as TimeRange) || 'medium_term';
     const limit = Math.min(50, Math.max(5, parseInt(searchParams.get('limit') || '50', 10))); // Ensure limit is between 5 and 50
     const mode = (searchParams.get('mode') as DataMode) || 'recent';
+    const playlistId = searchParams.get('playlist') || LIKED_SONGS_ID;
     const lastFmApiKey = searchParams.get('lastfm') === '0' ? undefined : process.env.LASTFM_API_KEY;
 
     const { result: stats, refreshedTokens } = await withSpotifyAccessToken(request, async () => {
-      // Fetch initial data in parallel
-      const [recentlyPlayed, topTracksRaw, topArtistsRaw] = await Promise.all([
+      const collectionPromise: Promise<PlaylistCollection | null> = mode === 'playlist'
+        ? (playlistId === LIKED_SONGS_ID ? getLikedSongsCollection() : getPlaylistCollection(playlistId))
+        : Promise.resolve(null);
+
+      // Personal tops stay available for the grids below the profile card.
+      const [recentlyPlayed, topTracksRaw, topArtistsRaw, collection] = await Promise.all([
         getRecentlyPlayed(limit),
         getTopTracks(timeRange, 50),
-        getTopArtists(timeRange, 50)
+        getTopArtists(timeRange, 50),
+        collectionPromise
       ]);
 
       const lastFmUnavailable = new Set<string>();
@@ -57,6 +64,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
       const topGenres = calculateTopGenres(topArtists);
 
       let trackStats, artistStats, genreStats, totalPlays, totalDuration, totalGenres, averagePopularity;
+      let playlistAnalysis: PlaylistAnalysis | undefined;
 
       switch (mode) {
         case 'topTracks': {
@@ -96,6 +104,44 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
           
           const totalPopularityArtists = trackStats.reduce((sum, track) => sum + (track.track.popularity || 0), 0);
           averagePopularity = trackStats.length > 0 ? Math.round(totalPopularityArtists / trackStats.length) : 0;
+          break;
+        }
+        case 'playlist': {
+          if (!collection) throw new Error('Playlist was not loaded');
+          const source = collection;
+          const artistIds = Array.from(new Set(
+            source.tracks.flatMap(item => item.track.artists.map(artist => artist.id).filter(Boolean))
+          ));
+          const playlistArtistsByIdRaw = await fetchArtistsInBatches(artistIds);
+          const playlistArtistsArray = await enhanceWithLastFm(Object.values(playlistArtistsByIdRaw));
+          const playlistArtistsById = Object.fromEntries(
+            playlistArtistsArray.map(artist => [artist.id, artist])
+          );
+
+          const addedAtById = new Map(source.tracks.map(item => [item.track.id, item.addedAt]));
+          const statsResult = calculateTopTracksStats(
+            source.tracks.map(item => item.track),
+            playlistArtistsById
+          );
+          trackStats = statsResult.trackStats.map(stat => {
+            const addedAt = addedAtById.get(stat.track.id);
+            return addedAt ? { ...stat, firstPlayed: addedAt, lastPlayed: addedAt } : stat;
+          });
+          artistStats = statsResult.artistStats;
+          genreStats = statsResult.genreStats;
+          totalPlays = statsResult.totalWeight;
+          totalDuration = statsResult.totalDuration;
+          totalGenres = Object.values(playlistArtistsById).reduce((sum, artist) => sum + (artist.genres?.length || 0), 0);
+
+          const totalPopularity = source.tracks.reduce((sum, item) => sum + (item.track.popularity || 0), 0);
+          averagePopularity = source.tracks.length > 0 ? Math.round(totalPopularity / source.tracks.length) : 0;
+          playlistAnalysis = {
+            id: source.id,
+            name: source.name,
+            ...(source.image ? { image: source.image } : {}),
+            total: source.total,
+            analyzed: trackStats.length,
+          };
           break;
         }
         case 'recent':
@@ -147,6 +193,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
         topGenres,
         timeRange,
         mode,
+        ...(playlistAnalysis ? { playlist: playlistAnalysis } : {}),
         ...(lastFmUnavailable.size > 0 && { lastFmUnavailableCount: lastFmUnavailable.size })
       };
 
@@ -216,6 +263,16 @@ export async function GET(request: NextRequest): Promise<NextResponse<Stats | { 
   } catch (error) {
     if (error instanceof UnauthenticatedError) {
       return NextResponse.json({ error: 'No access token' }, { status: 401 });
+    }
+    if (error instanceof MissingScopeError) {
+      return NextResponse.json({ error: 'missing_scope', scope: error.scope }, { status: 403 });
+    }
+    if (error instanceof InvalidPlaylistError) {
+      return NextResponse.json({ error: 'Invalid playlist' }, { status: 400 });
+    }
+    const statusCode = (error as { statusCode?: number }).statusCode;
+    if (statusCode === 404) {
+      return NextResponse.json({ error: 'Playlist not found' }, { status: 404 });
     }
     console.error('Error fetching stats:', error);
     return NextResponse.json(

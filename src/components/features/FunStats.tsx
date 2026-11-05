@@ -69,9 +69,9 @@ export default function FunStats({ stats }: FunStatsProps) {
     },
     {
       icon: TrendingUp,
-      title: stats.mode === 'recent' ? 'Total Plays' : 'In This List',
+      title: stats.mode === 'recent' ? 'Total Plays' : stats.mode === 'playlist' ? 'In This Playlist' : 'In This List',
       value: formatNumber(stats.overview.totalPlays),
-      description: stats.mode === 'recent' ? "Songs you've played" : 'Spotify-ranked artists or tracks',
+      description: stats.mode === 'recent' ? "Songs you've played" : stats.mode === 'playlist' ? 'Songs in this playlist' : 'Spotify-ranked artists or tracks',
       gradient: "from-emerald-500 via-green-500 to-lime-400",
     },
     {
@@ -183,8 +183,8 @@ export default function FunStats({ stats }: FunStatsProps) {
         <div className="flex items-center gap-2 bg-gray-700/40 border border-gray-600/50 rounded-full px-3 py-1.5 text-xs text-gray-200">
           <Target className="w-3.5 h-3.5 text-green-400 shrink-0" />
           <span className="capitalize">{stats.genres[0]?.genre || 'Unknown'}</span>
-          {stats.mode === 'recent' && (
-            <span className="text-gray-400">· {formatNumber(stats.genres[0]?.playCount || 0)} plays</span>
+          {(stats.mode === 'recent' || stats.mode === 'playlist') && (
+            <span className="text-gray-400">· {formatNumber(stats.genres[0]?.playCount || 0)} {stats.mode === 'playlist' ? 'songs' : 'plays'}</span>
           )}
         </div>
         <div className="flex items-center gap-2 bg-gray-700/40 border border-gray-600/50 rounded-full px-3 py-1.5 text-xs text-gray-200">

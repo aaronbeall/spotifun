@@ -1,6 +1,7 @@
-import { Headphones, Users, Music, Clock, Sparkles, Palette, Disc, Disc3, Disc2, TrendingUp, Star, RefreshCw, CloudAlert } from 'lucide-react';
-import { useMemo } from 'react';
-import { Stats, TimeRange, DataMode } from '@/types';
+import { Headphones, Users, Music, Clock, Sparkles, Palette, Disc, Disc3, Disc2, TrendingUp, Star, RefreshCw, CloudAlert, Heart, ChevronDown, ListMusic, Check, Loader2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { Stats, TimeRange, DataMode, PlaylistSelection, PlaylistSummary, PlaylistsResponse, LIKED_SONGS_ID } from '@/types';
 import { formatNumber, formatDuration, formatRelativeTime, getGenreColorClass, cn } from "@/utils";
 import { analyzePopularity } from "@/utils/popularity";
 import { WrappedMusicProfile } from "./WrappedMusicProfile";
@@ -32,9 +33,62 @@ interface MusicProfileProps {
   onTimeRangeChange: (range: TimeRange) => void;
   dataMode: DataMode;
   onDataModeChange: (mode: DataMode) => void;
+  selectedPlaylist: PlaylistSelection;
+  onPlaylistSelect: (playlist: PlaylistSelection) => void;
+  onPlaylistResolved: (playlist: PlaylistSelection) => void;
+  likedSongsNeedsReconnect: boolean;
+  onLikedSongsNeedsReconnect: (needsReconnect: boolean) => void;
   lastFetched: Date | null;
   isRefreshing: boolean;
   onRefresh: () => void;
+}
+
+function formatTrackCount(count: number): string {
+  return count.toLocaleString('en-US');
+}
+
+function PlaylistMark({ playlist, className }: { playlist: PlaylistSelection; className: string }) {
+  if (playlist.id === LIKED_SONGS_ID) return <Heart className={className} />;
+  if (playlist.image) {
+    return <img src={playlist.image} alt="" className={`${className} rounded-sm object-cover`} />;
+  }
+  return <ListMusic className={className} />;
+}
+
+function PlaylistMenuItem({
+  playlist,
+  selected,
+  needsReconnect = false,
+  hideCount = false,
+  onSelect,
+}: {
+  playlist: PlaylistSummary;
+  selected: boolean;
+  needsReconnect?: boolean;
+  hideCount?: boolean;
+  onSelect: (playlist: PlaylistSelection) => void;
+}) {
+  return (
+    <DropdownMenu.Item
+      onSelect={() => {
+        if (needsReconnect) {
+          window.location.href = '/api/auth/spotify';
+          return;
+        }
+        onSelect(playlist);
+      }}
+      className="flex items-center gap-2 px-3 py-2 text-sm text-gray-200 hover:bg-gray-700 hover:text-white outline-none cursor-pointer"
+    >
+      <PlaylistMark playlist={playlist} className="w-4 h-4 shrink-0" />
+      <span className="flex-1 truncate">{playlist.name}</span>
+      {needsReconnect ? (
+        <span className="text-[11px] text-amber-300/80">Reconnect</span>
+      ) : hideCount ? null : (
+        <span className="text-[11px] text-white/35">{formatTrackCount(playlist.trackCount)}</span>
+      )}
+      {selected && !needsReconnect && <Check className="w-3.5 h-3.5 text-pink-400 shrink-0" />}
+    </DropdownMenu.Item>
+  );
 }
 
 export default function MusicProfile({ 
@@ -46,31 +100,92 @@ export default function MusicProfile({
   onTimeRangeChange,
   dataMode,
   onDataModeChange,
+  selectedPlaylist,
+  onPlaylistSelect,
+  onPlaylistResolved,
+  likedSongsNeedsReconnect,
+  onLikedSongsNeedsReconnect,
   lastFetched, 
   isRefreshing, 
   onRefresh 
 }: MusicProfileProps) {
-  const isTopMode = dataMode !== 'recent';
+  // The switcher can move to the requested source immediately. Card content stays
+  // on the last loaded stats until the request finishes, so the section doesn't blank out.
+  const displayedMode = stats.mode;
+  const playlistSelected = dataMode === 'playlist';
+  const isPlaylistMode = displayedMode === 'playlist';
+  const isTopMode = displayedMode === 'topArtists' || displayedMode === 'topTracks';
+  const sourceChanged = dataMode !== displayedMode
+    || (dataMode === 'playlist' && selectedPlaylist.id !== stats.playlist?.id);
+  const loadingLabel = !sourceChanged
+    ? 'Updating'
+    : dataMode === 'playlist'
+    ? `Loading ${selectedPlaylist.name}`
+    : dataMode === 'topArtists'
+    ? 'Loading top artists'
+    : dataMode === 'topTracks'
+    ? 'Loading top tracks'
+    : 'Loading recently played';
   const limitIndex = Math.max(0, PLAY_LIMITS.indexOf(playLimit as typeof PLAY_LIMITS[number]));
+  const [playlistMenuOpen, setPlaylistMenuOpen] = useState(false);
+  const [playlistMenu, setPlaylistMenu] = useState<{
+    status: 'idle' | 'loading' | 'ready' | 'error';
+    likedSongs: PlaylistSummary | null;
+    playlists: PlaylistSummary[];
+  }>({ status: 'idle', likedSongs: null, playlists: [] });
+
+  const playlistCountLabel = useMemo(() => {
+    const source = stats.playlist;
+    if (!source) return 'Playlist';
+    if (source.analyzed < source.total) {
+      return `${formatTrackCount(source.analyzed)} of ${formatTrackCount(source.total)}`;
+    }
+    return `${formatTrackCount(source.analyzed)} ${source.analyzed === 1 ? 'track' : 'tracks'}`;
+  }, [stats.playlist]);
+
+  const loadPlaylists = async () => {
+    if (playlistMenu.status === 'loading' || playlistMenu.status === 'ready') return;
+    setPlaylistMenu(menu => ({ ...menu, status: 'loading' }));
+    try {
+      const response = await fetch('/api/playlists');
+      if (!response.ok) throw new Error('Failed to load playlists');
+      const data: PlaylistsResponse = await response.json();
+      setPlaylistMenu({ status: 'ready', likedSongs: data.likedSongs, playlists: data.playlists });
+      if (data.likedSongsNeedsReconnect) onLikedSongsNeedsReconnect(true);
+      const match = data.playlists.find(playlist => playlist.id === selectedPlaylist.id)
+        ?? (selectedPlaylist.id === LIKED_SONGS_ID ? data.likedSongs : null);
+      if (match) onPlaylistResolved(match);
+    } catch (error) {
+      console.error('Error fetching playlists:', error);
+      setPlaylistMenu(menu => ({ ...menu, status: 'error' }));
+    }
+  };
   
   // Calculate metrics and labels based on mode
   const { avgMetric, avgMetricLabel, uniquenessDescription, totalListeningLabel } = useMemo(() => {
-    if (dataMode === 'recent') {
+    if (displayedMode === 'recent') {
       return {
         avgMetric: Math.round(stats.overview.totalPlays / 30),
         avgMetricLabel: 'plays per day',
-        uniquenessDescription: `${Math.round((stats.overview.uniqueTracks / stats.overview.totalPlays) * 100)}% unique`,
+        uniquenessDescription: `${Math.round((stats.overview.uniqueTracks / Math.max(stats.overview.totalPlays, 1)) * 100)}% unique`,
         totalListeningLabel: 'total listening'
       };
-    } else {
+    }
+    if (displayedMode === 'playlist') {
       return {
         avgMetric: null,
-        avgMetricLabel: 'ranked by Spotify',
+        avgMetricLabel: 'in this playlist',
         uniquenessDescription: `${stats.overview.uniqueTracks} tracks`,
-        totalListeningLabel: 'total duration'
+        totalListeningLabel: 'in this playlist'
       };
     }
-  }, [dataMode, stats.overview]);
+    return {
+      avgMetric: null,
+      avgMetricLabel: 'ranked by Spotify',
+      uniquenessDescription: `${stats.overview.uniqueTracks} tracks`,
+      totalListeningLabel: 'total duration'
+    };
+  }, [displayedMode, stats.overview]);
 
   const popularity = analyzePopularity(stats.tracks.map(track => track.track));
 
@@ -117,7 +232,79 @@ export default function MusicProfile({
                   </button>
                 );
               })}
+              <div className={`relative flex items-center rounded-full ${playlistSelected ? 'text-white' : 'text-white/50'}`}>
+                {playlistSelected && (
+                  <span className="absolute inset-0 -z-10 rounded-full bg-pink-500 shadow-md" />
+                )}
+                <button
+                  onClick={() => onPlaylistSelect(selectedPlaylist)}
+                  disabled={isLoadingTimeRange}
+                  className="flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-l-full text-xs font-medium transition-colors focus:outline-none disabled:opacity-50 hover:text-white"
+                >
+                  <PlaylistMark playlist={selectedPlaylist} className="w-3.5 h-3.5 shrink-0" />
+                  <span className="max-w-[9rem] truncate">{selectedPlaylist.name}</span>
+                </button>
+                <span className={`w-px h-3 ${playlistSelected ? 'bg-white/30' : 'bg-white/15'}`} />
+                <DropdownMenu.Root
+                  open={playlistMenuOpen}
+                  onOpenChange={(open) => {
+                    setPlaylistMenuOpen(open);
+                    if (open) loadPlaylists();
+                  }}
+                >
+                  <DropdownMenu.Trigger
+                    disabled={isLoadingTimeRange}
+                    aria-label="Choose a playlist"
+                    className="flex items-center justify-center w-7 h-7 rounded-r-full focus:outline-none disabled:opacity-50 hover:text-white"
+                  >
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Portal>
+                    <DropdownMenu.Content
+                      align="start"
+                      sideOffset={8}
+                      className="z-50 w-72 max-h-80 overflow-y-auto bg-gray-800 border border-gray-700 rounded-lg shadow-xl py-1"
+                    >
+                      <PlaylistMenuItem
+                        playlist={playlistMenu.likedSongs ?? { id: LIKED_SONGS_ID, name: 'Liked Songs', trackCount: 0 }}
+                        selected={selectedPlaylist.id === LIKED_SONGS_ID}
+                        needsReconnect={likedSongsNeedsReconnect}
+                        hideCount={playlistMenu.likedSongs == null && !likedSongsNeedsReconnect}
+                        onSelect={onPlaylistSelect}
+                      />
+                      <DropdownMenu.Separator className="h-px bg-gray-700 my-1" />
+                      {playlistMenu.status === 'loading' && (
+                        <div className="px-3 py-2 text-xs text-white/40">Loading playlists…</div>
+                      )}
+                      {playlistMenu.status === 'error' && (
+                        <div className="px-3 py-2 text-xs text-white/40">Could not load playlists</div>
+                      )}
+                      {playlistMenu.playlists.map(playlist => (
+                        <PlaylistMenuItem
+                          key={playlist.id}
+                          playlist={playlist}
+                          selected={selectedPlaylist.id === playlist.id}
+                          onSelect={onPlaylistSelect}
+                        />
+                      ))}
+                      {playlistMenu.status === 'ready' && playlistMenu.playlists.length === 0 && (
+                        <div className="px-3 py-2 text-xs text-white/40">No playlists yet</div>
+                      )}
+                    </DropdownMenu.Content>
+                  </DropdownMenu.Portal>
+                </DropdownMenu.Root>
+              </div>
             </div>
+
+            {likedSongsNeedsReconnect && (
+              <button
+                type="button"
+                onClick={() => { window.location.href = '/api/auth/spotify'; }}
+                className="text-xs text-amber-300/80 hover:text-amber-200 transition-colors"
+              >
+                Reconnect Spotify to read Liked Songs
+              </button>
+            )}
 
             {isTopMode ? (
               <div className="inline-flex items-center gap-0.5 bg-white/[0.03] rounded-full p-0.5">
@@ -134,6 +321,10 @@ export default function MusicProfile({
                   </button>
                 ))}
               </div>
+            ) : isPlaylistMode ? (
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/[0.03] text-[11px] font-medium text-white/50">
+                {playlistCountLabel}
+              </span>
             ) : (
               <div className="inline-flex items-center gap-0.5 bg-white/[0.03] rounded-full p-0.5">
                 {PLAY_LIMITS.map((limit, i) => (
@@ -186,17 +377,18 @@ export default function MusicProfile({
           </div>
         </div>
 
-        {/* Wrapped Music Profile Sequence */}
-        <div className="mb-6">
-          <WrappedMusicProfile
-            stats={stats}
-            isLoadingTimeRange={isLoadingTimeRange}
-            playLimit={playLimit}
-            onPlayLimitChange={onPlayLimitChange}
-          />
-        </div>
+        <div className="relative" aria-busy={isLoadingTimeRange}>
+          <div className={isLoadingTimeRange ? 'opacity-70 pointer-events-none select-none transition-opacity' : 'transition-opacity'}>
+            <div className="mb-6">
+              <WrappedMusicProfile
+                stats={stats}
+                isLoadingTimeRange={isLoadingTimeRange}
+                playLimit={playLimit}
+                onPlayLimitChange={onPlayLimitChange}
+              />
+            </div>
 
-        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ${isLoadingTimeRange ? 'opacity-50' : ''}`}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
           {/* Artist Card */}
           <StatCard
@@ -216,8 +408,9 @@ export default function MusicProfile({
             score={stats.overview.artistDiversity}
             scoreLabel="Diversity"
             scoreMetricKey="artist-diversity"
-            listLabel={isTopMode ? 'Top' : undefined}
+            listLabel={isPlaylistMode ? 'In Playlist' : isTopMode ? 'Top' : undefined}
             showCounts={!isTopMode}
+            countLabel={isPlaylistMode ? 'songs' : 'plays'}
             mostPlayed={stats.artists
               .sort((a, b) => b.playCount - a.playCount)
               .map(artist => ({
@@ -246,8 +439,9 @@ export default function MusicProfile({
             score={stats.overview.uniqueTracks / Math.max(stats.overview.totalPlays, 1)}
             scoreLabel="Uniqueness"
             scoreMetricKey="track-uniqueness"
-            listLabel={isTopMode ? 'Top' : undefined}
+            listLabel={isPlaylistMode ? 'In Playlist' : isTopMode ? 'Top' : undefined}
             showCounts={!isTopMode}
+            countLabel={isPlaylistMode ? 'songs' : 'plays'}
             mostPlayed={stats.tracks
               .sort((a, b) => b.playCount - a.playCount)
               .map(track => ({
@@ -290,8 +484,9 @@ export default function MusicProfile({
             score={stats.overview.genreDiversity}
             scoreLabel="Diversity"
             scoreMetricKey="genre-diversity"
-            listLabel={isTopMode ? 'Top' : undefined}
+            listLabel={isPlaylistMode ? 'In Playlist' : isTopMode ? 'Top' : undefined}
             showCounts={!isTopMode}
+            countLabel={isPlaylistMode ? 'songs' : 'plays'}
             mostPlayed={stats.genres
               .map(genre => ({
                 name: genre.genre,
@@ -327,6 +522,19 @@ export default function MusicProfile({
                 url: track.external_urls?.spotify
               }))}
           />
+            </div>
+          </div>
+          {isLoadingTimeRange && (
+            <div className="absolute inset-x-0 top-4 z-20 flex justify-center pointer-events-none">
+              <div
+                role="status"
+                className="flex items-center gap-2 rounded-full bg-gray-950/85 border border-white/15 px-4 py-2 text-sm text-white shadow-xl backdrop-blur-sm"
+              >
+                <Loader2 className="w-4 h-4 animate-spin text-pink-400" />
+                {loadingLabel}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="mt-6 pt-6 border-t border-white/5">

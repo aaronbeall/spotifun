@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { BarChart3, ChevronDown, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User, Bug, Tags, Check } from 'lucide-react';
+import { BarChart3, ChevronDown, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User, Bug, Tags, Check, Info } from 'lucide-react';
 import { formatDuration, formatNumber, getGenreColorMap, getGenreColorClass } from '@/utils';
 import Image from 'next/image';
 import FunStats from '@/components/features/FunStats';
@@ -17,7 +17,7 @@ import { NowPlayingWidget } from '@/components/NowPlayingWidget';
 import { GenreDebugPanel } from '@/components/GenreDebugPanel';
 import { usePersistedToggle } from '@/hooks/usePersistedToggle';
 
-import { UserProfile, Stats, TimeRange, DataMode } from '@/types';
+import { UserProfile, Stats, TimeRange, DataMode, PlaylistSelection, LIKED_SONGS_ID } from '@/types';
 
 export default function DashboardContent() {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -28,7 +28,12 @@ export default function DashboardContent() {
   const [lastFetched, setLastFetched] = useState<Date | null>(null);
   const [timeRange, setTimeRange] = useState<TimeRange>('medium_term');
   const [playLimit, setPlayLimit] = useState<number>(50);
-  const [dataMode, setDataMode] = useState<'recent' | 'topArtists' | 'topTracks'>('recent');
+  const [dataMode, setDataMode] = useState<DataMode>('recent');
+  const [selectedPlaylist, setSelectedPlaylist] = useState<PlaylistSelection>({
+    id: LIKED_SONGS_ID,
+    name: 'Liked Songs',
+  });
+  const [likedSongsNeedsReconnect, setLikedSongsNeedsReconnect] = useState(false);
   const [showAllArtists, setShowAllArtists] = useState(false);
   const [showAllTracks, setShowAllTracks] = useState(false);
   const [showAllGenres, setShowAllGenres] = useState(false);
@@ -48,12 +53,14 @@ export default function DashboardContent() {
     range: TimeRange,
     limit: number,
     mode: DataMode,
-    lastFm: boolean = lastFmEnabled
+    lastFm: boolean = lastFmEnabled,
+    playlistId: string = selectedPlaylist.id
   ) => {
     const params = new URLSearchParams({ timeRange: range, limit: String(limit), mode });
+    if (mode === 'playlist') params.set('playlist', playlistId);
     if (!lastFm) params.set('lastfm', '0');
     return `/api/stats?${params}`;
-  }, [lastFmEnabled]);
+  }, [lastFmEnabled, selectedPlaylist.id]);
 
   const fetchAll = useCallback(async (range: TimeRange, limit: number, mode: DataMode) => {
     const [userResponse, statsResponse] = await Promise.all([
@@ -116,8 +123,46 @@ export default function DashboardContent() {
     }
   };
 
-  const handleDataModeChange = async (newMode: 'recent' | 'topArtists' | 'topTracks') => {
-    if (dataMode === newMode) return;
+  const handlePlaylistSelect = async (playlist: PlaylistSelection) => {
+    if (playlist.id === LIKED_SONGS_ID && likedSongsNeedsReconnect) {
+      window.location.href = '/api/auth/spotify';
+      return;
+    }
+    if (dataMode === 'playlist' && selectedPlaylist.id === playlist.id) return;
+
+    const previousMode = dataMode;
+    const previousPlaylist = selectedPlaylist;
+    setSelectedPlaylist(playlist);
+    setDataMode('playlist');
+    setIsLoadingTimeRange(true);
+
+    try {
+      const response = await fetch(buildStatsUrl(timeRange, playLimit, 'playlist', lastFmEnabled, playlist.id));
+      if (response.status === 403 && playlist.id === LIKED_SONGS_ID) {
+        setLikedSongsNeedsReconnect(true);
+        setSelectedPlaylist(previousPlaylist);
+        setDataMode(previousMode);
+        return;
+      }
+      if (!response.ok) {
+        console.error('Error fetching playlist stats:', response.status);
+        setSelectedPlaylist(previousPlaylist);
+        setDataMode(previousMode);
+        return;
+      }
+      setStats(await response.json());
+      setLastFetched(new Date());
+    } catch (error) {
+      console.error('Error fetching playlist stats:', error);
+      setSelectedPlaylist(previousPlaylist);
+      setDataMode(previousMode);
+    } finally {
+      setIsLoadingTimeRange(false);
+    }
+  };
+
+  const handleDataModeChange = async (newMode: DataMode) => {
+    if (newMode === 'playlist' || dataMode === newMode) return;
 
     setDataMode(newMode);
     setIsLoadingTimeRange(true);
@@ -325,6 +370,15 @@ export default function DashboardContent() {
                       </DropdownMenu.CheckboxItem>
                     )}
                     <DropdownMenu.Separator className="h-px bg-gray-700 my-1" />
+                    <DropdownMenu.Item asChild>
+                      <Link
+                        href="/about"
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer outline-none"
+                      >
+                        <Info className="w-4 h-4" />
+                        About
+                      </Link>
+                    </DropdownMenu.Item>
                     <DropdownMenu.Item
                       onSelect={handleSettings}
                       className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer outline-none"
@@ -361,6 +415,11 @@ export default function DashboardContent() {
             onTimeRangeChange={handleTimeRangeChange}
             dataMode={dataMode}
             onDataModeChange={handleDataModeChange}
+            selectedPlaylist={selectedPlaylist}
+            onPlaylistSelect={handlePlaylistSelect}
+            onPlaylistResolved={setSelectedPlaylist}
+            likedSongsNeedsReconnect={likedSongsNeedsReconnect}
+            onLikedSongsNeedsReconnect={setLikedSongsNeedsReconnect}
             onPlayLimitChange={async (newLimit) => {
               setPlayLimit(newLimit);
               setIsLoadingTimeRange(true);
@@ -624,6 +683,8 @@ export default function DashboardContent() {
 
         {/* Attribution Footer */}
         <div className="mt-12 mb-4 text-center text-xs text-gray-500">
+          <Link href="/about" className="text-gray-400 hover:text-gray-300 underline">About</Link>
+          {' · '}
           Genre data enhanced with{' '}
           <a 
             href="https://www.last.fm" 
