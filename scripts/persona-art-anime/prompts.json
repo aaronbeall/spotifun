@@ -1,0 +1,517 @@
+{
+ "style": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands.",
+ "characters": [
+  {
+   "id": "the-trend-voyager",
+   "name": "Skye",
+   "character": "a sea otter in an orange life vest with one band pin",
+   "scene": "riding a night ocean wave studded with floating album covers, holding up a glowing smartphone, neon harbour skyline behind",
+   "mood": "bright, adventurous",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Skye, a sea otter in an orange life vest with one band pin. Scene: riding a night ocean wave studded with floating album covers, holding up a glowing smartphone, neon harbour skyline behind. Mood: bright, adventurous. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-chill-curator",
+   "name": "Basil",
+   "character": "a sloth in a chunky green knit sweater",
+   "scene": "by a rain-streaked window at night with city bokeh, warm desk lamp, slowly reading the back of a record sleeve",
+   "mood": "calm, heavy-lidded",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Basil, a sloth in a chunky green knit sweater. Scene: by a rain-streaked window at night with city bokeh, warm desk lamp, slowly reading the back of a record sleeve. Mood: calm, heavy-lidded. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-electric-escapist",
+   "name": "Volta",
+   "character": "a glowing translucent jellyfish whose tentacles are neon aux cables ending in jack plugs",
+   "scene": "drifting underwater beneath a neon-lit harbour, light shafts from the surface, eyes shut, one sparkling tear",
+   "mood": "lost in the music",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Volta, a glowing translucent jellyfish whose tentacles are neon aux cables ending in jack plugs. Scene: drifting underwater beneath a neon-lit harbour, light shafts from the surface, eyes shut, one sparkling tear. Mood: lost in the music. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-reflective-dreamer",
+   "name": "Nimbus",
+   "character": "a small cloud creature wearing headphones",
+   "scene": "resting on a crescent moon above a sleeping city, gently raining music notes",
+   "mood": "wistful, dreamy",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Nimbus, a small cloud creature wearing headphones. Scene: resting on a crescent moon above a sleeping city, gently raining music notes. Mood: wistful, dreamy. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-golden-revivalist",
+   "name": "Goldie",
+   "character": "a golden retriever in a purple sequin disco jacket and wide 70s shirt collar",
+   "scene": "alone on an empty dance floor after closing, looking up at a turning mirror ball, light speckles everywhere",
+   "mood": "nostalgic, bittersweet smile",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Goldie, a golden retriever in a purple sequin disco jacket and wide 70s shirt collar. Scene: alone on an empty dance floor after closing, looking up at a turning mirror ball, light speckles everywhere. Mood: nostalgic, bittersweet smile. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-vintage-enthusiast",
+   "name": "Tweed",
+   "character": "a tortoise in a tweed cardigan whose shell has grown a brass gramophone horn",
+   "scene": "in a book-lined study at golden dusk, eyes closed, sipping tea",
+   "mood": "peaceful",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Tweed, a tortoise in a tweed cardigan whose shell has grown a brass gramophone horn. Scene: in a book-lined study at golden dusk, eyes closed, sipping tea. Mood: peaceful. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-restless-romantic",
+   "name": "Rosso",
+   "character": "a red fox in a black and crimson bolero jacket",
+   "scene": "striking a flamenco pose under a single red spotlight, a rose in its teeth, a vinyl record held like a fan, petals falling",
+   "mood": "passionate, dramatic",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Rosso, a red fox in a black and crimson bolero jacket. Scene: striking a flamenco pose under a single red spotlight, a rose in its teeth, a vinyl record held like a fan, petals falling. Mood: passionate, dramatic. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-sentimental-archivist",
+   "name": "Sepia",
+   "character": "an owl in a cardigan with round fogged-up glasses",
+   "scene": "in a dusty record archive at golden hour, hugging a stack of 45s to its chest",
+   "mood": "tender, teary",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Sepia, an owl in a cardigan with round fogged-up glasses. Scene: in a dusty record archive at golden hour, hugging a stack of 45s to its chest. Mood: tender, teary. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-playlist-hopper",
+   "name": "Hopscotch",
+   "character": "a frog in a bright hoodie",
+   "scene": "mid-leap between floating lily pads that are album covers on a night pond full of neon reflections",
+   "mood": "giddy, restless",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Hopscotch, a frog in a bright hoodie. Scene: mid-leap between floating lily pads that are album covers on a night pond full of neon reflections. Mood: giddy, restless. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-easy-explorer",
+   "name": "Peach",
+   "character": "a capybara with a peach on its head and one earbud in",
+   "scene": "floating in a record-shaped pool ring in a hot spring at dusk, steam and lanterns",
+   "mood": "blissfully content",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Peach, a capybara with a peach on its head and one earbud in. Scene: floating in a record-shaped pool ring in a hot spring at dusk, steam and lanterns. Mood: blissfully content. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-chaos-seeker",
+   "name": "Riot",
+   "character": "a raccoon in a torn hoodie",
+   "scene": "crowd-surfing in a shopping cart full of speakers through a rainy neon street, lightning in the sky",
+   "mood": "wild grin",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Riot, a raccoon in a torn hoodie. Scene: crowd-surfing in a shopping cart full of speakers through a rainy neon street, lightning in the sky. Mood: wild grin. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-moody-mixer",
+   "name": "Shade",
+   "character": "a chameleon DJ whose stripes shift colour",
+   "scene": "chin resting on a mixing desk in a dim club booth, LED meters glowing, smoke haze",
+   "mood": "pensive",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Shade, a chameleon DJ whose stripes shift colour. Scene: chin resting on a mixing desk in a dim club booth, LED meters glowing, smoke haze. Mood: pensive. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-retro-nomad",
+   "name": "Rusty",
+   "character": "a camel on roller skates with a boombox strapped to its hump",
+   "scene": "gliding down a desert highway at sunset, dunes and a retro motel sign glow",
+   "mood": "free-spirited",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Rusty, a camel on roller skates with a boombox strapped to its hump. Scene: gliding down a desert highway at sunset, dunes and a retro motel sign glow. Mood: free-spirited. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-gentle-nostalgic",
+   "name": "Honey",
+   "character": "a brown bear in a knitted cardigan",
+   "scene": "in a rocking chair on a porch at twilight with a transistor radio in its lap, fireflies",
+   "mood": "warm, a little sleepy",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Honey, a brown bear in a knitted cardigan. Scene: in a rocking chair on a porch at twilight with a transistor radio in its lap, fireflies. Mood: warm, a little sleepy. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-haunted-dj",
+   "name": "Baron",
+   "character": "a vampire bat in a high-collared cape with headphones round its neck",
+   "scene": "scratching a dusty turntable in a moonlit gothic chapel, candles burning low",
+   "mood": "cool smirk, one fang",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Baron, a vampire bat in a high-collared cape with headphones round its neck. Scene: scratching a dusty turntable in a moonlit gothic chapel, candles burning low. Mood: cool smirk, one fang. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-fading-wanderer",
+   "name": "Mist",
+   "character": "a moth whose wings are patterned like faded cassette labels",
+   "scene": "carrying a paper lantern along a foggy forest path at night",
+   "mood": "quietly lost",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Mist, a moth whose wings are patterned like faded cassette labels. Scene: carrying a paper lantern along a foggy forest path at night. Mood: quietly lost. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-indie-devotee",
+   "name": "Patch",
+   "character": "a hedgehog whose spines are guitar picks, carrying a tote bag covered in band pins",
+   "scene": "jumping in a small sweaty indie venue, stage lights and string lights",
+   "mood": "joyful",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Patch, a hedgehog whose spines are guitar picks, carrying a tote bag covered in band pins. Scene: jumping in a small sweaty indie venue, stage lights and string lights. Mood: joyful. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-ambient-collector",
+   "name": "Echo",
+   "character": "a pink axolotl with feathery gills",
+   "scene": "in a dark aquarium room holding a jar of glowing soundwaves like fireflies",
+   "mood": "serene wonder",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Echo, a pink axolotl with feathery gills. Scene: in a dark aquarium room holding a jar of glowing soundwaves like fireflies. Mood: serene wonder. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-subculture-rebel",
+   "name": "Spike",
+   "character": "a porcupine in a safety-pin punk vest",
+   "scene": "yelling (politely) into a megaphone in a graffiti alley lit by a flickering sign",
+   "mood": "defiant",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Spike, a porcupine in a safety-pin punk vest. Scene: yelling (politely) into a megaphone in a graffiti alley lit by a flickering sign. Mood: defiant. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-shadow-curator",
+   "name": "Inky",
+   "character": "an octopus wearing a monocle",
+   "scene": "hanging tiny dark album covers in a candlelit gallery, tentacles everywhere",
+   "mood": "refined, mysterious",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Inky, an octopus wearing a monocle. Scene: hanging tiny dark album covers in a candlelit gallery, tentacles everywhere. Mood: refined, mysterious. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-vintage-explorer",
+   "name": "Copper",
+   "character": "an armadillo in a pith helmet",
+   "scene": "metal-detecting old records out of the sand on a moonlit beach",
+   "mood": "excited discovery",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Copper, an armadillo in a pith helmet. Scene: metal-detecting old records out of the sand on a moonlit beach. Mood: excited discovery. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-gentle-historian",
+   "name": "Sage",
+   "character": "a snail whose shell is a coiled French horn",
+   "scene": "reading liner notes through a magnifying glass in a mossy library at dusk",
+   "mood": "scholarly calm",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Sage, a snail whose shell is a coiled French horn. Scene: reading liner notes through a magnifying glass in a mossy library at dusk. Mood: scholarly calm. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-underground-romantic",
+   "name": "Ember",
+   "character": "a ferret in a newsboy cap",
+   "scene": "serenading with a tiny accordion under a single streetlamp in a rainy cobbled alley",
+   "mood": "yearning",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Ember, a ferret in a newsboy cap. Scene: serenading with a tiny accordion under a single streetlamp in a rainy cobbled alley. Mood: yearning. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-obscure-archivist",
+   "name": "Burrow",
+   "character": "a mole with tiny spectacles",
+   "scene": "in an underground tunnel lined with records, ticking them off a clipboard by candlelight",
+   "mood": "diligent, solitary",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Burrow, a mole with tiny spectacles. Scene: in an underground tunnel lined with records, ticking them off a clipboard by candlelight. Mood: diligent, solitary. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-sonic-wanderer",
+   "name": "Zip",
+   "character": "a hummingbird",
+   "scene": "darting between night-blooming flowers whose blooms are little glowing speakers",
+   "mood": "buzzing with energy",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Zip, a hummingbird. Scene: darting between night-blooming flowers whose blooms are little glowing speakers. Mood: buzzing with energy. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-modern-daydreamer",
+   "name": "Cumulo",
+   "character": "a whale with tiny earbuds in",
+   "scene": "floating through pastel night clouds high above a city",
+   "mood": "drifting, dreamy",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Cumulo, a whale with tiny earbuds in. Scene: floating through pastel night clouds high above a city. Mood: drifting, dreamy. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-noise-nomad",
+   "name": "Static",
+   "character": "a small gremlin robot built from guitar pedals and cables",
+   "scene": "sparking and headbanging in a dark warehouse full of amp stacks",
+   "mood": "chaotic",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Static, a small gremlin robot built from guitar pedals and cables. Scene: sparking and headbanging in a dark warehouse full of amp stacks. Mood: chaotic. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-fadeaway-listener",
+   "name": "Wisp",
+   "character": "a dandelion-seed spirit with a tiny face",
+   "scene": "drifting off on a night breeze over a field, one music note trailing behind",
+   "mood": "fading, peaceful",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Wisp, a dandelion-seed spirit with a tiny face. Scene: drifting off on a night breeze over a field, one music note trailing behind. Mood: fading, peaceful. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-eclectic-retrohead",
+   "name": "Mixtape",
+   "character": "a magpie in a patched denim jacket",
+   "scene": "dancing in a nest built from cassettes and shiny 45s on a rooftop at golden hour",
+   "mood": "gleeful",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Mixtape, a magpie in a patched denim jacket. Scene: dancing in a nest built from cassettes and shiny 45s on a rooftop at golden hour. Mood: gleeful. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-vinyl-drifter",
+   "name": "Dinghy",
+   "character": "a sleepy little paper-boat creature with a face",
+   "scene": "sailing slow circles on a vinyl record that has become a moonlit pond",
+   "mood": "drowsy",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Dinghy, a sleepy little paper-boat creature with a face. Scene: sailing slow circles on a vinyl record that has become a moonlit pond. Mood: drowsy. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-obscure-punk",
+   "name": "Thorn",
+   "character": "a cactus with a spiky mohawk in a denim vest with an old cassette Walkman",
+   "scene": "in a desert at night beside a broken-down van, stars overhead",
+   "mood": "scrappy, wistful",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Thorn, a cactus with a spiky mohawk in a denim vest with an old cassette Walkman. Scene: in a desert at night beside a broken-down van, stars overhead. Mood: scrappy, wistful. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-lost-listener",
+   "name": "Fog",
+   "character": "a koala in an oversized coat",
+   "scene": "clinging to an old radio antenna on a misty rooftop at dawn",
+   "mood": "half asleep, wistful",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Fog, a koala in an oversized coat. Scene: clinging to an old radio antenna on a misty rooftop at dawn. Mood: half asleep, wistful. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-pop-loyalist",
+   "name": "Glitter",
+   "character": "a flamingo superfan with a lightstick and a homemade banner",
+   "scene": "in a stadium crowd at a pop concert, confetti and stage lights",
+   "mood": "ecstatic",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Glitter, a flamingo superfan with a lightstick and a homemade banner. Scene: in a stadium crowd at a pop concert, confetti and stage lights. Mood: ecstatic. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-chart-regular",
+   "name": "Mochi",
+   "character": "a hamster in pyjamas with earbuds in",
+   "scene": "on a tiny sofa in a cosy bedroom lit by a phone, holding a handwritten top-10 list",
+   "mood": "cosy content",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Mochi, a hamster in pyjamas with earbuds in. Scene: on a tiny sofa in a cosy bedroom lit by a phone, holding a handwritten top-10 list. Mood: cosy content. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-modern-melancholic",
+   "name": "Velvet",
+   "character": "a baby dragon in a sparkly stage jacket",
+   "scene": "belting into a microphone on a rainy rooftop stage, breathing a small flame of heartbreak",
+   "mood": "heartbroken power",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Velvet, a baby dragon in a sparkly stage jacket. Scene: belting into a microphone on a rainy rooftop stage, breathing a small flame of heartbreak. Mood: heartbroken power. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-brooding-fan",
+   "name": "Mauve",
+   "character": "a crow in an oversized hoodie with one earbud in",
+   "scene": "in bed at night, face lit only by phone glow, rain on the window",
+   "mood": "brooding",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Mauve, a crow in an oversized hoodie with one earbud in. Scene: in bed at night, face lit only by phone glow, rain on the window. Mood: brooding. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-classic-loyalist",
+   "name": "Sunny",
+   "character": "a yellow chick with a slick pompadour",
+   "scene": "jiving in front of a glowing jukebox in a 1950s diner at night",
+   "mood": "cheerful",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Sunny, a yellow chick with a slick pompadour. Scene: jiving in front of a glowing jukebox in a 1950s diner at night. Mood: cheerful. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-vintage-devotee",
+   "name": "Biscuit",
+   "character": "a pug in a sweater vest",
+   "scene": "curled up beside a record player with the same three well-loved records, rainy evening",
+   "mood": "devoted, cosy",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Biscuit, a pug in a sweater vest. Scene: curled up beside a record player with the same three well-loved records, rainy evening. Mood: devoted, cosy. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-dramatic-traditionalist",
+   "name": "Diva",
+   "character": "a swan in an opera cape and a tiny crown",
+   "scene": "on a velvet-curtained opera stage, one wing raised to a single spotlight",
+   "mood": "grand, tragic",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Diva, a swan in an opera cape and a tiny crown. Scene: on a velvet-curtained opera stage, one wing raised to a single spotlight. Mood: grand, tragic. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-melancholy-purist",
+   "name": "Droop",
+   "character": "a basset hound with long ears",
+   "scene": "sitting by a window playing the same record again while rain runs down the glass",
+   "mood": "melancholy",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Droop, a basset hound with long ears. Scene: sitting by a window playing the same record again while rain runs down the glass. Mood: melancholy. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-mainstream-hopper",
+   "name": "Fizz",
+   "character": "a grasshopper in a varsity jacket",
+   "scene": "bouncing on glowing radio waves over a city at night, phone in hand",
+   "mood": "hyper",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Fizz, a grasshopper in a varsity jacket. Scene: bouncing on glowing radio waves over a city at night, phone in hand. Mood: hyper. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-easy-listener",
+   "name": "Marsh",
+   "character": "a soft marshmallow-white bunny",
+   "scene": "dozing in a hammock on a balcony at dusk, one earbud in, fairy lights",
+   "mood": "sleepy calm",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Marsh, a soft marshmallow-white bunny. Scene: dozing in a hammock on a balcony at dusk, one earbud in, fairy lights. Mood: sleepy calm. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-doom-dancer",
+   "name": "Grim",
+   "character": "a tiny cute reaper in a hooded cloak",
+   "scene": "dancing in a dark club with a glowstick instead of a scythe, strobe lights and fog",
+   "mood": "gleefully dark",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Grim, a tiny cute reaper in a hooded cloak. Scene: dancing in a dark club with a glowstick instead of a scythe, strobe lights and fog. Mood: gleefully dark. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-lofi-drifter",
+   "name": "Loaf",
+   "character": "a grey cat in perfect loaf shape wearing big headphones",
+   "scene": "on a desk by a rainy window at night, lo-fi bedroom with plants and a desk lamp",
+   "mood": "sleepy, melancholy",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Loaf, a grey cat in perfect loaf shape wearing big headphones. Scene: on a desk by a rainy window at night, lo-fi bedroom with plants and a desk lamp. Mood: sleepy, melancholy. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-retro-socialite",
+   "name": "Cherry",
+   "character": "a poodle in a polka-dot dress",
+   "scene": "at a neon roller disco holding a boombox shaped like a cherry",
+   "mood": "glamorous fun",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Cherry, a poodle in a polka-dot dress. Scene: at a neon roller disco holding a boombox shaped like a cherry. Mood: glamorous fun. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-classic-radio-fan",
+   "name": "Dial",
+   "character": "a canary",
+   "scene": "perched on a glowing vintage tabletop radio in a warm kitchen at night, singing along",
+   "mood": "sweet, content",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Dial, a canary. Scene: perched on a glowing vintage tabletop radio in a warm kitchen at night, singing along. Mood: sweet, content. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-torchbearer",
+   "name": "Blaze",
+   "character": "a red panda",
+   "scene": "holding a lighter aloft in a dark concert crowd, a sea of lights around, crying and grinning at once",
+   "mood": "cathartic",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Blaze, a red panda. Scene: holding a lighter aloft in a dark concert crowd, a sea of lights around, crying and grinning at once. Mood: cathartic. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-reflective-listener",
+   "name": "Pebble",
+   "character": "a grey heron",
+   "scene": "standing very still in a misty pond at dawn next to a radio floating on a lily pad",
+   "mood": "contemplative",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Pebble, a grey heron. Scene: standing very still in a misty pond at dawn next to a radio floating on a lily pad. Mood: contemplative. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-minimalist-creator",
+   "name": "Cube",
+   "character": "a penguin in a black turtleneck",
+   "scene": "building a beat on a single tiny synth in a clean minimal studio, one cool light",
+   "mood": "focused, confident",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Cube, a penguin in a black turtleneck. Scene: building a beat on a single tiny synth in a clean minimal studio, one cool light. Mood: focused, confident. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-soft-collector",
+   "name": "Moss",
+   "character": "a tardigrade (moss piglet)",
+   "scene": "curled protectively around one cherished cassette on a bed of glowing moss in a forest at night",
+   "mood": "tender",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Moss, a tardigrade (moss piglet). Scene: curled protectively around one cherished cassette on a bed of glowing moss in a forest at night. Mood: tender. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-niche-rebel",
+   "name": "Fang",
+   "character": "a wolf pup in a studded leather jacket",
+   "scene": "howling at a red moon from a rooftop",
+   "mood": "fierce, lonely",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Fang, a wolf pup in a studded leather jacket. Scene: howling at a red moon from a rooftop. Mood: fierce, lonely. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-shadow-follower",
+   "name": "Smoke",
+   "character": "a ring-tailed lemur with huge lantern eyes",
+   "scene": "following a single glowing music note through a dark jungle",
+   "mood": "curious, wary",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Smoke, a ring-tailed lemur with huge lantern eyes. Scene: following a single glowing music note through a dark jungle. Mood: curious, wary. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-revival-purist",
+   "name": "Brass",
+   "character": "a beetle whose horn is a trumpet bell",
+   "scene": "polishing it with a grin in a jazz club back room, warm brass light",
+   "mood": "proud",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Brass, a beetle whose horn is a trumpet bell. Scene: polishing it with a grin in a jazz club back room, warm brass light. Mood: proud. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-vintage-collector",
+   "name": "Lace",
+   "character": "a mouse in a tiny apron",
+   "scene": "in a cluttered old record shop at night, holding up one beloved LP under a hanging bulb",
+   "mood": "delighted",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Lace, a mouse in a tiny apron. Scene: in a cluttered old record shop at night, holding up one beloved LP under a hanging bulb. Mood: delighted. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-obscure-devotee",
+   "name": "Abyss",
+   "character": "an anglerfish whose lure is a glowing record",
+   "scene": "singing alone in the pitch-black deep sea",
+   "mood": "haunting",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Abyss, an anglerfish whose lure is a glowing record. Scene: singing alone in the pitch-black deep sea. Mood: haunting. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-preservationist",
+   "name": "Acorn",
+   "character": "a red squirrel",
+   "scene": "tucking records into a tree hollow for safekeeping in an autumn forest at dusk",
+   "mood": "careful, protective",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Acorn, a red squirrel. Scene: tucking records into a tree hollow for safekeeping in an autumn forest at dusk. Mood: careful, protective. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-curious-casual",
+   "name": "Pip",
+   "character": "a duckling",
+   "scene": "peeking curiously into a huge glowing speaker cone at a night market",
+   "mood": "wide-eyed",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Pip, a duckling. Scene: peeking curiously into a huge glowing speaker cone at a night market. Mood: wide-eyed. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-gentle-dabbler",
+   "name": "Flutter",
+   "character": "a butterfly with pastel wings",
+   "scene": "landing on a flower wearing tiny headphones in a moonlit garden",
+   "mood": "gentle",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Flutter, a butterfly with pastel wings. Scene: landing on a flower wearing tiny headphones in a moonlit garden. Mood: gentle. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-glitch-drifter",
+   "name": "Byte",
+   "character": "a pixel slime creature",
+   "scene": "glitching in and out in a dark room of CRT screens, little pixels floating off",
+   "mood": "unsettled",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Byte, a pixel slime creature. Scene: glitching in and out in a dark room of CRT screens, little pixels floating off. Mood: unsettled. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-quiet-ghost",
+   "name": "Hush",
+   "character": "a small sheet ghost with earbud cords dangling",
+   "scene": "peeking around a bedroom door at night, hallway light behind",
+   "mood": "shy",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Hush, a small sheet ghost with earbud cords dangling. Scene: peeking around a bedroom door at night, hallway light behind. Mood: shy. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-retro-casual",
+   "name": "Sherbet",
+   "character": "a hermit crab whose shell is a cassette tape",
+   "scene": "doing a sideways shuffle on a beach boardwalk at sunset, arcade lights",
+   "mood": "carefree",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Sherbet, a hermit crab whose shell is a cassette tape. Scene: doing a sideways shuffle on a beach boardwalk at sunset, arcade lights. Mood: carefree. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-soft-traditionalist",
+   "name": "Linen",
+   "character": "a sheep with round glasses",
+   "scene": "knitting a scarf out of cassette tape beside an old radio by a fireplace",
+   "mood": "cosy",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Linen, a sheep with round glasses. Scene: knitting a scarf out of cassette tape beside an old radio by a fireplace. Mood: cosy. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-restless-historian",
+   "name": "Scramble",
+   "character": "a mountain goat with a scarf",
+   "scene": "leaping between towering stacks of old records like cliffs in a dramatic storm-lit sky",
+   "mood": "daring",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Scramble, a mountain goat with a scarf. Scene: leaping between towering stacks of old records like cliffs in a dramatic storm-lit sky. Mood: daring. The character is centred with its head in the upper half of the frame."
+  },
+  {
+   "id": "the-fading-whisperer",
+   "name": "Dusk",
+   "character": "a firefly",
+   "scene": "whose light flickers in time with a faraway old song over a dark meadow at nightfall",
+   "mood": "fading, nostalgic",
+   "prompt": "Moody anime key-visual illustration, square 1:1, half-body portrait of a single anthropomorphic animal character, cinematic night lighting with one warm or neon key light and a cool coloured rim light, hard-edged cel shading with soft painted backgrounds, glossy expressive anime eyes, atmospheric depth (bokeh, haze, light rays, drifting particles), rich but slightly desaturated colour grade, thin tinted line art (no heavy black outlines), music as a quiet visual motif. Cute but melancholic, Studio-quality, painterly background, no text, no logos, no watermark, no real brands. Character: Dusk, a firefly. Scene: whose light flickers in time with a faraway old song over a dark meadow at nightfall. Mood: fading, nostalgic. The character is centred with its head in the upper half of the frame."
+  }
+ ]
+}

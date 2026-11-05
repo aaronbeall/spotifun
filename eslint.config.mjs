@@ -18,7 +18,7 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
-      "scripts/persona-art/**",
+      "scripts/persona-art/**", "scripts/persona-art-anime/**",
     ],
   },
 ];
