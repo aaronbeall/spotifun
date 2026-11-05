@@ -23,6 +23,8 @@ export interface StorySlide {
   headline: string;
   detail: string;
   accent?: string;
+  /** Persona slides: the persona id, used to show the character portrait. */
+  personaId?: string;
   hour?: number;
   hourCount?: number;
   hourTotal?: number;
@@ -180,6 +182,7 @@ function personaSlide(stats: Stats): StorySlide {
     headline: persona.name,
     detail: persona.description,
     accent: persona.color,
+    personaId: persona.id,
   };
 }
 

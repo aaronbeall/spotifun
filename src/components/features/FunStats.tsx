@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Stats } from '@/types';
 import { buildStorySlides, type StorySlide } from '@/utils/listeningFacts';
+import { getPersonaCharacter, personaPortrait } from '@/utils/personaCharacters';
 
 interface FunStatsProps {
   stats: Stats;
@@ -38,15 +39,34 @@ function HourFace({ hour }: { hour: number }) {
 
 function SlideBody({ slide }: { slide: StorySlide }) {
   if (slide.kind === 'persona') {
+    const character = slide.personaId ? getPersonaCharacter(slide.personaId) : undefined;
     return (
       <div className="relative">
         <div
           className="pointer-events-none absolute -left-10 -top-16 h-56 w-56 rounded-full blur-3xl"
           style={{ background: slide.accent ?? '#f472b6', opacity: 0.55 }}
         />
-        <p className="relative text-4xl font-black italic leading-none tracking-tight text-white sm:text-6xl">
-          {slide.headline}
-        </p>
+        <div className="relative flex items-center gap-5 sm:gap-7">
+          {slide.personaId && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={personaPortrait(slide.personaId)}
+              alt=""
+              className="h-28 w-28 shrink-0 -rotate-3 rounded-2xl border-4 border-white/15 object-cover shadow-2xl sm:h-40 sm:w-40"
+              draggable={false}
+            />
+          )}
+          <div>
+            <p className="text-4xl font-black italic leading-none tracking-tight text-white sm:text-6xl">
+              {slide.headline}
+            </p>
+            {character && (
+              <p className="mt-3 text-sm font-semibold text-white/70">
+                Starring {character.name}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
     );
   }
