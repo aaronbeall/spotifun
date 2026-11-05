@@ -20,7 +20,7 @@ function EqualizerBars() {
   );
 }
 
-export function NowPlayingWidget() {
+export function NowPlayingWidget({ endpoint = '/api/player/current' }: { endpoint?: string } = {}) {
   const [current, setCurrent] = useState<NowPlaying | null>(null);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export function NowPlayingWidget() {
 
     const poll = async () => {
       try {
-        const res = await fetch('/api/player/current');
+        const res = await fetch(endpoint);
         if (!res.ok || cancelled) return;
         const data: NowPlaying = await res.json();
         if (!cancelled) setCurrent(data);
@@ -43,7 +43,7 @@ export function NowPlayingWidget() {
       cancelled = true;
       clearInterval(interval);
     };
-  }, []);
+  }, [endpoint]);
 
   if (!current?.track) return null;
 
