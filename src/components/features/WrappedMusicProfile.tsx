@@ -7,17 +7,17 @@ import { SpectrumDimensionBars } from "./SpectrumDimensionBars";
 import { Stats } from "@/types";
 import { PopularityCard } from "./PopularityCard";
 import { PopularityHistogram } from "./PopularityHistogram";
-import { PersonaCard } from "./PersonaCard";
+import { PersonaCard, PersonaPortrait } from "./PersonaCard";
 import { FlowCardD3, CHART_MODE_TITLES, CHART_MODE_DESCRIPTIONS } from "./FlowCardD3";
 import { FlowStreamChart, FlowChartMode, FlowTrack } from "./FlowStreamChart";
 import { FlowLegend } from "./FlowLegend";
 import { ShareModal } from "../ShareModal";
 import { ShareContent } from "../ShareCardTemplate";
-import { GenerativeArt } from "../GenerativeArt";
 import { ImageBadge } from "../ImageBadge";
 import { findBestMatchingVibe } from "@/utils/musicVibesAnalyzer";
 import { analyzePopularity, getPopularityExtremes } from "@/utils/popularity";
-import { getUserPersona, personaToArtProfile } from "@/utils/musicPersonas";
+import { getUserPersona } from "@/utils/musicPersonas";
+import { getPersonaCharacter } from "@/utils/personaCharacters";
 import { darkenHex } from "@/utils/color";
 import { CARD_THEMES } from "@/utils/cardThemes";
 
@@ -249,16 +249,13 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
       default: {
         const persona = getUserPersona(stats);
         const colors = { light: persona.color, dark: darkenHex(persona.color, 0.6) };
+        const character = getPersonaCharacter(persona.id);
         return {
           eyebrow: 'Your Listener Persona',
           title: persona.name,
-          description: persona.description,
+          description: character ? `${persona.description} Meet ${character.name}: ${character.bio.charAt(0).toLowerCase()}${character.bio.slice(1)}` : persona.description,
           color: colors,
-          visual: (
-            <CircularVisual glow={colors.light}>
-              <GenerativeArt seed={persona.id} colors={colors} profile={personaToArtProfile(persona)} className="w-full h-full" />
-            </CircularVisual>
-          ),
+          visual: <PersonaPortrait persona={persona} tilt={false} className="w-64" />,
         };
       }
     }
