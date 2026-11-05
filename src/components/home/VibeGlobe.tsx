@@ -24,6 +24,10 @@ interface Point {
 
 const SPRITE_SIZE = 128;
 const TILT = -0.32;
+/** How long released particles take to fade out, in seconds */
+const FADE_OUT = 1.6;
+/** Released particles settle to this speed, in px per second */
+const DRIFT_SPEED = 28;
 
 /** Evenly spread points over a unit sphere (Fibonacci lattice) */
 function fibonacciSphere(count: number, spriteCount: number): Point[] {
@@ -50,6 +54,8 @@ interface Particle {
   vx: number;
   vy: number;
   age: number;
+  /** Seconds since the cursor let go of it; it coasts and fades out */
+  free: number;
   size: number;
   color: string;
 }
@@ -319,6 +325,7 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
               vx: -Math.sin(a) * drift,
               vy: Math.cos(a) * drift,
               age: 0,
+              free: 0,
               size: 0.9 + Math.random() * 1.4 + c.strength * 1.2,
               color,
             });
@@ -338,24 +345,36 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
         for (let i = particles.length - 1; i >= 0; i--) {
           const q = particles[i];
           q.age += dt;
+          // Once the cursor leaves (or a finger lifts) a particle keeps its momentum and fades out
+          if (!pointer.active || q.free > 0) q.free += dt;
           const dx = pointer.x - q.x;
           const dy = pointer.y - q.y;
           const dist = Math.hypot(dx, dy) || 1;
-          const pull = Math.min(9000, 260 + 2.2e6 / (dist * dist + 400));
-          q.vx = (q.vx + (dx / dist) * pull * dt) * drag;
-          q.vy = (q.vy + (dy / dist) * pull * dt) * drag;
+          const pull = q.free > 0 ? 0 : Math.min(9000, 260 + 2.2e6 / (dist * dist + 400));
+          if (q.free > 0) {
+            // Ease from whatever speed it had down to a slow drift along its current heading
+            const speed = Math.hypot(q.vx, q.vy) || 1;
+            const target = DRIFT_SPEED / speed;
+            const ease = Math.min(dt * 3, 1);
+            q.vx += (q.vx * target - q.vx) * ease;
+            q.vy += (q.vy * target - q.vy) * ease;
+          } else {
+            q.vx = (q.vx + (dx / dist) * pull * dt) * drag;
+            q.vy = (q.vy + (dy / dist) * pull * dt) * drag;
+          }
           const px = q.x;
           const py = q.y;
           const step = Math.hypot(q.vx, q.vy) * dt;
-          // Arrived (or would overshoot this frame), lost, or the cursor left
-          if (dist < 4 || step >= dist || q.age > 3 || !pointer.active) {
+          // Arrived (or would overshoot this frame), lost, or finished fading after release
+          const arrived = q.free === 0 && (dist < 4 || step >= dist);
+          if (arrived || (q.age > 3 && q.free === 0) || q.free > FADE_OUT) {
             particles[i] = particles[particles.length - 1];
             particles.pop();
             continue;
           }
           q.x += q.vx * dt;
           q.y += q.vy * dt;
-          const fade = Math.min(1, q.age * 6) * Math.min(1, dist / 28);
+          const fade = Math.min(1, q.age * 6) * (q.free > 0 ? 1 - q.free / FADE_OUT : Math.min(1, dist / 28));
           // A short streak along the motion reads as speed
           octx.strokeStyle = rgba(q.color, 0.25 * fade);
           octx.lineWidth = q.size * 3;
