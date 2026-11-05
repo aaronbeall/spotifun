@@ -229,23 +229,15 @@ export default function Home() {
         <Image src="/home/art-spiral.webp" alt="" fill sizes="100vw" className="-z-10 object-cover opacity-25" />
         <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-gray-950 via-gray-950/70 to-gray-950" />
         <motion.div {...reveal} className="mx-auto flex max-w-2xl flex-col items-center px-4 py-20 text-center sm:py-28">
-          <Image src="/logo.png" alt="" width={72} height={72} className="h-16 w-16" />
+          <Link href="/" aria-label="Spotifun home">
+            <Image src="/logo.png" alt="" width={72} height={72} className="h-16 w-16" />
+          </Link>
           <h2 className="mt-6 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">Curious what&apos;s in yours?</h2>
           <p className="mt-4 text-lg text-gray-400">It only reads your listening history. Your playlists stay exactly as they are.</p>
           <ConnectButton isConnecting={isConnecting} onClick={handleConnect} className="mt-8" />
         </motion.div>
       </section>
 
-      <footer className="border-t border-white/5">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-8 text-sm text-gray-500 sm:flex-row sm:px-6">
-          <p>A just-for-fun side project. Not affiliated with Spotify.</p>
-          <p className="flex gap-3">
-            <Link href="/about" className="hover:text-gray-300">About</Link>
-            <Link href="/about/vacrs" className="hover:text-gray-300">VACRS</Link>
-            <span>Sam is pretend. The artists, songs and artwork are real.</span>
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }

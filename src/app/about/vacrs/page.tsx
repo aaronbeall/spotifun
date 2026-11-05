@@ -7,11 +7,11 @@ export const metadata: Metadata = {
 };
 
 const STEPS = [
-  { n: '1', title: 'Genres', text: 'Tags on the artists in the view you have open.' },
-  { n: '2', title: 'Five scores', text: 'Each tag sits on five traits. The view is their weighted average.' },
-  { n: '3', title: 'Snap two', text: 'Mood and energy are cut at the middle. The other three scores stay as they are.' },
-  { n: '4', title: 'Four facts', text: 'Genre spread, popularity, loyalty, and era come from the library, not from VACRS.' },
-  { n: '5', title: 'One name', text: 'Six yes-or-no answers pick one of 64 personas.' },
+  { n: '1', title: 'Genres', text: 'Tags on the artists in the view you have open.', panel: 'bg-violet-400/[0.07]' },
+  { n: '2', title: 'Five scores', text: 'Each tag sits on five traits. The view is their weighted average.', panel: 'bg-white/[0.03]' },
+  { n: '3', title: 'Snap two', text: 'Mood and energy are cut at the middle. The other three scores stay as they are.', panel: 'bg-amber-300/[0.06]' },
+  { n: '4', title: 'Four facts', text: 'Genre spread, popularity, loyalty, and era come from the library, not from VACRS.', panel: 'bg-emerald-400/[0.06]' },
+  { n: '5', title: 'One name', text: 'Six yes-or-no answers pick one of 64 personas.', panel: 'bg-pink-400/[0.07]' },
 ];
 
 const AXES = [
@@ -37,6 +37,132 @@ const HOPPER = [
   ['Loyalty', 'Wanderer'],
   ['Era', 'Current'],
 ];
+
+function GenresMark() {
+  const rows = [
+    { tag: 'pop', dot: 'bg-violet-300', pill: 'border-violet-300/50 text-violet-100' },
+    { tag: 'jazz', dot: 'bg-cyan-300', pill: 'border-cyan-300/50 text-cyan-100' },
+    { tag: 'soul', dot: 'bg-amber-300', pill: 'border-amber-300/50 text-amber-100' },
+  ];
+  return (
+    <div className="flex flex-col items-center justify-center gap-1.5 px-2 py-3" aria-hidden>
+      {rows.map(row => (
+        <div key={row.tag} className="flex items-center gap-2">
+          <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${row.dot}`} />
+          <span className="h-px w-4 shrink-0 bg-white/30" />
+          <span className={`rounded-full border bg-black/25 px-2 py-0.5 text-[11px] font-medium ${row.pill}`}>{row.tag}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ScoresMark() {
+  const marks = [0.78, 0.64, 0.42, 0.3, 0.56];
+  return (
+    <div className="flex w-full flex-col justify-center gap-1.5 px-2.5 py-3" aria-hidden>
+      {marks.map((mark, index) => (
+        <div key={AXES[index].name} className="flex items-center gap-1.5">
+          <span className="w-3 font-mono text-[9px] text-gray-500">{AXES[index].name[0]}</span>
+          <span
+            className="relative h-1.5 flex-1 rounded-full"
+            style={{ background: `linear-gradient(90deg, ${AXES[index].from}, ${AXES[index].to})` }}
+          >
+            <span
+              className="absolute top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow"
+              style={{ left: `${mark * 100}%` }}
+            />
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SnapMark() {
+  return (
+    <div className="flex w-full flex-col justify-center gap-1.5 px-2.5 py-3" aria-hidden>
+      {AXES.slice(0, 2).map(axis => (
+        <span
+          key={axis.name}
+          className="relative h-3 overflow-hidden rounded-full"
+          style={{ background: `linear-gradient(90deg, ${axis.from}, ${axis.to})` }}
+        >
+          <span className="absolute left-1/2 top-1/2 h-5 w-0.5 -translate-x-1/2 -translate-y-1/2 bg-white shadow" />
+        </span>
+      ))}
+      <span className="mt-1 flex flex-col gap-1.5 opacity-70">
+        {AXES.slice(2).map(axis => (
+          <span
+            key={axis.name}
+            className="h-1 rounded-full"
+            style={{ background: `linear-gradient(90deg, ${axis.from}, ${axis.to})` }}
+          />
+        ))}
+      </span>
+    </div>
+  );
+}
+
+function FactsMark() {
+  return (
+    <div className="grid h-full grid-cols-2 gap-1 p-1.5" aria-hidden>
+      <div className="flex flex-col items-center justify-center rounded-lg bg-black/25 py-1.5">
+        <svg viewBox="0 0 48 26" className="h-7 w-12">
+          <circle cx="8" cy="7" r="3" fill="#a78bfa" />
+          <circle cx="40" cy="6" r="3" fill="#22d3ee" />
+          <circle cx="24" cy="14" r="3" fill="#fbbf24" />
+          <circle cx="10" cy="21" r="2.4" fill="#fb7185" />
+          <circle cx="36" cy="20" r="2.4" fill="#34d399" />
+        </svg>
+        <span className="text-[9px] uppercase tracking-wide text-gray-400">Spread</span>
+      </div>
+      <div className="flex flex-col items-center justify-center gap-1.5 rounded-lg bg-black/25 px-2 py-1.5">
+        <span className="relative h-1.5 w-full rounded-full bg-white/10">
+          <span className="absolute inset-y-0 left-0 w-[68%] rounded-full bg-emerald-400" />
+          <span className="absolute left-1/2 top-1/2 h-3.5 w-px -translate-x-1/2 -translate-y-1/2 bg-white" />
+        </span>
+        <span className="text-[9px] uppercase tracking-wide text-gray-400">50</span>
+      </div>
+      <div className="flex flex-col items-center justify-center rounded-lg bg-black/25 py-1.5">
+        <svg viewBox="0 0 48 26" className="h-7 w-12">
+          <circle cx="12" cy="13" r="5" fill="#c4b5fd" />
+          <circle cx="24" cy="13" r="5" fill="#c4b5fd" />
+          <circle cx="36" cy="13" r="4.5" fill="none" stroke="white" strokeOpacity="0.35" strokeWidth="1.5" />
+        </svg>
+        <span className="text-[9px] uppercase tracking-wide text-gray-400">Loyal</span>
+      </div>
+      <div className="flex flex-col items-center justify-center rounded-lg bg-black/25 py-1.5">
+        <svg viewBox="0 0 48 26" className="h-7 w-12">
+          <line x1="4" y1="14" x2="44" y2="14" stroke="white" strokeOpacity="0.45" strokeWidth="2.5" strokeLinecap="round" />
+          <circle cx="36" cy="14" r="4.5" fill="#f472b6" />
+        </svg>
+        <span className="text-[9px] uppercase tracking-wide text-gray-400">Era</span>
+      </div>
+    </div>
+  );
+}
+
+function NameMark() {
+  return (
+    <div className="flex items-center justify-center px-3 py-4" aria-hidden>
+      <div className="grid grid-cols-8 gap-[3px]">
+        {Array.from({ length: 64 }, (_, index) => (
+          <span
+            key={index}
+            className={
+              index === 27
+                ? 'h-2 w-2 rounded-[2px] bg-pink-400 shadow-[0_0_8px_rgba(244,114,182,0.95)]'
+                : 'h-2 w-2 rounded-[2px] bg-white/15'
+            }
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const STEP_MARKS = [GenresMark, ScoresMark, SnapMark, FactsMark, NameMark];
 
 function Axis({
   name,
@@ -88,16 +214,50 @@ export default function VacrsPage() {
           VACRS scores the music from 0 to 1 on five traits. The persona keeps only two of those scores,
           adds four facts about how you listen, and looks up one of 64 names.
         </p>
+        <div className="mt-6 space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-relaxed">
+          <p>
+            Valence and arousal are not original here. They are the two axes of the circumplex model of
+            affect{' '}
+            <a href="https://doi.org/10.1037/h0077714" className="text-violet-300 underline decoration-violet-300/40 underline-offset-2 hover:text-violet-200" target="_blank" rel="noopener noreferrer">Russell, 1980</a>,
+            which music research uses as a dimensional account of emotion{' '}
+            <a href="https://doi.org/10.1177/0305735610362821" className="text-violet-300 underline decoration-violet-300/40 underline-offset-2 hover:text-violet-200" target="_blank" rel="noopener noreferrer">Eerola &amp; Vuoskoski, 2011</a>.
+            VACRS keeps those two axes and adds three the circumplex does not have: complexity, rawness,
+            and social presence. The scores written onto genres, the cut into a persona, and the four
+            library facts are the expansion.
+          </p>
+          <ol className="list-decimal space-y-1 pl-5 text-xs text-gray-500">
+            <li>
+              Russell, J. A. (1980). A circumplex model of affect. <span className="italic">Journal of Personality and Social Psychology, 39</span>(6), 1161–1178.{' '}
+              <a href="https://doi.org/10.1037/h0077714" className="text-gray-400 hover:text-gray-300" target="_blank" rel="noopener noreferrer">https://doi.org/10.1037/h0077714</a>
+            </li>
+            <li>
+              Eerola, T., &amp; Vuoskoski, J. K. (2011). A comparison of the discrete and dimensional models of emotion in music. <span className="italic">Psychology of Music, 39</span>(1), 18–49.{' '}
+              <a href="https://doi.org/10.1177/0305735610362821" className="text-gray-400 hover:text-gray-300" target="_blank" rel="noopener noreferrer">https://doi.org/10.1177/0305735610362821</a>
+            </li>
+          </ol>
+        </div>
       </header>
 
-      <ol className="grid gap-3 sm:grid-cols-5">
-        {STEPS.map(step => (
-          <li key={step.n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-            <span className="font-mono text-xs text-violet-300">{step.n}</span>
-            <h2 className="mt-2 text-sm font-semibold text-white">{step.title}</h2>
-            <p className="mt-1 text-xs leading-relaxed text-gray-400">{step.text}</p>
-          </li>
-        ))}
+      <ol className="flex snap-x snap-mandatory gap-2 overflow-x-auto pb-1 [scrollbar-width:none] md:grid md:grid-cols-5 md:overflow-visible md:pb-0 [&::-webkit-scrollbar]:hidden">
+        {STEPS.map((step, index) => {
+          const Mark = STEP_MARKS[index];
+          return (
+            <li key={step.n} className="flex w-40 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-white/10 md:w-auto">
+              <div className={`flex h-28 items-center ${step.panel}`}>
+                <div className="w-full">
+                  <Mark />
+                </div>
+              </div>
+              <div className="flex flex-1 flex-col bg-white/[0.02] p-3">
+                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-violet-400/15 font-mono text-[11px] text-violet-200">
+                  {step.n}
+                </span>
+                <h2 className="mt-2 text-sm font-semibold text-white">{step.title}</h2>
+                <p className="mt-1 text-[11px] leading-snug text-gray-400">{step.text}</p>
+              </div>
+            </li>
+          );
+        })}
       </ol>
 
       <section className="space-y-6">

@@ -293,20 +293,20 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
       <div className="bg-gray-800 shadow-lg border-b border-gray-700 sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3 shrink-0">
+            <Link href="/" className="flex items-center gap-3 shrink-0">
               <div className="relative w-10 h-10">
                 <Image
                   src="/logo.png"
-                  alt="Spotifun logo"
+                  alt=""
                   fill
                   className="object-contain"
                   sizes="40px"
                 />
               </div>
-              <h1 className="text-2xl font-black italic lowercase tracking-tight text-violet-400">
+              <span className="text-2xl font-black italic lowercase tracking-tight text-violet-400">
                 Spotifun
-              </h1>
-            </div>
+              </span>
+            </Link>
 
             <div className="flex-1 flex justify-center min-w-0">
               <NowPlayingWidget endpoint={`${apiBase}/player/current`} />
@@ -706,20 +706,6 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
           <Rankings stats={stats} />
         </div>
 
-        {/* Attribution Footer */}
-        <div className="mt-12 mb-4 text-center text-xs text-gray-500">
-          <Link href="/about" className="text-gray-400 hover:text-gray-300 underline">About</Link>
-          {' · '}
-          Genre data enhanced with{' '}
-          <a 
-            href="https://www.last.fm" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-gray-400 hover:text-gray-300 underline"
-          >
-            Last.fm
-          </a>
-        </div>
       </div>
 
       {isDev && debugPanelEnabled && (

@@ -34,17 +34,6 @@ export default function AboutLayout({ children }: { children: React.ReactNode })
       <main className="mx-auto max-w-3xl px-5 py-12">
         {children}
       </main>
-
-      <footer className="border-t border-white/10">
-        <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-xs text-gray-500">
-          <p>Spotifun is an independent project and is not affiliated with Spotify AB.</p>
-          <p className="flex gap-3">
-            <Link href="/about#privacy" className="hover:text-gray-300">Privacy</Link>
-            <Link href="/about#terms" className="hover:text-gray-300">Terms</Link>
-            <Link href="/about#contact" className="hover:text-gray-300">Contact</Link>
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }

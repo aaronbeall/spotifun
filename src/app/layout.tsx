@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import * as Tooltip from "@radix-ui/react-tooltip";
+import { SiteFooter } from "@/components/SiteFooter";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -31,10 +32,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${display.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${display.variable} flex min-h-screen flex-col bg-gray-950 antialiased`}
       >
         <Tooltip.Provider>
-          {children}
+          <div className="flex-1">{children}</div>
+          <SiteFooter />
         </Tooltip.Provider>
       </body>
     </html>
