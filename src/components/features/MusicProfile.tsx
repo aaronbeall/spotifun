@@ -168,7 +168,7 @@ export default function MusicProfile({
         avgMetric: Math.round(stats.overview.totalPlays / 30),
         avgMetricLabel: 'plays per day',
         uniquenessDescription: `${Math.round((stats.overview.uniqueTracks / Math.max(stats.overview.totalPlays, 1)) * 100)}% unique`,
-        totalListeningLabel: 'total listening'
+        totalListeningLabel: 'of these tracks'
       };
     }
     if (displayedMode === 'playlist') {

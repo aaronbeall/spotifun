@@ -19,7 +19,7 @@ export const METRIC_DESCRIPTIONS: Record<string, string> = {
   'unique-artists': 'Number of different artists in this view. Higher means more diverse artist exploration.',
   'unique-tracks': 'Number of different songs in this view. Higher means varied listening rather than repeating the same tracks.',
   'unique-genres': 'Number of different genres represented. Higher means eclectic taste across musical styles.',
-  'total-duration': 'Combined listening time across all tracks. Shows how much time you\'ve spent with this music.',
+  'total-duration': 'Combined length of the tracks in this view. This is the songs added together, not time spent listening.',
   'genre-diversity': 'Ratio of unique genres to total genre tags across all your artists. Higher means less repetition in genre tags.',
   'artist-diversity': 'Ratio of unique artists to total plays. Higher means you sample widely rather than focusing on a few favorites.',
   'average-popularity': 'Average Spotify popularity rating (0-100) of your tracks. Higher means mainstream hits; lower means niche, underground music.',
@@ -38,19 +38,19 @@ export const METRIC_DESCRIPTIONS: Record<string, string> = {
   'persona-mood': 'Your typical emotional tone from sad to happy. Positive means upbeat; melancholic means darker moods.',
   'persona-energy': 'Your typical energy level from calm to energetic. High energy means intense, fast music; low means relaxing, mellow.',
   
-  // Fun Stats
-  'total-tracks-played': 'How many individual song plays you\'ve made. Each repeat counts separately.',
-  'artist-discovery': 'How many different artists you\'ve explored. Higher means broader musical exploration.',
-  'average-session': 'Average length of each track you listen to. Calculated as total listening time divided by number of plays.',
+  // Listening story
+  'total-tracks-played': 'How many plays are in the current window. Each repeat counts separately. This is not a lifetime total.',
+  'artist-discovery': 'How many different artists are in this view.',
+  'average-session': 'Average length of the tracks in this view. This is not the length of a listening session.',
   
   // Stat Card Metrics (MusicProfile)
   'plays-per-day': 'Average number of plays per day over the past 30 days. Higher means more active listening.',
   'track-uniqueness': 'What percentage of plays are unique tracks vs repeats. Higher means more variety; lower means more repetition.',
   'track-count-only': 'Total number of unique tracks without repetition context.',
   
-  // Rankings
-  'ranking-score': 'Your score based on total plays, unique artists, unique tracks, and genre diversity. Higher means more active and diverse listening.',
-  'ranking-position': 'Your position in the ranking. Lower number means higher rank.',
+  // You, over time
+  'ranking-score': 'How this view compares with your own top artists across Spotify\'s three time ranges. There is no score against other people.',
+  'ranking-position': 'Where this view sits on popularity, genre spread, mood, and energy next to your other time ranges.',
   
   // Vibe Metrics
   'vibe-match': 'How closely your listening matches this vibe\'s profile. Higher percentage means stronger alignment.',

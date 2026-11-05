@@ -1,222 +1,139 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Trophy, Star, Music, Clock, Target, Zap, Heart, Award, Lock, CheckCircle } from 'lucide-react';
-import { Achievement, Stats } from '@/types';
+import { Stats } from '@/types';
+import { buildFindings, viewScope, type Finding } from '@/utils/listeningFacts';
 
 interface AchievementsProps {
   stats: Stats;
 }
 
+function HitCard({ finding }: { finding: Finding }) {
+  if (finding.kind === 'replay') {
+    return (
+      <article className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-500 via-fuchsia-600 to-orange-500 p-6 text-white shadow-lg">
+        <div className="absolute -right-4 -top-3 rotate-12 rounded-md border-4 border-white/90 px-2 py-1 text-xs font-black tracking-[0.18em]">
+          ×{finding.count}
+        </div>
+        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/70">Replay</p>
+        <h3 className="mt-3 text-2xl font-black leading-tight">{finding.name}</h3>
+        <p className="mt-2 text-sm text-white/80">{finding.artist}</p>
+        <p className="mt-4 text-sm text-white/90">{finding.fact}</p>
+      </article>
+    );
+  }
+
+  if (finding.kind === 'streak') {
+    const marks = Math.min(finding.count ?? 0, 16);
+    return (
+      <article className="rounded-2xl bg-[#1b1030] p-6 text-white shadow-lg ring-1 ring-violet-400/40">
+        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-violet-300">Streak</p>
+        <div className="mt-4 flex items-end gap-1" aria-hidden>
+          {Array.from({ length: marks }, (_, index) => (
+            <span
+              key={index}
+              className="w-2 rounded-full bg-violet-200"
+              style={{ height: `${12 + (index % 5) * 6}px` }}
+            />
+          ))}
+        </div>
+        <h3 className="mt-4 text-2xl font-black leading-tight">{finding.name}</h3>
+        <p className="mt-2 text-sm text-violet-100/80">{finding.fact}</p>
+      </article>
+    );
+  }
+
+  if (finding.kind === 'deepcut') {
+    return (
+      <article className="rounded-2xl bg-[#0c0a09] p-6 text-stone-300 shadow-lg ring-1 ring-stone-700">
+        <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-stone-500">Deep cut</p>
+        <p className="mt-4 font-mono text-5xl font-bold tabular-nums text-amber-200/90">{finding.count}</p>
+        <h3 className="mt-3 text-xl font-semibold text-stone-100">{finding.name}</h3>
+        <p className="mt-1 text-sm text-stone-500">{finding.artist}</p>
+      </article>
+    );
+  }
+
+  if (finding.kind === 'span') {
+    return (
+      <article className="rounded-2xl bg-[#10141c] p-6 text-white shadow-lg ring-1 ring-sky-900">
+        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-sky-300/80">Year span</p>
+        <div className="mt-4 flex items-end justify-between gap-3">
+          <span className="text-3xl font-black tabular-nums text-amber-100">{finding.from}</span>
+          <span className="mb-2 h-px flex-1 bg-gradient-to-r from-amber-200 to-sky-300" />
+          <span className="text-3xl font-black tabular-nums text-sky-100">{finding.to}</span>
+        </div>
+        <p className="mt-3 text-sm text-white/70">{finding.count} years apart</p>
+      </article>
+    );
+  }
+
+  const percent = finding.percent ?? 0;
+  return (
+    <article className="flex items-center gap-5 rounded-2xl bg-emerald-950 p-6 text-white shadow-lg ring-1 ring-emerald-700/60">
+      <div
+        className="grid h-20 w-20 shrink-0 place-items-center rounded-full"
+        style={{ background: `conic-gradient(#5eead4 ${percent * 3.6}deg, rgba(255,255,255,0.12) 0)` }}
+        aria-hidden
+      >
+        <div className="grid h-14 w-14 place-items-center rounded-full bg-emerald-950 text-sm font-black">
+          {percent}%
+        </div>
+      </div>
+      <div>
+        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-300/80">Coverage</p>
+        <h3 className="mt-2 text-lg font-bold leading-snug">{finding.fact}</h3>
+      </div>
+    </article>
+  );
+}
+
 export default function Achievements({ stats }: AchievementsProps) {
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
-
-  useEffect(() => {
-    const generateAchievements = (): Achievement[] => {
-      const { totalPlays, uniqueArtists, uniqueTracks, totalDuration } = stats.overview;
-
-      const allAchievements: Achievement[] = [
-        {
-          id: 'first_track',
-          title: 'First Steps',
-          description: 'Played your first track',
-          icon: <Music className="w-6 h-6" />,
-          unlocked: totalPlays >= 1,
-          progress: Math.min(totalPlays, 1),
-          maxProgress: 1,
-          color: 'from-green-500 to-emerald-600'
-        },
-        {
-          id: 'hundred_plays',
-          title: 'Century Club',
-          description: 'Reached 100 total plays',
-          icon: <Trophy className="w-6 h-6" />,
-          unlocked: totalPlays >= 100,
-          progress: Math.min(totalPlays, 100),
-          maxProgress: 100,
-          color: 'from-blue-500 to-cyan-600'
-        },
-        {
-          id: 'thousand_plays',
-          title: 'Millennium',
-          description: 'Reached 1,000 total plays',
-          icon: <Star className="w-6 h-6" />,
-          unlocked: totalPlays >= 1000,
-          progress: Math.min(totalPlays, 1000),
-          maxProgress: 1000,
-          color: 'from-purple-500 to-indigo-600'
-        },
-        {
-          id: 'ten_thousand_plays',
-          title: 'Music Marathon',
-          description: 'Reached 10,000 total plays',
-          icon: <Award className="w-6 h-6" />,
-          unlocked: totalPlays >= 10000,
-          progress: Math.min(totalPlays, 10000),
-          maxProgress: 10000,
-          color: 'from-yellow-500 to-orange-600'
-        },
-        {
-          id: 'genre_explorer',
-          title: 'Genre Explorer',
-          description: 'Listened to 10 different genres',
-          icon: <Zap className="w-6 h-6" />,
-          unlocked: stats.genres.length >= 10,
-          progress: Math.min(stats.genres.length, 10),
-          maxProgress: 10,
-          color: 'from-pink-500 to-rose-600'
-        },
-        {
-          id: 'artist_collector',
-          title: 'Artist Collector',
-          description: 'Listened to 50 different artists',
-          icon: <Heart className="w-6 h-6" />,
-          unlocked: uniqueArtists >= 50,
-          progress: Math.min(uniqueArtists, 50),
-          maxProgress: 50,
-          color: 'from-red-500 to-pink-600'
-        },
-        {
-          id: 'music_master',
-          title: 'Music Master',
-          description: 'Listened to 500 different tracks',
-          icon: <Target className="w-6 h-6" />,
-          unlocked: uniqueTracks >= 500,
-          progress: Math.min(uniqueTracks, 500),
-          maxProgress: 500,
-          color: 'from-indigo-500 to-purple-600'
-        },
-        {
-          id: 'time_traveler',
-          title: 'Time Traveler',
-          description: 'Listened for 100+ hours total',
-          icon: <Clock className="w-6 h-6" />,
-          unlocked: totalDuration >= 100 * 60 * 60 * 1000, // 100 hours in ms
-          progress: Math.min(totalDuration, 100 * 60 * 60 * 1000),
-          maxProgress: 100 * 60 * 60 * 1000,
-          color: 'from-teal-500 to-cyan-600'
-        }
-      ];
-
-      return allAchievements;
-    };
-
-    setAchievements(generateAchievements());
-  }, [stats]);
-
-  const unlockedCount = achievements.filter(a => a.unlocked).length;
-  const totalCount = achievements.length;
+  const findings = buildFindings(stats);
+  const hits = findings.filter(finding => finding.hit);
+  const misses = findings.filter(finding => !finding.hit);
+  const scope = viewScope(stats);
 
   return (
-    <div className="bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-700">
-      <div className="flex items-center gap-3 mb-6">
-        <Trophy className="w-6 h-6 text-yellow-400" />
-        <h2 className="text-2xl font-bold text-white">Achievements</h2>
-        <div className="ml-auto bg-gray-700 rounded-full px-3 py-1 border border-gray-600">
-          <span className="text-sm font-medium text-gray-200">
-            {unlockedCount}/{totalCount}
-          </span>
+    <div className="rounded-2xl border border-gray-700 bg-gray-800 p-6 shadow-lg sm:p-8">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-bold text-white">Findings</h2>
+          <p className="mt-1 text-sm text-gray-400">Patterns in this view. They change when the source changes.</p>
         </div>
+        <span className="rounded-full border border-gray-600 bg-gray-900/70 px-3 py-1 text-xs font-medium text-gray-300">
+          {scope}
+        </span>
       </div>
 
-      {/* Progress Bar */}
-      <div className="mb-8">
-        <div className="flex justify-between text-sm text-gray-300 mb-2">
-          <span>Overall Progress</span>
-          <span className="font-medium">{Math.round((unlockedCount / totalCount) * 100)}%</span>
-        </div>
-        <div className="w-full bg-gray-700 rounded-full h-2.5">
-          <div
-            className="bg-gradient-to-r from-yellow-500 to-orange-500 h-2.5 rounded-full transition-all duration-1000"
-            style={{ width: `${(unlockedCount / totalCount) * 100}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Achievements Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {achievements.map((achievement) => (
-          <div
-            key={achievement.id}
-            className={`relative rounded-xl p-6 transition-all duration-300 ${
-              achievement.unlocked 
-                ? 'bg-gradient-to-r ' + achievement.color + ' text-white shadow-lg border border-transparent' 
-                : 'bg-gray-700/50 text-gray-300 border border-gray-600'
-            }`}
-          >
-            {/* Lock/Check Icon */}
-            <div className={`absolute top-4 right-4 ${achievement.unlocked ? 'text-white' : 'text-gray-300'}`}>
-              {achievement.unlocked ? (
-                <CheckCircle className="w-5 h-5 text-white" />
-              ) : (
-                <Lock className="w-5 h-5 text-gray-400" />
-              )}
+      {findings.length === 0 ? (
+        <p className="text-sm text-gray-400">This view has no songs to measure.</p>
+      ) : (
+        <>
+          {hits.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {hits.map(finding => (
+                <HitCard key={finding.id} finding={finding} />
+              ))}
             </div>
+          ) : (
+            <p className="text-sm text-gray-400">Nothing in this view clears a mark. The measurements are below.</p>
+          )}
 
-            {/* Achievement Icon */}
-            <div className={`mb-4 ${achievement.unlocked ? 'text-white' : 'text-gray-400'}`}>
-              {achievement.icon}
-            </div>
-
-            {/* Achievement Details */}
-            <h3 className={`text-lg font-bold mb-2 ${achievement.unlocked ? 'text-white' : 'text-gray-200'}`}>
-              {achievement.title}
-            </h3>
-            <p className={`text-sm mb-4 ${achievement.unlocked ? 'text-white/90' : 'text-gray-500'}`}>
-              {achievement.description}
-            </p>
-            {/* Progress Bar */}
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs">
-                <span className={achievement.unlocked ? 'text-white/80' : 'text-gray-500'}>
-                  Progress
-                </span>
-                <span className={achievement.unlocked ? 'text-white/80' : 'text-gray-500'}>
-                  {achievement.id === 'time_traveler'
-                    ? `${Math.round((achievement.progress ?? 0) / (60 * 60 * 1000))}h / ${Math.round((achievement.maxProgress ?? 0) / (60 * 60 * 1000))}h`
-                    : `${achievement.progress} / ${achievement.maxProgress}`
-                  }
-                </span>
-              </div>
-              <div className={`w-full rounded-full h-1.5 ${
-                achievement.unlocked ? 'bg-white/20' : 'bg-gray-700'
-              }`}>
-                <div
-                  className={`h-1.5 rounded-full transition-all duration-1000 ${
-                    achievement.unlocked ? 'bg-white' : 'bg-gray-500'
-                  }`}
-                  style={{
-                    width: `${((achievement.progress ?? 0) / (achievement.maxProgress ?? 1)) * 100}%`,
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Unlocked Badge */}
-            {achievement.unlocked && (
-              <div className="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">
-                UNLOCKED!
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Achievement Stats */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-r from-green-900/30 to-emerald-900/30 rounded-lg p-4 text-center border border-green-800/30">
-          <div className="text-2xl font-bold text-green-400">{unlockedCount}</div>
-          <div className="text-sm text-gray-300">Achievements Unlocked</div>
-        </div>
-        <div className="bg-gradient-to-r from-blue-900/30 to-cyan-900/30 rounded-lg p-4 text-center border border-blue-800/30">
-          <div className="text-2xl font-bold text-blue-400">{totalCount - unlockedCount}</div>
-          <div className="text-sm text-gray-300">Still Locked</div>
-        </div>
-        <div className="bg-gradient-to-r from-purple-900/30 to-indigo-900/30 rounded-lg p-4 text-center border border-purple-800/30">
-          <div className="text-2xl font-bold text-purple-400">{Math.round((unlockedCount / totalCount) * 100)}%</div>
-          <div className="text-sm text-gray-300">Completion Rate</div>
-        </div>
-      </div>
+          {misses.length > 0 && (
+            <ul className="mt-6 divide-y divide-white/10 text-sm">
+              {misses.map(finding => (
+                <li key={finding.id} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+                  <span className="font-medium text-gray-400">{finding.title}</span>
+                  <span className="text-gray-300 sm:text-right">
+                    {finding.fact}
+                    <span className="mt-0.5 block text-xs text-gray-500">{finding.detail}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
     </div>
   );
 }

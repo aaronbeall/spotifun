@@ -2,195 +2,271 @@
 
 import { useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { Music, Clock, TrendingUp, Heart, Zap, Star, Target, Award, ChevronLeft, ChevronRight, type LucideIcon } from 'lucide-react';
-import { Stats } from "@/types";
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Stats } from '@/types';
+import { buildStorySlides, type StorySlide } from '@/utils/listeningFacts';
 
 interface FunStatsProps {
   stats: Stats;
 }
 
-interface StoryCard {
-  icon: LucideIcon;
-  title: string;
-  value: string;
-  description: string;
-  gradient: string;
+function HourFace({ hour }: { hour: number }) {
+  return (
+    <svg viewBox="0 0 120 120" className="h-28 w-28 shrink-0" aria-hidden>
+      <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1" />
+      {Array.from({ length: 24 }, (_, index) => {
+        const angle = (index / 24) * Math.PI * 2 - Math.PI / 2;
+        const active = index === hour;
+        const inner = active ? 38 : 44;
+        const outer = active ? 54 : 50;
+        return (
+          <line
+            key={index}
+            x1={60 + Math.cos(angle) * inner}
+            y1={60 + Math.sin(angle) * inner}
+            x2={60 + Math.cos(angle) * outer}
+            y2={60 + Math.sin(angle) * outer}
+            stroke={active ? '#fde68a' : 'rgba(255,255,255,0.4)'}
+            strokeWidth={active ? 4 : 1.5}
+            strokeLinecap="round"
+          />
+        );
+      })}
+    </svg>
+  );
 }
 
-export default function FunStats({ stats }: FunStatsProps) {
-  const [current, setCurrent] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const reduceMotion = useReducedMotion();
+function SlideBody({ slide }: { slide: StorySlide }) {
+  if (slide.kind === 'persona') {
+    return (
+      <div className="relative">
+        <div
+          className="pointer-events-none absolute -left-10 -top-16 h-56 w-56 rounded-full blur-3xl"
+          style={{ background: slide.accent ?? '#f472b6', opacity: 0.55 }}
+        />
+        <p className="relative text-4xl font-black italic leading-none tracking-tight text-white sm:text-6xl">
+          {slide.headline}
+        </p>
+      </div>
+    );
+  }
 
-  const formatDuration = (ms: number) => {
-    const minutes = Math.floor(ms / 60000);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
+  if (slide.kind === 'replay') {
+    return (
+      <div className="relative pr-24">
+        <div className="absolute right-0 top-0 rotate-12 rounded-lg border-4 border-white/80 px-3 py-1 text-sm font-black tracking-[0.2em] text-white">
+          ×{slide.replayCount}
+        </div>
+        <p className="text-4xl font-black leading-none tracking-tight text-white sm:text-5xl">{slide.headline}</p>
+      </div>
+    );
+  }
 
-    if (days > 0) return `${days} days`;
-    if (hours > 0) return `${hours} hours`;
-    return `${minutes} minutes`;
-  };
+  if (slide.kind === 'once') {
+    return (
+      <p className="font-serif text-5xl font-light italic tracking-tight text-white sm:text-7xl">
+        {slide.headline}
+      </p>
+    );
+  }
 
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
-  };
+  if (slide.kind === 'run' || slide.kind === 'concentration') {
+    const marks = Math.min(slide.runCount ?? 0, 12);
+    return (
+      <div>
+        <div className="mb-4 flex items-end gap-1.5" aria-hidden>
+          {Array.from({ length: marks }, (_, index) => (
+            <span
+              key={index}
+              className="w-2.5 rounded-full bg-white"
+              style={{ height: `${18 + index * 4}px`, opacity: 0.35 + (index / Math.max(marks, 1)) * 0.65 }}
+            />
+          ))}
+        </div>
+        <p className="text-4xl font-black leading-none tracking-tight text-white sm:text-5xl">{slide.headline}</p>
+      </div>
+    );
+  }
 
-  const calculateListeningPersonality = () => {
-    const { genreDiversity, artistDiversity } = stats.overview;
+  if (slide.kind === 'hour' && slide.hour != null) {
+    return (
+      <div className="flex items-center gap-6">
+        <HourFace hour={slide.hour} />
+        <p className="text-4xl font-black leading-none text-amber-100 sm:text-5xl">{slide.headline}</p>
+      </div>
+    );
+  }
 
-    if (genreDiversity > 0.7 && artistDiversity > 0.6) {
-      return 'Music Explorer';
-    } else if (artistDiversity < 0.4) {
-      return 'Loyal Listener';
-    } else if (genreDiversity > 0.8) {
-      return 'Genre Hopper';
-    } else {
-      return 'Balanced Listener';
-    }
-  };
+  if (slide.kind === 'window' || slide.kind === 'built') {
+    return (
+      <div>
+        <div className="mb-4 flex items-center gap-3" aria-hidden>
+          <span className="h-2.5 w-2.5 rounded-full bg-white" />
+          <span className="h-px flex-1 bg-gradient-to-r from-white via-white/40 to-white" />
+          <span className="h-2.5 w-2.5 rounded-full bg-white" />
+        </div>
+        <p className="text-4xl font-black leading-none tracking-tight text-white sm:text-6xl">{slide.headline}</p>
+      </div>
+    );
+  }
 
-  const cards: StoryCard[] = [
-    {
-      icon: Music,
-      title: "Total Music Time",
-      value: formatDuration(stats.overview.totalDuration),
-      description: "You've spent this much time listening to music!",
-      gradient: "from-indigo-500 via-blue-500 to-sky-400",
-    },
-    {
-      icon: Heart,
-      title: "Your Music Personality",
-      value: calculateListeningPersonality(),
-      description: "Based on your listening habits",
-      gradient: "from-fuchsia-500 via-pink-500 to-rose-400",
-    },
-    {
-      icon: TrendingUp,
-      title: stats.mode === 'recent' ? 'Total Plays' : stats.mode === 'playlist' ? 'In This Playlist' : 'In This List',
-      value: formatNumber(stats.overview.totalPlays),
-      description: stats.mode === 'recent' ? "Songs you've played" : stats.mode === 'playlist' ? 'Songs in this playlist' : 'Spotify-ranked artists or tracks',
-      gradient: "from-emerald-500 via-green-500 to-lime-400",
-    },
-    {
-      icon: Star,
-      title: "Artist Discovery",
-      value: formatNumber(stats.overview.uniqueArtists),
-      description: "Different artists you've explored",
-      gradient: "from-amber-500 via-orange-500 to-yellow-400",
-    },
-    {
-      icon: Zap,
-      title: "Genre Diversity",
-      value: `${Math.round(stats.overview.genreDiversity * 100)}%`,
-      description: "How diverse your music taste is",
-      gradient: "from-violet-500 via-purple-500 to-indigo-400",
-    },
-    {
-      icon: Clock,
-      title: "Average Session",
-      value: `${Math.round(stats.overview.averageSessionLength)} min`,
-      description: "Your typical listening session length",
-      gradient: "from-cyan-500 via-sky-500 to-blue-400",
-    },
-  ];
+  if (slide.kind === 'years' && slide.yearFrom != null && slide.yearTo != null) {
+    return (
+      <div>
+        <div className="flex items-end justify-between gap-4">
+          <span className="text-4xl font-black tabular-nums text-amber-100 sm:text-6xl">{slide.yearFrom}</span>
+          <span className="mb-3 h-px flex-1 bg-gradient-to-r from-amber-200 to-sky-300" />
+          <span className="text-4xl font-black tabular-nums text-sky-100 sm:text-6xl">{slide.yearTo}</span>
+        </div>
+        <div className="mt-2 flex justify-between gap-6 text-xs text-white/70">
+          <span className="max-w-[45%] truncate">{slide.yearFromTitle}</span>
+          <span className="max-w-[45%] truncate text-right">{slide.yearToTitle}</span>
+        </div>
+      </div>
+    );
+  }
 
-  const goTo = (idx: number) => setCurrent((idx + cards.length) % cards.length);
-  const active = cards[current];
-  const ActiveIcon = active.icon;
+  if (slide.kind === 'drift') {
+    return (
+      <div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl bg-black/25 px-4 py-3">
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">Earlier</div>
+            <div className="text-4xl font-black tabular-nums text-white">{slide.earlyPopularity}</div>
+          </div>
+          <div className="rounded-2xl bg-white/15 px-4 py-3">
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70">Later</div>
+            <div className="text-4xl font-black tabular-nums text-white">{slide.latePopularity}</div>
+          </div>
+        </div>
+        <p className="mt-4 text-2xl font-black text-white">{slide.headline}</p>
+      </div>
+    );
+  }
+
+  if (slide.kind === 'length') {
+    return (
+      <div>
+        <div className="mb-3 flex gap-px" aria-hidden>
+          {Array.from({ length: 28 }, (_, index) => (
+            <span
+              key={index}
+              className="w-px bg-white/70"
+              style={{ height: index % 4 === 0 ? 16 : 8 }}
+            />
+          ))}
+        </div>
+        <p className="font-mono text-4xl font-bold tracking-tight text-white sm:text-6xl">{slide.headline}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-700 animate-fade-in">
-      <div className="flex items-center gap-2 mb-4 px-1">
-        <Award className="w-5 h-5 text-yellow-400" />
+    <p className="text-4xl font-black leading-none tracking-tight text-white sm:text-6xl">{slide.headline}</p>
+  );
+}
+
+const SLIDE_BACKGROUNDS: Record<StorySlide['kind'], string> = {
+  persona: 'bg-gray-950',
+  replay: 'bg-gradient-to-br from-rose-600 via-fuchsia-700 to-orange-500',
+  once: 'bg-[#14110e]',
+  run: 'bg-gradient-to-br from-violet-700 via-indigo-800 to-slate-900',
+  hour: 'bg-[#1a1408]',
+  window: 'bg-gradient-to-r from-slate-800 to-cyan-950',
+  years: 'bg-[#10141c]',
+  built: 'bg-gradient-to-br from-emerald-800 to-teal-950',
+  drift: 'bg-gradient-to-br from-orange-700 via-rose-800 to-slate-950',
+  length: 'bg-[#121418]',
+  concentration: 'bg-gradient-to-br from-pink-700 to-purple-950',
+  empty: 'bg-gray-900',
+};
+
+export default function FunStats({ stats }: FunStatsProps) {
+  const slides = buildStorySlides(stats);
+  const storyKey = `${stats.mode}:${stats.timeRange}:${stats.playlist?.id ?? ''}`;
+  const [current, setCurrent] = useState(0);
+  const [seenKey, setSeenKey] = useState(storyKey);
+  const [isPaused, setIsPaused] = useState(false);
+  const reduceMotion = useReducedMotion();
+  if (seenKey !== storyKey) {
+    setSeenKey(storyKey);
+    setCurrent(0);
+  }
+  const index = slides.length === 0 ? 0 : current % slides.length;
+  const active = slides[index];
+
+  const goTo = (next: number) => setCurrent((next + slides.length) % slides.length);
+
+  return (
+    <div className="rounded-2xl border border-gray-700 bg-gray-800 p-4 shadow-lg sm:p-6">
+      <div className="mb-4 px-1">
         <h2 className="text-lg font-bold text-white">Your Music Story</h2>
+        <p className="text-xs text-gray-400">Facts from this view, not a lifetime total.</p>
       </div>
 
-      {/* Story progress segments */}
-      <div className="flex gap-1.5 px-1 mb-3">
-        {cards.map((card, idx) => (
+      <div className="mb-3 flex gap-1.5 px-1">
+        {slides.map((slide, slideIndex) => (
           <button
-            key={idx}
-            onClick={() => goTo(idx)}
-            aria-label={`Go to ${card.title}`}
-            aria-current={idx === current ? 'step' : undefined}
-            className="flex-1 h-1 rounded-full bg-white/15 overflow-hidden focus:outline-none focus-visible:ring-1 focus-visible:ring-white/60"
+            key={slide.id}
+            onClick={() => goTo(slideIndex)}
+            aria-label={`Go to ${slide.kicker}`}
+            aria-current={slideIndex === index ? 'step' : undefined}
+            className="h-1 flex-1 overflow-hidden rounded-full bg-white/15 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/60"
           >
-            {idx === current && !reduceMotion ? (
+            {slideIndex === index && !reduceMotion ? (
               <div
-                key={current}
-                onAnimationEnd={() => goTo(current + 1)}
-                className="h-full bg-white rounded-full animate-progress-fill"
+                key={`${slide.id}-${index}`}
+                onAnimationEnd={() => {
+                  if (!isPaused && slides.length > 1) goTo(index + 1);
+                }}
+                className="h-full animate-progress-fill rounded-full bg-white"
                 style={{ animationPlayState: isPaused ? 'paused' : 'running' }}
               />
-            ) : idx <= current ? (
-              <div className="h-full w-full bg-white rounded-full" />
+            ) : slideIndex <= index ? (
+              <div className="h-full w-full rounded-full bg-white" />
             ) : null}
           </button>
         ))}
       </div>
 
-      {/* Story slide */}
       <div
-        className="relative rounded-2xl group"
+        className="group relative rounded-2xl"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
         <AnimatePresence mode="wait">
           <motion.div
-            key={current}
-            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: 24 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -24 }}
+            key={active.id}
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
             transition={{ duration: 0.35, ease: 'easeOut' }}
-            className={`relative overflow-hidden bg-gradient-to-br ${active.gradient} rounded-2xl p-6 sm:p-8 min-h-[220px] flex flex-col justify-center`}
+            className={`relative min-h-[240px] overflow-hidden rounded-2xl p-6 sm:p-8 ${SLIDE_BACKGROUNDS[active.kind]}`}
           >
-            <ActiveIcon
-              className="absolute -right-6 -bottom-6 w-44 h-44 text-white/10 rotate-[-12deg] pointer-events-none"
-              strokeWidth={1.5}
-            />
-
-            <span className="text-xs font-bold uppercase tracking-widest text-white/70 mb-2">
-              {active.title}
-            </span>
-            <div className="text-4xl sm:text-6xl font-black italic tracking-tight text-white mb-3 drop-shadow-sm break-words">
-              {active.value}
-            </div>
-            <p className="text-sm text-white/80 max-w-xs">{active.description}</p>
+            <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.22em] text-white/60">{active.kicker}</p>
+            <SlideBody slide={active} />
+            <p className="mt-4 max-w-md text-sm leading-relaxed text-white/75">{active.detail}</p>
           </motion.div>
         </AnimatePresence>
 
-        <button
-          onClick={() => goTo(current - 1)}
-          aria-label="Previous stat"
-          className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/20 text-white opacity-0 group-hover:opacity-100 hover:bg-black/40 transition-opacity focus:opacity-100 focus:outline-none"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <button
-          onClick={() => goTo(current + 1)}
-          aria-label="Next stat"
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/20 text-white opacity-0 group-hover:opacity-100 hover:bg-black/40 transition-opacity focus:opacity-100 focus:outline-none"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Fun facts */}
-      <div className="mt-4 flex flex-wrap gap-2 px-1">
-        <div className="flex items-center gap-2 bg-gray-700/40 border border-gray-600/50 rounded-full px-3 py-1.5 text-xs text-gray-200">
-          <Target className="w-3.5 h-3.5 text-green-400 shrink-0" />
-          <span className="capitalize">{stats.genres[0]?.genre || 'Unknown'}</span>
-          {(stats.mode === 'recent' || stats.mode === 'playlist') && (
-            <span className="text-gray-400">· {formatNumber(stats.genres[0]?.playCount || 0)} {stats.mode === 'playlist' ? 'songs' : 'plays'}</span>
-          )}
-        </div>
-        <div className="flex items-center gap-2 bg-gray-700/40 border border-gray-600/50 rounded-full px-3 py-1.5 text-xs text-gray-200">
-          <TrendingUp className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-          <span>{Math.round(stats.overview.artistDiversity * 100)}% new artists per play</span>
-        </div>
+        {slides.length > 1 && (
+          <>
+            <button
+              onClick={() => goTo(index - 1)}
+              aria-label="Previous story"
+              className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/25 p-2 text-white opacity-0 transition-opacity hover:bg-black/45 focus:opacity-100 focus:outline-none group-hover:opacity-100"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => goTo(index + 1)}
+              aria-label="Next story"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/25 p-2 text-white opacity-0 transition-opacity hover:bg-black/45 focus:opacity-100 focus:outline-none group-hover:opacity-100"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

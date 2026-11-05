@@ -3,135 +3,237 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'VACRS and personas — Spotifun',
-  description: 'How Spotifun scores music on five traits and snaps that score, plus your listening habits, into one of 64 personas.',
+  description: 'How Spotifun scores music on five traits, then snaps two of them plus four listening facts into one of 64 personas.',
 };
 
-const TRAITS = [
-  ['Valence', 'Unpleasant', 'Pleasant', 'Emotional tone. Dark, tense, or sad on one side. Bright or cheerful on the other.'],
-  ['Arousal', 'Calm', 'Energetic', 'How activated the music feels. Ambient and slow versus fast, loud, and driving.'],
-  ['Complexity', 'Simple', 'Complex', 'How intricate the music is. Straightforward and repetitive versus dense and shifting.'],
-  ['Rawness', 'Polished', 'Raw', 'Production. Clean studio finish versus lo-fi, live, or gritty.'],
-  ['Social presence', 'Solitary', 'Communal', 'Whether the music feels like a private listen or a room full of people.'],
+const STEPS = [
+  { n: '1', title: 'Genres', text: 'Tags on the artists in the view you have open.' },
+  { n: '2', title: 'Five scores', text: 'Each tag sits on five traits. The view is their weighted average.' },
+  { n: '3', title: 'Snap two', text: 'Mood and energy are cut at the middle. The other three scores stay as they are.' },
+  { n: '4', title: 'Four facts', text: 'Genre spread, popularity, loyalty, and era come from the library, not from VACRS.' },
+  { n: '5', title: 'One name', text: 'Six yes-or-no answers pick one of 64 personas.' },
 ];
 
-const SWITCHES = [
-  ['Mood', 'Darker', 'Brighter', 'VACRS valence, split at the midpoint.'],
-  ['Energy', 'Calm', 'Energetic', 'VACRS arousal, split at the midpoint.'],
-  ['Genre spread', 'Focused', 'Eclectic', 'How many distinct genres you have, relative to the genre tags on those artists.'],
-  ['Popularity', 'Niche', 'Mainstream', 'Average Spotify popularity. 50 is the line.'],
-  ['Artist loyalty', 'Wanderer', 'Loyal', 'Returning to the same artists counts as loyal. Sampling widely counts as wandering.'],
-  ['Era', 'Classic', 'Current', 'Average release year. Within the last five years counts as current.'],
+const AXES = [
+  { name: 'Valence', low: 'Unpleasant', high: 'Pleasant', meaning: 'Dark or sad, through to bright or cheerful.', from: '#312e81', to: '#fbbf24' },
+  { name: 'Arousal', low: 'Calm', high: 'Energetic', meaning: 'Slow and ambient, through to fast and driving.', from: '#0c4a6e', to: '#fb7185' },
+  { name: 'Complexity', low: 'Simple', high: 'Complex', meaning: 'Repetitive and direct, through to dense and shifting.', from: '#334155', to: '#a78bfa' },
+  { name: 'Rawness', low: 'Polished', high: 'Raw', meaning: 'Clean studio finish, through to lo-fi, live, or gritty.', from: '#94a3b8', to: '#d97706' },
+  { name: 'Social presence', low: 'Solitary', high: 'Communal', meaning: 'A private listen, through to a room full of people.', from: '#1e1b4b', to: '#f472b6' },
 ];
+
+const FACTS = [
+  { name: 'Genre spread', low: 'Focused', high: 'Eclectic', line: 'Above 0.5 is eclectic. Exactly 0.5 stays focused.' },
+  { name: 'Popularity', low: 'Niche', high: 'Mainstream', line: 'Average Spotify popularity. 50, and anything under it, stays niche.' },
+  { name: 'Artist loyalty', low: 'Wanderer', high: 'Loyal', line: 'Returning to the same artists is loyal. A diversity of 0.5 counts as wandering.' },
+  { name: 'Era', low: 'Classic', high: 'Current', line: 'Average release year. Five years ago, or newer, counts as current.' },
+];
+
+const HOPPER = [
+  ['Mood', 'Brighter'],
+  ['Energy', 'Energetic'],
+  ['Genre spread', 'Eclectic'],
+  ['Popularity', 'Mainstream'],
+  ['Loyalty', 'Wanderer'],
+  ['Era', 'Current'],
+];
+
+function Axis({
+  name,
+  low,
+  high,
+  meaning,
+  from,
+  to,
+}: {
+  name: string;
+  low: string;
+  high: string;
+  meaning: string;
+  from: string;
+  to: string;
+}) {
+  return (
+    <div>
+      <h3 className="mb-2 text-sm font-semibold text-white">{name}</h3>
+      <div
+        className="relative h-3 rounded-full"
+        style={{ background: `linear-gradient(90deg, ${from}, ${to})` }}
+        role="img"
+        aria-label={`${name}, from ${low} at 0 to ${high} at 1. The middle is 0.5.`}
+      >
+        <span className="absolute left-1/2 top-1/2 h-5 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow" />
+      </div>
+      <div className="mt-1.5 flex justify-between text-[11px] uppercase tracking-wide text-gray-500">
+        <span>0 · {low}</span>
+        <span>0.5</span>
+        <span>{high} · 1</span>
+      </div>
+      <p className="mt-1 text-sm text-gray-400">{meaning}</p>
+    </div>
+  );
+}
 
 export default function VacrsPage() {
   return (
-    <article className="space-y-12">
+    <article className="space-y-14">
       <header>
         <p className="text-xs font-semibold uppercase tracking-widest text-violet-300">
           <Link href="/about" className="hover:text-violet-200">About</Link>
           <span className="text-gray-600"> / </span>
           VACRS
         </p>
-        <h1 className="mt-2 text-4xl font-bold tracking-tight text-white">VACRS, and the persona it names</h1>
-        <p className="mt-4 text-lg leading-relaxed">
-          VACRS is Spotifun&apos;s trait model. It places music on five axes from 0 to 1, with 0.5 as neutral.
-          A persona is what you get when two of those axes, plus four facts about how you listen, are each
-          forced to one side. There are 64 combinations, and each one has a name.
+        <h1 className="mt-2 text-4xl font-bold tracking-tight text-white">How a persona gets its name</h1>
+        <p className="mt-4 text-lg leading-relaxed text-gray-300">
+          VACRS scores the music from 0 to 1 on five traits. The persona keeps only two of those scores,
+          adds four facts about how you listen, and looks up one of 64 names.
         </p>
       </header>
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-white">Five traits, not genres</h2>
-        <p>
-          Genres are the input. Traits are the description. A genre string is matched against a taxonomy.
-          Tags that do not match are left out, which is why the profile also reports coverage: how much of
-          the genre weight actually landed on a known trait. Artists with only a couple of Spotify genres
-          may pick up extra tags from Last.fm before that match runs.
-        </p>
-        <p>
-          Each included genre carries a score on every axis. Those scores are averaged, weighted by how often
-          the genre shows up in the view you have open. Recently played tracks weight by plays. A playlist
-          weights by the songs in it. The spectrum card is that average, still on a continuous scale.
-        </p>
-        <div className="overflow-x-auto rounded-xl border border-white/10">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-gray-500">
-              <tr>
-                <th className="px-4 py-3 font-medium">Trait</th>
-                <th className="px-4 py-3 font-medium">0</th>
-                <th className="px-4 py-3 font-medium">1</th>
-                <th className="px-4 py-3 font-medium">What it means</th>
-              </tr>
-            </thead>
-            <tbody>
-              {TRAITS.map(([name, low, high, meaning]) => (
-                <tr key={name} className="border-t border-white/10">
-                  <td className="px-4 py-3 font-medium text-white">{name}</td>
-                  <td className="px-4 py-3 text-gray-400">{low}</td>
-                  <td className="px-4 py-3 text-gray-400">{high}</td>
-                  <td className="px-4 py-3">{meaning}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <ol className="grid gap-3 sm:grid-cols-5">
+        {STEPS.map(step => (
+          <li key={step.n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+            <span className="font-mono text-xs text-violet-300">{step.n}</span>
+            <h2 className="mt-2 text-sm font-semibold text-white">{step.title}</h2>
+            <p className="mt-1 text-xs leading-relaxed text-gray-400">{step.text}</p>
+          </li>
+        ))}
+      </ol>
+
+      <section className="space-y-6">
+        <div>
+          <h2 className="text-xl font-semibold text-white">1–2. Genres become five scores</h2>
+          <p className="mt-2 text-sm leading-relaxed">
+            A genre tag is matched to a known trait profile. Tags that do not match are left out, which is
+            the coverage number on the profile. Thin Spotify genres can pick up Last.fm tags first.
+            Plays weight a recent-play view. Songs weight a playlist. The spectrum card is this average,
+            still on a continuous scale. The mark in the middle of each bar is 0.5, neutral.
+          </p>
+        </div>
+        <div className="space-y-5">
+          {AXES.map(axis => (
+            <Axis key={axis.name} {...axis} />
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-6">
+        <div>
+          <h2 className="text-xl font-semibold text-white">3. Two scores snap. Three do not.</h2>
+          <p className="mt-2 text-sm leading-relaxed">
+            Mood is valence. Energy is arousal. Above 0.5 is brighter or energetic. Exactly 0.5 stays
+            darker or calm. Complexity, rawness, and social presence never choose the name.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-2xl border border-violet-400/30 bg-violet-400/[0.06] p-5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-violet-300">Names the persona</p>
+            <div className="mt-4 overflow-hidden rounded-full text-center text-xs font-semibold" role="img" aria-label="A score cut at 0.5. The left half is the low side. The right half is the high side.">
+              <div className="flex h-11">
+                <div className="flex flex-1 items-center justify-center bg-indigo-950 text-indigo-200">0.5 and below</div>
+                <div className="flex flex-1 items-center justify-center bg-amber-300 text-amber-950">Above 0.5</div>
+              </div>
+            </div>
+            <ul className="mt-4 space-y-2 text-sm text-gray-300">
+              <li className="flex justify-between gap-3">
+                <span className="text-white">Valence</span>
+                <span className="text-gray-400">Unpleasant → Pleasant</span>
+              </li>
+              <li className="flex justify-between gap-3">
+                <span className="text-white">Arousal</span>
+                <span className="text-gray-400">Calm → Energetic</span>
+              </li>
+            </ul>
+          </div>
+          <div className="rounded-2xl border border-white/10 p-5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">Stays on the spectrum</p>
+            <ul className="mt-4 space-y-3 text-sm">
+              <li>
+                <span className="font-medium text-white">Complexity</span>
+                <span className="text-gray-400"> · simple to complex</span>
+              </li>
+              <li>
+                <span className="font-medium text-white">Rawness</span>
+                <span className="text-gray-400"> · polished to raw</span>
+              </li>
+              <li>
+                <span className="font-medium text-white">Social presence</span>
+                <span className="text-gray-400"> · solitary to communal</span>
+              </li>
+            </ul>
+            <p className="mt-4 text-sm leading-relaxed text-gray-400">
+              You still see these on the spectrum card. They are not asked when the persona is named.
+            </p>
+          </div>
         </div>
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-white">Six switches, one name</h2>
-        <p>
-          The persona does not keep the decimals. It asks six yes-or-no questions and looks the answer up
-          in a complete table. Every combination maps to exactly one listener. Two questions come straight
-          from VACRS. The other four come from the shape of the library, not from the trait score.
-        </p>
-        <div className="overflow-x-auto rounded-xl border border-white/10">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-gray-500">
-              <tr>
-                <th className="px-4 py-3 font-medium">Switch</th>
-                <th className="px-4 py-3 font-medium">One side</th>
-                <th className="px-4 py-3 font-medium">The other</th>
-                <th className="px-4 py-3 font-medium">Source</th>
-              </tr>
-            </thead>
-            <tbody>
-              {SWITCHES.map(([name, low, high, source]) => (
-                <tr key={name} className="border-t border-white/10">
-                  <td className="px-4 py-3 font-medium text-white">{name}</td>
-                  <td className="px-4 py-3 text-gray-400">{low}</td>
-                  <td className="px-4 py-3 text-gray-400">{high}</td>
-                  <td className="px-4 py-3">{source}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div>
+          <h2 className="text-xl font-semibold text-white">4. Four facts from the library</h2>
+          <p className="mt-2 text-sm leading-relaxed">
+            These are not VACRS scores. Each one is still forced to a side before the name is chosen.
+          </p>
         </div>
-        <p>
-          Valence, arousal, and genre spread use a strict midpoint: exactly 0.5 stays on the low side,
-          which means darker, calm, and focused. Popularity at 50 stays niche. A listener who splits plays
-          evenly enough to land on 0.5 artist diversity counts as a wanderer. Era runs the other way: an
-          average release year five years ago, or newer, counts as current.
-        </p>
-        <p>
-          A few of the names that fall out of that grid: The Playlist Hopper is eclectic, mainstream, wandering,
-          current, brighter, and energetic. The Shadow Curator is eclectic, niche, loyal, current, darker, and calm.
-          The Melancholy Purist is focused, mainstream, loyal, classic, darker, and calm.
-        </p>
+        <ul className="divide-y divide-white/10 overflow-hidden rounded-2xl border border-white/10">
+          {FACTS.map(fact => (
+            <li key={fact.name} className="grid gap-3 bg-white/[0.02] px-4 py-4 sm:grid-cols-[9rem_1fr] sm:items-center">
+              <div>
+                <h3 className="text-sm font-semibold text-white">{fact.name}</h3>
+                <p className="mt-1 text-xs text-gray-500">{fact.low} · {fact.high}</p>
+              </div>
+              <p className="text-sm text-gray-300">{fact.line}</p>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-white">What VACRS does not decide</h2>
-        <p>
-          Complexity, rawness, and social presence stay on the spectrum. They do not pick the persona name.
-          The portrait drawn for a persona borrows them back as a picture of the six switches: an eclectic
-          listener is drawn as complex, a niche listener as raw, and a wanderer as communal. That picture is
-          a translation of the persona, not a second measurement of the songs.
-        </p>
-        <p>
-          Vibes are a different reading of the same five scores. A vibe is whichever preset profile sits
-          nearest the continuous average. The persona is the named cell in the six-switch table. They can
-          agree in spirit and still not be the same sentence.
-        </p>
+        <div>
+          <h2 className="text-xl font-semibold text-white">5. Six answers, one name</h2>
+          <p className="mt-2 text-sm leading-relaxed">
+            Two sides on six questions is 64 combinations. Every combination has exactly one persona.
+            This is one of them.
+          </p>
+        </div>
+        <div className="rounded-2xl border border-pink-400/30 bg-pink-500/[0.07] p-6">
+          <p className="text-xs font-semibold uppercase tracking-widest text-pink-300">Example</p>
+          <h3 className="mt-2 text-3xl font-black italic tracking-tight text-white">The Playlist Hopper</h3>
+          <ul className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {HOPPER.map(([question, answer]) => (
+              <li key={question} className="rounded-xl bg-black/30 px-3 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-pink-200/70">{question}</p>
+                <p className="mt-1 text-sm font-semibold text-white">{answer}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-sm text-pink-100/80">
+            Flip any one of those six and the name changes. The Shadow Curator, for instance, is eclectic,
+            niche, loyal, current, darker, and calm.
+          </p>
+        </div>
+        <div className="flex items-center gap-3 text-sm text-gray-400" aria-hidden>
+          <span className="font-mono text-violet-300">2 × 2 × 2 × 2 × 2 × 2</span>
+          <span className="h-px flex-1 bg-white/10" />
+          <span className="font-semibold text-white">64 names</span>
+        </div>
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-2">
+        <div className="rounded-2xl border border-white/10 p-5">
+          <h2 className="text-base font-semibold text-white">The portrait is a drawing of the name</h2>
+          <p className="mt-2 text-sm leading-relaxed">
+            The artwork does not remeasure the songs. It redraws the six answers: eclectic becomes complex,
+            niche becomes raw, and wandering becomes communal.
+          </p>
+        </div>
+        <div className="rounded-2xl border border-white/10 p-5">
+          <h2 className="text-base font-semibold text-white">A vibe is the nearest score</h2>
+          <p className="mt-2 text-sm leading-relaxed">
+            A vibe matches the five continuous scores to the closest preset. The persona is the named cell
+            in the six-answer table. They can sound alike and still not be the same result.
+          </p>
+        </div>
       </section>
 
       <p>

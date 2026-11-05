@@ -94,6 +94,24 @@ export interface StatsOverview {
 export type TimeRange = 'short_term' | 'medium_term' | 'long_term';
 export type DataMode = 'recent' | 'topArtists' | 'topTracks' | 'playlist';
 
+/** One Spotify time range, summarized so a view can be set next to the others. */
+export interface EraSnapshot {
+  timeRange: TimeRange;
+  label: string;
+  /** Average popularity, 0–100. Top tracks when Spotify returns them, otherwise top artists. */
+  popularity: number;
+  /** Unique genres divided by genre tags, same ratio as the profile overview. */
+  genreDiversity: number;
+  valence: number;
+  arousal: number;
+  artists: number;
+  tracks: number;
+}
+
+export interface ErasResponse {
+  eras: EraSnapshot[];
+}
+
 /** Saved-tracks library, which Spotify does not return from the playlists endpoint. */
 export const LIKED_SONGS_ID = 'liked';
 

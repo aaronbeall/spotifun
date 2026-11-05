@@ -1,177 +1,197 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Trophy, Medal, Award, Crown, Users, TrendingUp, Star } from 'lucide-react';
-import { UserRanking, Stats } from '@/types';
+import { useEffect, useMemo, useState } from 'react';
+import { EraSnapshot, ErasResponse, Stats } from '@/types';
+import {
+  currentViewSnapshot,
+  readShift,
+  type ShiftMetric,
+  type ViewSnapshot,
+} from '@/utils/listeningFacts';
 
-interface Rankings {
+interface RankingsProps {
   stats: Stats;
 }
 
-export default function Rankings({ stats }: Rankings) {
-  const [rankings, setRankings] = useState<UserRanking[]>([]);
-  const [userRank, setUserRank] = useState<UserRanking | null>(null);
+const ERA_COLOR: Record<EraSnapshot['timeRange'], string> = {
+  short_term: '#67e8f9',
+  medium_term: '#c4b5fd',
+  long_term: '#fbbf24',
+};
+
+const CURRENT_COLOR = '#fb7185';
+
+const LANES: {
+  key: ShiftMetric;
+  label: string;
+  low: string;
+  high: string;
+  position: (snapshot: ViewSnapshot | EraSnapshot) => number;
+  format: (snapshot: ViewSnapshot | EraSnapshot) => string;
+}[] = [
+  {
+    key: 'popularity',
+    label: 'Popularity',
+    low: 'Niche',
+    high: 'Mainstream',
+    position: item => item.popularity / 100,
+    format: item => String(Math.round(item.popularity)),
+  },
+  {
+    key: 'genreDiversity',
+    label: 'Genre spread',
+    low: 'Focused',
+    high: 'Eclectic',
+    position: item => item.genreDiversity,
+    format: item => `${Math.round(item.genreDiversity * 100)}%`,
+  },
+  {
+    key: 'valence',
+    label: 'Mood',
+    low: 'Darker',
+    high: 'Brighter',
+    position: item => item.valence,
+    format: item => item.valence.toFixed(2),
+  },
+  {
+    key: 'arousal',
+    label: 'Energy',
+    low: 'Calm',
+    high: 'Energetic',
+    position: item => item.arousal,
+    format: item => item.arousal.toFixed(2),
+  },
+];
+
+function clampPercent(value: number): string {
+  return `${Math.min(100, Math.max(0, value * 100))}%`;
+}
+
+export default function Rankings({ stats }: RankingsProps) {
+  const current = useMemo(() => currentViewSnapshot(stats), [stats]);
+  const [eras, setEras] = useState<EraSnapshot[] | null>(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    // Mock rankings data - in a real app, this would come from an API
-    const generateMockRankings = (): { rankings: UserRanking[]; userRank: UserRanking } => {
-      const mockUsers: UserRanking[] = [
-        { id: 'user1', name: 'MusicMaster2024', score: 9500, rank: 1 },
-        { id: 'user2', name: 'VinylCollector', score: 8900, rank: 2 },
-        { id: 'user3', name: 'BeatHunter', score: 8200, rank: 3 },
-        { id: 'user4', name: 'SoundExplorer', score: 7800, rank: 4 },
-        { id: 'user5', name: 'MelodyMaker', score: 7200, rank: 5 },
-        { id: 'user6', name: 'RhythmRider', score: 6800, rank: 6 },
-        { id: 'user7', name: 'HarmonySeeker', score: 6400, rank: 7 },
-        { id: 'user8', name: 'TuneTracker', score: 5900, rank: 8 },
-        { id: 'user9', name: 'AudioAdventurer', score: 5400, rank: 9 },
-        { id: 'user10', name: 'SongSurfer', score: 4900, rank: 10 },
-      ];
-
-      // Calculate user's score based on their stats
-      const userScore = Math.round(
-        stats.overview.totalPlays * 0.4 +
-        stats.overview.uniqueArtists * 2 +
-        stats.overview.uniqueTracks * 0.5 +
-        stats.overview.genreDiversity * 1000
-      );
-
-      // Insert user into rankings
-      const allUsers = [...mockUsers, { id: 'current_user', name: 'You', score: userScore, rank: 0 }];
-      allUsers.sort((a, b) => b.score - a.score);
-
-      // Update ranks
-      allUsers.forEach((user, index) => {
-        user.rank = index + 1;
+    let cancelled = false;
+    fetch('/api/stats/eras')
+      .then(response => {
+        if (!response.ok) throw new Error('eras failed');
+        return response.json() as Promise<ErasResponse>;
+      })
+      .then(data => {
+        if (!cancelled) setEras(data.eras);
+      })
+      .catch(() => {
+        if (!cancelled) setFailed(true);
       });
-
-      const userRankData = allUsers.find(user => user.id === 'current_user')!;
-      const topRankings = allUsers.slice(0, 10);
-
-      return { rankings: topRankings, userRank: userRankData };
+    return () => {
+      cancelled = true;
     };
+  }, []);
 
-    const { rankings, userRank } = generateMockRankings();
-    setRankings(rankings);
-    setUserRank(userRank);
-  }, [stats]);
-
-  const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Crown className="w-5 h-5 text-yellow-500" />;
-    if (rank === 2) return <Medal className="w-5 h-5 text-gray-400" />;
-    if (rank === 3) return <Award className="w-5 h-5 text-orange-500" />;
-    return <Trophy className="w-5 h-5 text-gray-400" />;
-  };
-
-  const getRankColor = (rank: number) => {
-    if (rank === 1) return 'from-yellow-500 to-yellow-700 border-yellow-600';
-    if (rank === 2) return 'from-gray-500 to-gray-700 border-gray-600';
-    if (rank === 3) return 'from-orange-500 to-orange-700 border-orange-600';
-    return 'from-gray-700 to-gray-900 border-gray-600';
-  };
-
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
-  };
+  const shift = eras ? readShift(current, eras, stats) : null;
 
   return (
-    <div className="bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-700">
-      <div className="flex items-center gap-3 mb-6">
-        <Users className="w-6 h-6 text-blue-400" />
-        <h2 className="text-2xl font-bold text-white">Global Rankings</h2>
+    <div className="rounded-2xl border border-gray-700 bg-gray-800 p-6 shadow-lg sm:p-8">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-white">You, over time</h2>
+        <p className="mt-1 max-w-2xl text-sm text-gray-400">
+          The diamond is the source selected above. The dots are your top tracks and top artists in each
+          Spotify period, without Last.fm.
+        </p>
       </div>
 
-      {/* User's Rank */}
-      {userRank && (
-        <div className={`bg-gradient-to-r ${getRankColor(userRank.rank)} rounded-xl p-6 text-white mb-8 border`}>
-          <div className="flex items-center gap-4">
-            <div className="text-4xl font-bold drop-shadow-md">#{userRank.rank}</div>
-            <div className="flex-1">
-              <h3 className="text-xl font-bold">{userRank.name}</h3>
-              <p className="text-white/90">Your current ranking</p>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold">{formatNumber(userRank.score)}</div>
-              <div className="text-sm text-white/80">points</div>
-            </div>
-          </div>
+      {failed && (
+        <p className="text-sm text-gray-400">Spotify didn&apos;t return the other time ranges.</p>
+      )}
+
+      {!failed && !eras && (
+        <div className="space-y-3" aria-hidden>
+          {LANES.map(lane => (
+            <div key={lane.key} className="h-16 animate-pulse rounded-full bg-gray-900/80" />
+          ))}
         </div>
       )}
 
-      {/* Top Rankings */}
-      <div className="space-y-3">
-        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-green-400" />
-          Top 10 Music Lovers
-        </h3>
+      {eras && !shift && (
+        <p className="text-sm text-gray-400">Spotify has no top artists or tracks for these periods yet.</p>
+      )}
 
-        {rankings.map(user => (
-          <div
-            key={user.id}
-            className={`flex items-center gap-4 p-4 rounded-lg transition-all duration-200 ${
-              user.id === 'current_user'
-                ? 'bg-green-900/30 border-2 border-green-700/50 hover:border-green-600/70'
-                : 'bg-gray-700/50 hover:bg-gray-700/70 border border-gray-600/50'
-            }`}
+      {shift && eras && (
+        <>
+          <p
+            className={
+              shift.standout
+                ? 'mb-8 max-w-3xl text-2xl font-black italic leading-snug text-white'
+                : 'mb-8 max-w-3xl text-lg leading-snug text-gray-300'
+            }
           >
-            {/* Rank */}
-            <div className="flex items-center gap-2">
-              {getRankIcon(user.rank)}
-              <span className="text-lg font-bold text-gray-200">#{user.rank}</span>
-            </div>
+            {shift.sentence}
+          </p>
 
-            {/* User Info */}
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <span className={`font-medium ${user.id === 'current_user' ? 'text-green-300' : 'text-white'}`}>
-                  {user.name}
-                </span>
-                {user.id === 'current_user' && (
-                  <span className="bg-green-600 text-white text-xs px-2 py-1 rounded-full font-medium">
-                    YOU
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Score */}
-            <div className="text-right">
-              <div className="text-lg font-bold text-white">{formatNumber(user.score)}</div>
-              <div className="text-xs text-gray-300">points</div>
-            </div>
+          <div className="space-y-6">
+            {LANES.map(lane => {
+              const featured = shift.standout === lane.key;
+              return (
+                <div
+                  key={lane.key}
+                  className={featured ? 'rounded-2xl bg-rose-950/40 p-4 ring-1 ring-rose-400/50' : ''}
+                >
+                  <div className="mb-2 flex items-baseline justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-white">{lane.label}</span>
+                      {featured && (
+                        <span className="rounded-full bg-rose-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-rose-200">
+                          The gap
+                        </span>
+                      )}
+                    </div>
+                    {current.plot && (
+                      <span className="font-mono text-sm text-rose-200">{lane.format(current)}</span>
+                    )}
+                  </div>
+                  <div className="relative h-12 rounded-full bg-gray-950/80">
+                    <div className="absolute inset-x-4 top-1/2 h-px -translate-y-1/2 bg-white/15" />
+                    {eras.filter(era => era.artists > 0 || era.tracks > 0).map(era => (
+                      <span
+                        key={era.timeRange}
+                        className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-gray-950"
+                        style={{ left: clampPercent(lane.position(era)), background: ERA_COLOR[era.timeRange] }}
+                        title={`${era.label}: ${lane.format(era)}`}
+                      />
+                    ))}
+                    {current.plot && (
+                      <span
+                        className="absolute top-1/2 z-10 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-[3px] ring-2 ring-gray-950"
+                        style={{ left: clampPercent(lane.position(current)), background: CURRENT_COLOR }}
+                        title={`${current.label}: ${lane.format(current)}`}
+                      />
+                    )}
+                  </div>
+                  <div className="mt-1 flex justify-between text-[10px] uppercase tracking-widest text-gray-500">
+                    <span>{lane.low}</span>
+                    <span>{lane.high}</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        ))}
-      </div>
 
-      {/* Ranking Categories */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-r from-blue-900/30 to-cyan-900/30 rounded-lg p-4 text-center border border-blue-800/30">
-          <Star className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-          <div className="text-lg font-bold text-blue-400">Total Plays</div>
-          <div className="text-sm text-gray-300">40% of score</div>
-        </div>
-        <div className="bg-gradient-to-r from-purple-900/30 to-pink-900/30 rounded-lg p-4 text-center border border-purple-800/30">
-          <Users className="w-8 h-8 text-purple-400 mx-auto mb-2" />
-          <div className="text-lg font-bold text-purple-400">Artist Diversity</div>
-          <div className="text-sm text-gray-300">30% of score</div>
-        </div>
-        <div className="bg-gradient-to-r from-green-900/30 to-emerald-900/30 rounded-lg p-4 text-center border border-green-800/30">
-          <Trophy className="w-8 h-8 text-green-400 mx-auto mb-2" />
-          <div className="text-lg font-bold text-green-400">Genre Exploration</div>
-          <div className="text-sm text-gray-300">30% of score</div>
-        </div>
-      </div>
-
-      {/* Ranking Info */}
-      <div className="mt-6 bg-gray-700/30 rounded-lg p-4 border border-gray-600/30">
-        <h4 className="font-semibold text-white mb-2">How Rankings Work</h4>
-        <p className="text-sm text-gray-300">
-          Rankings are calculated based on your total plays, artist diversity, and genre exploration.
-          The more diverse your listening habits and the more music you discover, the higher your score!
-        </p>
-      </div>
+          <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs text-gray-300">
+            <span className="inline-flex items-center gap-2">
+              <span className="inline-block h-2.5 w-2.5 rotate-45 rounded-[2px]" style={{ background: CURRENT_COLOR }} />
+              {current.label}
+            </span>
+            {eras.filter(era => era.artists > 0 || era.tracks > 0).map(era => (
+              <span key={era.timeRange} className="inline-flex items-center gap-2">
+                <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: ERA_COLOR[era.timeRange] }} />
+                {era.label}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

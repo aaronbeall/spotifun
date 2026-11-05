@@ -29,7 +29,7 @@ export default function Home() {
           
           <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto">
             Discover insights, stats, and fun feedback about your Spotify listening habits. 
-            Get your personalized music profile and unlock achievements!
+            Get a music profile, findings from the view you open, and a comparison with your own listening over time.
           </p>
 
           <button
@@ -67,14 +67,14 @@ export default function Home() {
 
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-white text-center hover:bg-white/20 transition-all duration-300">
             <Trophy className="w-12 h-12 mx-auto mb-4 text-yellow-300" />
-            <h3 className="text-xl font-semibold mb-2">Achievements</h3>
-            <p className="text-white/80">Unlock fun achievements and milestones for your listening journey</p>
+            <h3 className="text-xl font-semibold mb-2">Findings</h3>
+            <p className="text-white/80">Replays, streaks, deep cuts, and the years your songs actually span</p>
           </div>
 
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-white text-center hover:bg-white/20 transition-all duration-300">
             <Users className="w-12 h-12 mx-auto mb-4 text-purple-300" />
-            <h3 className="text-xl font-semibold mb-2">Rankings</h3>
-            <p className="text-white/80">Compare your music habits with other users worldwide</p>
+            <h3 className="text-xl font-semibold mb-2">Over Time</h3>
+            <p className="text-white/80">Set this view next to your top artists from the last month, six months, and all time</p>
           </div>
         </div>
 
