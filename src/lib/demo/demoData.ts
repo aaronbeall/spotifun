@@ -1,13 +1,16 @@
 /**
- * Made-up listening data for demo mode (/demo).
+ * Example listening data for the example profile (/example).
  *
- * Everything here is fictional: artists, albums, tracks and the listener. The objects use
- * the same Spotify Web API shapes the live endpoints return, so the real stats pipeline
- * and dashboard components run on them unchanged. Generation is seeded, so the dataset is
- * the same on every request apart from play timestamps, which are anchored to "now".
+ * The listener is made up, but the artists, albums and songs are real. Artwork and Spotify
+ * links are looked up at runtime (./artwork.ts) and fall back to generated art when that
+ * lookup isn't available. The objects use the same Spotify Web API shapes the live endpoints
+ * return, so the real stats pipeline and dashboard components run on them unchanged.
+ * Generation is seeded, so the dataset is the same on every request apart from play
+ * timestamps, which are anchored to "now".
  */
 import type { ListeningDataSource } from '@/lib/statsPipeline';
 import type { NowPlaying, TimeRange, UserProfile } from '@/types';
+import type { Artwork } from './artwork';
 
 // ---------- Seeded randomness ----------
 
@@ -33,7 +36,6 @@ function hashString(value: string): number {
 }
 
 type Rng = ReturnType<typeof createRng>;
-const pick = <T,>(rng: Rng, items: readonly T[]): T => items[Math.floor(rng() * items.length)];
 const between = (rng: Rng, min: number, max: number) => min + rng() * (max - min);
 
 // ---------- Generated cover art ----------
@@ -76,76 +78,87 @@ const images = (url: string): SpotifyApi.ImageObject[] => [{ url, width: 300, he
 
 // ---------- Catalog ----------
 
+interface AlbumSeed {
+  name: string;
+  year: number;
+  tracks: string[];
+}
+
 interface ArtistSeed {
   name: string;
   genres: string[];
+  /** Rough Spotify popularity (0-100). An estimate, not live data. */
   popularity: number;
-  /** How much the demo listener likes them: [short_term, medium_term, long_term] */
+  /** How much the example listener likes them: [short_term, medium_term, long_term] */
   affinity: [number, number, number];
+  /** Hue for the fallback art used when real artwork can't be looked up */
   hue: number;
   /** Typical track length in minutes */
   length?: [number, number];
+  albums: AlbumSeed[];
 }
 
-// The demo listener: an indie/dream-pop kid with a synthwave habit, a lo-fi study playlist,
-// and a few chaotic detours (yes, the death metal is load-bearing).
+// The example listener: real artists and real songs. A dream-pop and indie kid with a synthwave
+// habit, a lo-fi study playlist, a jazz-nerd streak and a few chaotic detours (yes, the metal is load-bearing).
+// Artwork and Spotify links are looked up at runtime (see ./artwork.ts); everything else lives here.
 const ARTIST_SEEDS: ArtistSeed[] = [
-  { name: 'Moonbeam Laundromat', genres: ['dream pop', 'shoegaze', 'indie pop'], popularity: 58, affinity: [9, 10, 9], hue: 265 },
-  { name: 'Neon Pelican', genres: ['synthwave', 'synthpop', 'electronic'], popularity: 63, affinity: [10, 8, 6], hue: 320 },
-  { name: 'The Velvet Toasters', genres: ['indie pop', 'indie rock', 'garage rock'], popularity: 71, affinity: [7, 9, 10], hue: 25 },
-  { name: 'Lofi Grandma', genres: ['lo-fi', 'jazz', 'chillhop'], popularity: 54, affinity: [8, 7, 7], hue: 190 },
-  { name: 'Sofa Kingdom', genres: ['bedroom pop', 'indie pop'], popularity: 39, affinity: [6, 8, 5], hue: 140 },
-  { name: 'Glitter Goblin', genres: ['hyperpop', 'electropop', 'pop'], popularity: 47, affinity: [9, 5, 2], hue: 300 },
-  { name: 'Kid Cumulus', genres: ['hip hop', 'cloud rap', 'rap'], popularity: 76, affinity: [5, 6, 6], hue: 210 },
-  { name: 'Midnight Waffle', genres: ['chillwave', 'vaporwave', 'synthpop'], popularity: 33, affinity: [6, 6, 4], hue: 280 },
-  { name: 'Quiet Lighthouse', genres: ['ambient', 'post-rock', 'drone'], popularity: 22, affinity: [4, 6, 7], hue: 200, length: [5.5, 9] },
-  { name: 'Lady Thunderclap', genres: ['pop', 'dance-pop', 'electropop'], popularity: 88, affinity: [6, 5, 4], hue: 350 },
-  { name: 'Honey Bunker', genres: ['neo soul', 'r&b', 'soul'], popularity: 61, affinity: [5, 7, 6], hue: 40 },
-  { name: 'Velociraptor Funeral', genres: ['death metal', 'metal', 'thrash metal'], popularity: 29, affinity: [4, 3, 3], hue: 0 },
-  { name: 'Saxophone Weather', genres: ['jazz', 'smooth jazz', 'fusion'], popularity: 35, affinity: [3, 5, 6], hue: 30, length: [4, 7] },
-  { name: 'Starfruit Collective', genres: ['k-pop', 'dance-pop', 'pop'], popularity: 82, affinity: [5, 4, 3], hue: 55 },
-  { name: 'Cardigan Club', genres: ['indie folk', 'folk', 'singer-songwriter'], popularity: 44, affinity: [3, 5, 8], hue: 95 },
-  { name: 'Turbo Possum', genres: ['pop punk', 'punk', 'skate punk'], popularity: 51, affinity: [3, 4, 7], hue: 15, length: [1.8, 3] },
-  { name: 'Ghost Arcade', genres: ['synthwave', 'post-punk', 'darkwave'], popularity: 41, affinity: [7, 5, 3], hue: 245 },
-  { name: 'Bossa Nova Robot', genres: ['bossa nova', 'latin jazz'], popularity: 26, affinity: [2, 4, 4], hue: 165 },
-  { name: 'Afro Comet', genres: ['afrobeats', 'dancehall', 'afropop'], popularity: 69, affinity: [4, 4, 2], hue: 45 },
-  { name: 'Cello Vortex', genres: ['modern classical', 'classical', 'orchestral'], popularity: 31, affinity: [2, 3, 5], hue: 220, length: [4, 8] },
-  { name: 'Brunch Riot', genres: ['garage rock', 'indie rock', 'punk'], popularity: 49, affinity: [4, 4, 6], hue: 10 },
-  { name: 'Soft Serve Sunday', genres: ['soft rock', 'yacht rock'], popularity: 37, affinity: [2, 3, 4], hue: 185 },
-  { name: 'Tiny Volcano', genres: ['trip hop', 'downtempo', 'electronic'], popularity: 43, affinity: [4, 5, 5], hue: 5 },
-  { name: 'Basement Choir', genres: ['midwest emo', 'emo', 'indie rock'], popularity: 36, affinity: [3, 4, 6], hue: 120 },
-  { name: 'Disco Tortoise', genres: ['nu disco', 'disco', 'funk'], popularity: 55, affinity: [5, 4, 3], hue: 330 },
-  { name: 'Captain Lowercase', genres: ['lo-fi hip hop', 'indie hip hop', 'lo-fi'], popularity: 32, affinity: [5, 5, 4], hue: 175 },
-  { name: 'Polar Bear Party', genres: ['edm', 'electro house', 'dubstep'], popularity: 74, affinity: [3, 3, 2], hue: 195 },
-  { name: 'Rosa Relámpago', genres: ['reggaeton', 'latin pop'], popularity: 84, affinity: [4, 3, 1], hue: 340 },
-  { name: 'Paper Satellites', genres: ['dream pop', 'indietronica', 'electronic'], popularity: 46, affinity: [6, 6, 5], hue: 230 },
-  { name: 'The Spreadsheet Kings', genres: ['progressive rock', 'math rock', 'art rock'], popularity: 28, affinity: [2, 3, 5], hue: 75, length: [5, 8.5] },
-  { name: 'Banjo Thunder', genres: ['bluegrass', 'americana', 'country'], popularity: 34, affinity: [2, 2, 3], hue: 35 },
-  { name: 'Velvet Vending Machine', genres: ['funk', 'neo soul', 'r&b'], popularity: 52, affinity: [4, 5, 4], hue: 290 },
-  { name: 'Static Mermaid', genres: ['shoegaze', 'noise pop', 'dream pop'], popularity: 24, affinity: [6, 5, 4], hue: 180 },
-  { name: 'Pixel Orchard', genres: ['glitch', 'electronic', 'ambient'], popularity: 19, affinity: [3, 3, 2], hue: 110 },
-  { name: 'Mothman Prom', genres: ['indie rock', 'psychedelic rock', 'garage rock'], popularity: 40, affinity: [5, 4, 3], hue: 260 },
-  { name: 'DJ Snack Break', genres: ['house', 'deep house', 'dance-pop'], popularity: 59, affinity: [4, 4, 3], hue: 150 },
+  { name: 'Beach House', genres: ['dream pop', 'indie pop', 'shoegaze'], popularity: 72, affinity: [9, 10, 9], hue: 265, length: [4, 6],
+    albums: [{ name: 'Depression Cherry', year: 2015, tracks: ['Space Song', 'Levitation', 'PPP'] }, { name: 'Bloom', year: 2012, tracks: ['Myth', 'Wild'] }] },
+  { name: 'The Midnight', genres: ['synthwave', 'synthpop', 'retrowave'], popularity: 60, affinity: [10, 8, 6], hue: 320,
+    albums: [{ name: 'Endless Summer', year: 2016, tracks: ['Sunset', 'Jason', 'Endless Summer'] }] },
+  { name: 'Japanese Breakfast', genres: ['indie pop', 'indie rock', 'dream pop'], popularity: 63, affinity: [8, 9, 8], hue: 25,
+    albums: [{ name: 'Jubilee', year: 2021, tracks: ['Be Sweet', 'Paprika', 'Kokomo, IN', 'Slide Tackle'] }] },
+  { name: 'Nujabes', genres: ['lo-fi hip hop', 'jazz rap', 'chillhop'], popularity: 62, affinity: [8, 7, 7], hue: 190,
+    albums: [{ name: 'Modal Soul', year: 2005, tracks: ['Feather', 'Luv(sic.) pt3', 'Reflection Eternal'] }] },
+  { name: 'Mitski', genres: ['indie rock', 'indie pop', 'art pop'], popularity: 82, affinity: [7, 8, 6], hue: 140,
+    albums: [{ name: 'Be the Cowboy', year: 2018, tracks: ['Nobody', 'Washing Machine Heart', 'Geyser'] }, { name: 'The Land Is Inhospitable and So Are We', year: 2023, tracks: ['My Love Mine All Mine'] }] },
+  { name: 'Charli xcx', genres: ['hyperpop', 'electropop', 'pop'], popularity: 80, affinity: [9, 5, 2], hue: 95,
+    albums: [{ name: 'BRAT', year: 2024, tracks: ['360', 'Von dutch', 'Apple'] }] },
+  { name: 'Kendrick Lamar', genres: ['hip hop', 'conscious hip hop', 'west coast rap'], popularity: 90, affinity: [5, 6, 7], hue: 210,
+    albums: [{ name: 'To Pimp a Butterfly', year: 2015, tracks: ['Alright', 'King Kunta'] }, { name: 'good kid, m.A.A.d city', year: 2012, tracks: ['Money Trees'] }] },
+  { name: 'Tame Impala', genres: ['psychedelic rock', 'neo-psychedelic', 'indie rock'], popularity: 80, affinity: [6, 7, 7], hue: 280, length: [3.5, 7.5],
+    albums: [{ name: 'Currents', year: 2015, tracks: ['Let It Happen', 'The Less I Know The Better', 'Eventually'] }] },
+  { name: 'Boards of Canada', genres: ['idm', 'ambient', 'electronic'], popularity: 55, affinity: [4, 6, 7], hue: 200, length: [3, 6],
+    albums: [{ name: 'Music Has the Right to Children', year: 1998, tracks: ['Roygbiv', 'Turquoise Hexagon Sun'] }, { name: 'The Campfire Headphase', year: 2005, tracks: ['Dayvan Cowboy'] }] },
+  { name: 'Daft Punk', genres: ['french house', 'electronic', 'disco'], popularity: 81, affinity: [6, 5, 5], hue: 350, length: [3.5, 6],
+    albums: [{ name: 'Random Access Memories', year: 2013, tracks: ['Get Lucky', 'Instant Crush'] }, { name: 'Discovery', year: 2001, tracks: ['One More Time', 'Digital Love'] }] },
+  { name: 'Hiatus Kaiyote', genres: ['neo soul', 'future soul', 'r&b'], popularity: 52, affinity: [5, 7, 6], hue: 40,
+    albums: [{ name: 'Tawk Tomahawk', year: 2012, tracks: ['Nakamarra'] }, { name: 'Mood Valiant', year: 2021, tracks: ['Red Room'] }] },
+  { name: 'Gojira', genres: ['death metal', 'progressive metal', 'metal'], popularity: 62, affinity: [4, 3, 3], hue: 0,
+    albums: [{ name: 'Magma', year: 2016, tracks: ['Stranded', 'Silvera'] }] },
+  { name: 'Herbie Hancock', genres: ['jazz', 'jazz funk', 'hard bop'], popularity: 58, affinity: [3, 5, 6], hue: 30, length: [5, 9],
+    albums: [{ name: 'Empyrean Isles', year: 1964, tracks: ['Cantaloupe Island'] }, { name: 'Head Hunters', year: 1973, tracks: ['Chameleon', 'Watermelon Man'] }] },
+  { name: 'NewJeans', genres: ['k-pop', 'dance pop', 'pop'], popularity: 78, affinity: [5, 4, 3], hue: 55, length: [2.5, 3.5],
+    albums: [{ name: 'New Jeans', year: 2022, tracks: ['Hype Boy', 'Attention'] }, { name: 'Get Up', year: 2023, tracks: ['Super Shy', 'ETA'] }] },
+  { name: 'Bon Iver', genres: ['indie folk', 'folk', 'chamber pop'], popularity: 74, affinity: [3, 5, 8], hue: 110,
+    albums: [{ name: 'Bon Iver, Bon Iver', year: 2011, tracks: ['Holocene', 'Perth'] }, { name: 'For Emma, Forever Ago', year: 2008, tracks: ['Skinny Love'] }] },
+  { name: 'Slowdive', genres: ['shoegaze', 'dream pop', 'noise pop'], popularity: 64, affinity: [6, 5, 5], hue: 180, length: [4, 7],
+    albums: [{ name: 'Souvlaki', year: 1993, tracks: ['When the Sun Hits', 'Alison'] }] },
+  { name: 'Kraftwerk', genres: ['krautrock', 'synthpop', 'electronic'], popularity: 57, affinity: [2, 3, 5], hue: 245, length: [4, 7],
+    albums: [{ name: 'The Man-Machine', year: 1978, tracks: ['The Model', 'The Robots'] }, { name: 'Computer World', year: 1981, tracks: ['Computer Love'] }] },
+  { name: 'Fela Kuti', genres: ['afrobeat', 'afro-funk', 'funk'], popularity: 50, affinity: [2, 4, 4], hue: 45, length: [8, 13],
+    albums: [{ name: 'Expensive Shit', year: 1975, tracks: ['Water No Get Enemy'] }, { name: 'Zombie', year: 1976, tracks: ['Zombie'] }] },
+  { name: 'Khruangbin', genres: ['psychedelic soul', 'funk', 'surf rock'], popularity: 67, affinity: [5, 6, 5], hue: 165,
+    albums: [{ name: 'Con Todo El Mundo', year: 2018, tracks: ['Maria También', 'Evan Finds the Third Room'] }, { name: 'Mordechai', year: 2020, tracks: ['Time (You and I)'] }] },
+  { name: 'Phoebe Bridgers', genres: ['indie folk', 'singer-songwriter', 'indie rock'], popularity: 73, affinity: [4, 6, 6], hue: 220,
+    albums: [{ name: 'Stranger in the Alps', year: 2017, tracks: ['Motion Sickness'] }, { name: 'Punisher', year: 2020, tracks: ['Kyoto', 'Garden Song'] }] },
+  { name: 'Bad Bunny', genres: ['reggaeton', 'latin trap', 'latin pop'], popularity: 93, affinity: [4, 3, 1], hue: 340,
+    albums: [{ name: 'Un Verano Sin Ti', year: 2022, tracks: ['Tití Me Preguntó', 'Me Porto Bonito'] }] },
+  { name: 'Burial', genres: ['uk garage', 'dubstep', 'electronic'], popularity: 51, affinity: [4, 4, 4], hue: 230, length: [4, 7],
+    albums: [{ name: 'Untrue', year: 2007, tracks: ['Archangel', 'Untrue'] }] },
+  { name: 'Caroline Polachek', genres: ['art pop', 'indie pop', 'electropop'], popularity: 63, affinity: [6, 5, 3], hue: 300,
+    albums: [{ name: 'Pang', year: 2019, tracks: ["So Hot You're Hurting My Feelings"] }, { name: 'Desire, I Want To Turn Into You', year: 2023, tracks: ['Welcome To My Island', 'Bunny Is A Rider'] }] },
+  { name: 'Fleetwood Mac', genres: ['soft rock', 'classic rock', 'yacht rock'], popularity: 84, affinity: [2, 3, 5], hue: 15,
+    albums: [{ name: 'Rumours', year: 1977, tracks: ['Dreams', 'The Chain'] }, { name: 'Tango in the Night', year: 1987, tracks: ['Everywhere'] }] },
+  { name: 'Tyler, The Creator', genres: ['hip hop', 'neo soul', 'alternative hip hop'], popularity: 88, affinity: [5, 5, 4], hue: 75,
+    albums: [{ name: 'Flower Boy', year: 2017, tracks: ['See You Again', 'Boredom'] }, { name: 'IGOR', year: 2019, tracks: ['EARFQUAKE'] }] },
+  { name: 'Radiohead', genres: ['art rock', 'alternative rock', 'experimental rock'], popularity: 80, affinity: [3, 5, 7], hue: 120, length: [4, 6],
+    albums: [{ name: 'In Rainbows', year: 2007, tracks: ['Weird Fishes/Arpeggi', 'Reckoner'] }, { name: 'Kid A', year: 2000, tracks: ['Everything In Its Right Place'] }] },
+  { name: 'Dolly Parton', genres: ['country', 'bluegrass', 'americana'], popularity: 76, affinity: [2, 2, 3], hue: 35,
+    albums: [{ name: 'Jolene', year: 1974, tracks: ['Jolene'] }, { name: '9 to 5 and Odd Jobs', year: 1980, tracks: ['9 to 5'] }] },
+  { name: 'Mac DeMarco', genres: ['indie rock', 'jangle pop', 'slacker rock'], popularity: 70, affinity: [5, 5, 5], hue: 150,
+    albums: [{ name: 'Salad Days', year: 2014, tracks: ['Chamber Of Reflection', 'Salad Days'] }, { name: '2', year: 2012, tracks: ['My Kind Of Woman'] }] },
 ];
-
-const TITLE_WORDS = {
-  adjectives: ['Velvet', 'Electric', 'Sleepy', 'Neon', 'Haunted', 'Golden', 'Tiny', 'Cosmic', 'Sticky', 'Lukewarm', 'Glow-in-the-Dark', 'Overcaffeinated', 'Gentle', 'Feral', 'Holographic', 'Soggy', 'Midnight', 'Plastic', 'Lazy', 'Turbo'],
-  nouns: ['Pancakes', 'Satellites', 'Heartbeat', 'Raccoons', 'Lighthouse', 'Vending Machine', 'Thunderstorm', 'Sunburn', 'Cassette', 'Daydream', 'Rollercoaster', 'Houseplant', 'Group Chat', 'Fireflies', 'Laundry Day', 'Bus Stop', 'Disco Ball', 'Dinosaur', 'Moon Boots', 'Leftovers'],
-  places: ['the Parking Lot', 'Aisle Nine', 'the Deep End', 'Outer Space', 'the Food Court', 'Your Basement', 'the Arcade', 'the Last Train', 'the Laundromat', 'Grandma\'s Car'],
-  verbs: ['Dancing', 'Crying', 'Skating', 'Floating', 'Texting', 'Running', 'Dreaming', 'Snacking', 'Spinning', 'Hiding'],
-};
-
-function makeTitle(rng: Rng): string {
-  const { adjectives, nouns, places, verbs } = TITLE_WORDS;
-  switch (Math.floor(rng() * 6)) {
-    case 0: return `${pick(rng, adjectives)} ${pick(rng, nouns)}`;
-    case 1: return `${pick(rng, verbs)} in ${pick(rng, places)}`;
-    case 2: return `${pick(rng, nouns)} at ${pick(rng, places)}`;
-    case 3: return `${pick(rng, adjectives)} ${pick(rng, nouns)} (Demo)`;
-    case 4: return `${pick(rng, verbs)} with ${pick(rng, nouns)}`;
-    default: return `Ode to ${pick(rng, nouns)}`;
-  }
-}
 
 const slug = (value: string) => value.toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '');
 
@@ -163,15 +176,11 @@ interface DemoCatalog {
   tracks: DemoTrack[];
 }
 
+/** Search link used until (or unless) the real Spotify link is looked up */
+const searchUrl = (query: string) => `https://open.spotify.com/search/${encodeURIComponent(query)}`;
+
 function buildCatalog(): DemoCatalog {
   const rng = createRng(20251102);
-  const usedTitles = new Set<string>();
-  const uniqueTitle = () => {
-    let title = makeTitle(rng);
-    while (usedTitles.has(title)) title = makeTitle(rng);
-    usedTitles.add(title);
-    return title;
-  };
 
   const artists = ARTIST_SEEDS.map((seed): SpotifyApi.ArtistObjectFull => {
     const id = `demo-artist-${slug(seed.name)}`;
@@ -181,7 +190,7 @@ function buildCatalog(): DemoCatalog {
       type: 'artist',
       uri: `spotify:artist:${id}`,
       href: `https://api.spotify.com/v1/artists/${id}`,
-      external_urls: { spotify: `https://open.spotify.com/search/${encodeURIComponent(seed.name)}` },
+      external_urls: { spotify: searchUrl(seed.name) },
       genres: seed.genres,
       popularity: seed.popularity,
       followers: { href: null, total: Math.round(seed.popularity ** 3 * (2 + rng() * 6)) },
@@ -195,66 +204,103 @@ function buildCatalog(): DemoCatalog {
     const artistRef: SpotifyApi.ArtistObjectSimplified = {
       id: artist.id, name: artist.name, type: 'artist', uri: artist.uri, href: artist.href, external_urls: artist.external_urls,
     };
-    const albumCount = 1 + Math.floor(rng() * 2);
-    for (let a = 0; a < albumCount; a++) {
-      const albumName = uniqueTitle();
-      const albumId = `demo-album-${slug(seed.name)}-${a}`;
-      const year = 2014 + Math.floor(rng() * 12);
-      const trackCount = 2 + Math.floor(rng() * 3);
+    seed.albums.forEach((albumSeed, a) => {
+      const albumId = `demo-album-${slug(seed.name)}-${slug(albumSeed.name)}`;
       const album: SpotifyApi.AlbumObjectSimplified = {
         id: albumId,
-        name: albumName,
+        name: albumSeed.name,
         type: 'album',
-        album_type: trackCount <= 2 ? 'single' : 'album',
-        total_tracks: trackCount,
+        album_type: albumSeed.tracks.length <= 1 ? 'single' : 'album',
+        total_tracks: Math.max(albumSeed.tracks.length, 8 + Math.floor(rng() * 6)),
         artists: [artistRef],
         images: images(coverArt(albumId, (seed.hue + a * 35) % 360)),
-        release_date: `${year}-${String(1 + Math.floor(rng() * 12)).padStart(2, '0')}-${String(1 + Math.floor(rng() * 28)).padStart(2, '0')}`,
-        release_date_precision: 'day',
+        release_date: `${albumSeed.year}`,
+        release_date_precision: 'year',
         uri: `spotify:album:${albumId}`,
         href: `https://api.spotify.com/v1/albums/${albumId}`,
-        external_urls: { spotify: `https://open.spotify.com/search/${encodeURIComponent(albumName)}` },
+        external_urls: { spotify: searchUrl(`${albumSeed.name} ${seed.name}`) },
       };
-      const [minLength, maxLength] = seed.length ?? [2.4, 4.6];
-      for (let t = 0; t < trackCount; t++) {
-        const name = uniqueTitle();
-        const id = `demo-track-${slug(seed.name)}-${a}-${t}`;
-        // Occasional feature from another artist in the catalog
-        const featured = rng() < 0.12 ? artists[Math.floor(rng() * artists.length)] : null;
-        const trackArtists = featured && featured.id !== artist.id
-          ? [artistRef, { id: featured.id, name: featured.name, type: 'artist' as const, uri: featured.uri, href: featured.href, external_urls: featured.external_urls }]
-          : [artistRef];
+      const [minLength, maxLength] = seed.length ?? [2.6, 4.6];
+      albumSeed.tracks.forEach((name, t) => {
+        const id = `demo-track-${slug(seed.name)}-${slug(name)}`;
         tracks.push({
           artistIndex,
-          appeal: 0.4 + rng() * 0.6,
+          // Earlier-listed songs are the hits
+          appeal: Math.max(0.35, 1 - t * 0.18 - a * 0.1) * (0.85 + rng() * 0.15),
           track: {
             id,
             name,
             type: 'track',
             uri: `spotify:track:${id}`,
             href: `https://api.spotify.com/v1/tracks/${id}`,
-            external_urls: { spotify: `https://open.spotify.com/search/${encodeURIComponent(`${name} ${seed.name}`)}` },
+            external_urls: { spotify: searchUrl(`${name} ${seed.name}`) },
             external_ids: {},
             album,
-            artists: trackArtists,
+            artists: [artistRef],
             disc_number: 1,
             track_number: t + 1,
             duration_ms: Math.round(between(rng, minLength, maxLength) * 60000),
-            explicit: rng() < 0.2,
-            popularity: Math.max(1, Math.min(100, Math.round(seed.popularity + between(rng, -18, 12)))),
+            explicit: false,
+            popularity: Math.max(1, Math.min(100, Math.round(seed.popularity + between(rng, -14, 8) - t * 3))),
             preview_url: null,
             is_local: false,
           },
         });
-      }
-    }
+      });
+    });
   });
 
   return { artists, tracks };
 }
 
-let catalog: DemoCatalog | null = null;
-const getCatalog = () => (catalog ??= buildCatalog());
+/** Lookup key for an album in `Artwork.albums` */
+export const albumKey = (artist: string, album: string) => `${artist}|${album}`;
+
+/** Artist names and albums the artwork lookup should resolve */
+export function getArtworkQueries(): { artists: string[]; albums: { artist: string; album: string }[] } {
+  return {
+    artists: ARTIST_SEEDS.map(seed => seed.name),
+    albums: ARTIST_SEEDS.flatMap(seed => seed.albums.map(album => ({ artist: seed.name, album: album.name }))),
+  };
+}
+
+/** Swaps in real artwork and Spotify links wherever the lookup found them */
+function applyArtwork(base: DemoCatalog, artwork: Artwork): DemoCatalog {
+  const artistById = new Map(base.artists.map(artist => {
+    const found = artwork.artists[artist.name];
+    return [artist.id, found ? { ...artist, images: found.images, external_urls: { spotify: found.url } } : artist];
+  }));
+  const ref = (artist: SpotifyApi.ArtistObjectSimplified): SpotifyApi.ArtistObjectSimplified => {
+    const full = artistById.get(artist.id);
+    return full ? { ...artist, external_urls: full.external_urls } : artist;
+  };
+  const albums = new Map<string, SpotifyApi.AlbumObjectSimplified>();
+  const tracks = base.tracks.map(item => {
+    const { album } = item.track;
+    let resolved = albums.get(album.id);
+    if (!resolved) {
+      const found = artwork.albums[albumKey(album.artists[0].name, album.name)];
+      resolved = { ...album, artists: album.artists.map(ref), ...(found && { images: found.images, external_urls: { spotify: found.url } }) };
+      albums.set(album.id, resolved);
+    }
+    return { ...item, track: { ...item.track, album: resolved, artists: item.track.artists.map(ref) } };
+  });
+  return { artists: base.artists.map(artist => artistById.get(artist.id)!), tracks };
+}
+
+let baseCatalog: DemoCatalog | null = null;
+const catalogsByArtwork = new WeakMap<Artwork, DemoCatalog>();
+
+function getCatalog(artwork?: Artwork | null): DemoCatalog {
+  baseCatalog ??= buildCatalog();
+  if (!artwork) return baseCatalog;
+  let catalog = catalogsByArtwork.get(artwork);
+  if (!catalog) {
+    catalog = applyArtwork(baseCatalog, artwork);
+    catalogsByArtwork.set(artwork, catalog);
+  }
+  return catalog;
+}
 
 // ---------- Listening behavior ----------
 
@@ -264,8 +310,8 @@ function artistScores(range: TimeRange): number[] {
   return ARTIST_SEEDS.map(seed => seed.affinity[index] * (0.85 + rng() * 0.3));
 }
 
-function rankedTopArtists(range: TimeRange): SpotifyApi.ArtistObjectFull[] {
-  const { artists } = getCatalog();
+function rankedTopArtists(range: TimeRange, artwork?: Artwork | null): SpotifyApi.ArtistObjectFull[] {
+  const { artists } = getCatalog(artwork);
   const scores = artistScores(range);
   return artists
     .map((artist, i) => ({ artist, score: scores[i] }))
@@ -273,8 +319,8 @@ function rankedTopArtists(range: TimeRange): SpotifyApi.ArtistObjectFull[] {
     .map(({ artist }) => artist);
 }
 
-function rankedTopTracks(range: TimeRange): SpotifyApi.TrackObjectFull[] {
-  const { tracks } = getCatalog();
+function rankedTopTracks(range: TimeRange, artwork?: Artwork | null): SpotifyApi.TrackObjectFull[] {
+  const { tracks } = getCatalog(artwork);
   const scores = artistScores(range);
   const rng = createRng(hashString(`tracks-${range}`));
   return tracks
@@ -287,8 +333,8 @@ function rankedTopTracks(range: TimeRange): SpotifyApi.TrackObjectFull[] {
  * A believable recently-played history: a few listening sessions over the last couple of days,
  * newest first, with favorite tracks on repeat.
  */
-function recentlyPlayed(limit: number, now: number): SpotifyApi.PlayHistoryObject[] {
-  const { tracks } = getCatalog();
+function recentlyPlayed(limit: number, now: number, artwork?: Artwork | null): SpotifyApi.PlayHistoryObject[] {
+  const { tracks } = getCatalog(artwork);
   const rng = createRng(hashString('recently-played'));
   const scores = artistScores('short_term');
   const weights = tracks.map(item => (scores[item.artistIndex] * item.appeal) ** 2.2);
@@ -327,17 +373,20 @@ function recentlyPlayed(limit: number, now: number): SpotifyApi.PlayHistoryObjec
   return plays.slice(0, limit);
 }
 
-/** Data source with the same contract as the live Spotify one, backed by the demo catalog. */
-export function createDemoDataSource(now: number = Date.now()): ListeningDataSource {
+/**
+ * Data source with the same contract as the live Spotify one, backed by the example catalog.
+ * Pass the result of `getArtwork()` to use real artwork; without it, generated art is used.
+ */
+export function createDemoDataSource(now: number = Date.now(), artwork?: Artwork | null): ListeningDataSource {
   return {
-    getRecentlyPlayed: async limit => recentlyPlayed(limit, now),
-    getTopTracks: async (range, limit) => rankedTopTracks(range).slice(0, limit),
-    getTopArtists: async (range, limit) => rankedTopArtists(range).slice(0, limit),
+    getRecentlyPlayed: async limit => recentlyPlayed(limit, now, artwork),
+    getTopTracks: async (range, limit) => rankedTopTracks(range, artwork).slice(0, limit),
+    getTopArtists: async (range, limit) => rankedTopArtists(range, artwork).slice(0, limit),
     fetchArtistsByIds: async ids => {
       const wanted = new Set(ids);
-      return Object.fromEntries(getCatalog().artists.filter(a => wanted.has(a.id)).map(a => [a.id, a]));
+      return Object.fromEntries(getCatalog(artwork).artists.filter(a => wanted.has(a.id)).map(a => [a.id, a]));
     },
-    // Demo artists already have rich genres, so there is nothing to enrich
+    // Example artists already have rich genres, so there is nothing to enrich
     enhanceArtists: async artists => ({ artists, lastFmUnavailable: [] }),
   };
 }
@@ -350,8 +399,8 @@ export const DEMO_USER: UserProfile = {
   followers: { total: 42 },
 };
 
-export function getDemoNowPlaying(): NowPlaying {
-  const track = rankedTopTracks('short_term')[0];
+export function getDemoNowPlaying(artwork?: Artwork | null): NowPlaying {
+  const track = rankedTopTracks('short_term', artwork)[0];
   return {
     isPlaying: true,
     track: {

@@ -345,7 +345,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                       className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer outline-none"
                     >
                       <LogOut className="w-4 h-4" />
-                      {demo ? 'Exit demo' : 'Logout'}
+                      {demo ? 'Back to home' : 'Logout'}
                     </DropdownMenu.Item>
                   </DropdownMenu.Content>
                 </DropdownMenu.Portal>
@@ -360,7 +360,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
           <div className="container mx-auto px-4 py-2.5 flex flex-col sm:flex-row items-center justify-center gap-x-4 gap-y-1.5 text-sm text-center">
             <span className="flex items-center gap-2 font-medium">
               <Sparkles className="w-4 h-4 shrink-0" />
-              You&apos;re snooping on {user.display_name}, a totally made-up listener. Every artist here is fictional.
+              You&apos;re peeking at {user.display_name}&apos;s profile. Sam is pretend, but the music is real.
             </span>
             <a
               href="/api/auth/spotify"
