@@ -156,6 +156,21 @@ export function explainGenreMatch(tag: string): {
   return { kind: 'unknown', node: null, scoresFrom: null };
 }
 
+/** Genre labels that match neither the taxonomy nor the mood vocabulary. */
+export function unmatchedGenreNames(names: string[]): string[] {
+  const seen = new Set<string>();
+  const misses: string[] = [];
+  for (const name of names) {
+    const label = name.trim();
+    if (!label) continue;
+    const key = label.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    if (explainGenreMatch(label).kind === 'unknown') misses.push(label);
+  }
+  return misses;
+}
+
 /**
  * Classify a single genre string
  * 

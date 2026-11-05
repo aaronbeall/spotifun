@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
+import { MUSIC_VIBES } from '@/utils/musicVibes';
 
 export const metadata: Metadata = {
   title: 'VACRS and personas — Spotifun',
@@ -8,7 +10,7 @@ export const metadata: Metadata = {
 
 const STEPS = [
   { n: '1', title: 'Genres', text: 'Tags on the artists in the view you have open.', panel: 'bg-violet-400/[0.07]' },
-  { n: '2', title: 'Five scores', text: 'Each tag sits on five traits. The view is their weighted average.', panel: 'bg-white/[0.03]' },
+  { n: '2', title: 'Five scores', text: 'Each tag sits on five traits. The view is their weighted average, and the vibe is the closest of 15 presets.', panel: 'bg-white/[0.03]' },
   { n: '3', title: 'Snap two', text: 'Mood and energy are cut at the middle. The other three scores stay as they are.', panel: 'bg-amber-300/[0.06]' },
   { n: '4', title: 'Four facts', text: 'Genre spread, popularity, loyalty, and era come from the library, not from VACRS.', panel: 'bg-emerald-400/[0.06]' },
   { n: '5', title: 'One name', text: 'Six yes-or-no answers pick one of 64 personas.', panel: 'bg-pink-400/[0.07]' },
@@ -164,6 +166,57 @@ function NameMark() {
 
 const STEP_MARKS = [GenresMark, ScoresMark, SnapMark, FactsMark, NameMark];
 
+const VIBE_EXAMPLES = ['tranquility', 'intensity', 'euphoria']
+  .map(id => MUSIC_VIBES.find(vibe => vibe.id === id))
+  .filter((vibe): vibe is (typeof MUSIC_VIBES)[number] => vibe != null);
+
+function VibeExample({ vibe }: { vibe: (typeof MUSIC_VIBES)[number] }) {
+  const scores = [
+    vibe.targetScore.valence,
+    vibe.targetScore.arousal,
+    vibe.targetScore.complexity,
+    vibe.targetScore.rawness,
+    vibe.targetScore.socialPresence,
+  ];
+  return (
+    <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
+      <div className="flex flex-col items-center text-center">
+        {vibe.image && (
+          <Image
+            src={vibe.image}
+            alt=""
+            width={88}
+            height={88}
+            className="h-20 w-20 rounded-full"
+          />
+        )}
+        <h4 className="mt-3 font-semibold text-white">{vibe.name}</h4>
+        <p className="mt-1 text-xs leading-snug text-gray-400">{vibe.description}</p>
+      </div>
+      <div className="mt-4 space-y-2">
+        {AXES.map((axis, index) => (
+          <div key={axis.name} className="flex items-center gap-2">
+            <span className="w-14 shrink-0 text-[10px] uppercase tracking-wide text-gray-500">
+              {axis.name === 'Social presence' ? 'Social' : axis.name === 'Complexity' ? 'Complex' : axis.name}
+            </span>
+            <span
+              className="relative h-1.5 flex-1 rounded-full"
+              style={{ background: `linear-gradient(90deg, ${axis.from}, ${axis.to})` }}
+              role="img"
+              aria-label={`${axis.name} ${scores[index]}`}
+            >
+              <span
+                className="absolute top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-black/40 bg-white shadow"
+                style={{ left: `${scores[index] * 100}%` }}
+              />
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Axis({
   name,
   low,
@@ -211,19 +264,28 @@ export default function VacrsPage() {
         </p>
         <h1 className="mt-2 text-4xl font-bold tracking-tight text-white">How a persona gets its name</h1>
         <p className="mt-4 text-lg leading-relaxed text-gray-300">
-          VACRS scores the music from 0 to 1 on five traits. The persona keeps only two of those scores,
-          adds four facts about how you listen, and looks up one of 64 names.
+          VACRS scores the music from 0 to 1 on five traits. A vibe is the preset closest to all five.
+          The persona keeps only two of those scores, adds four facts about how you listen, and looks up
+          one of 64 names.
         </p>
         <div className="mt-6 space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-relaxed">
           <p>
-            Valence and arousal are not original here. They are the two axes of the circumplex model of
-            affect{' '}
+            Valence and arousal come from the circumplex model of affect{' '}
             <a href="https://doi.org/10.1037/h0077714" className="text-violet-300 underline decoration-violet-300/40 underline-offset-2 hover:text-violet-200" target="_blank" rel="noopener noreferrer">Russell, 1980</a>,
             which music research uses as a dimensional account of emotion{' '}
             <a href="https://doi.org/10.1177/0305735610362821" className="text-violet-300 underline decoration-violet-300/40 underline-offset-2 hover:text-violet-200" target="_blank" rel="noopener noreferrer">Eerola &amp; Vuoskoski, 2011</a>.
-            VACRS keeps those two axes and adds three the circumplex does not have: complexity, rawness,
-            and social presence. The scores written onto genres, the cut into a persona, and the four
-            library facts are the expansion.
+            Complexity follows depth, the third attribute{' '}
+            <a href="https://doi.org/10.1177/1948550616641473" className="text-violet-300 underline decoration-violet-300/40 underline-offset-2 hover:text-violet-200" target="_blank" rel="noopener noreferrer">Greenberg et al., 2016</a>{' '}
+            found in what people hear: emotional and intellectual complexity.
+            Rawness lines up with the rootsy, unpretentious factor in{' '}
+            <a href="https://doi.org/10.1037/a0022406" className="text-violet-300 underline decoration-violet-300/40 underline-offset-2 hover:text-violet-200" target="_blank" rel="noopener noreferrer">Rentfrow, Goldberg, &amp; Levitin, 2011</a>,
+            and with the clean-to-distorted span{' '}
+            <a href="https://doi.org/10.1098/rstb.2024.0014" className="text-violet-300 underline decoration-violet-300/40 underline-offset-2 hover:text-violet-200" target="_blank" rel="noopener noreferrer">Bryant &amp; Smaldino, 2025</a>{' '}
+            describe in timbre.
+            Social presence takes up social relatedness, one of the three reasons{' '}
+            <a href="https://doi.org/10.3389/fpsyg.2013.00511" className="text-violet-300 underline decoration-violet-300/40 underline-offset-2 hover:text-violet-200" target="_blank" rel="noopener noreferrer">Schäfer, Sedlmeier, Städtler, &amp; Huron, 2013</a>{' '}
+            found that people listen.
+            The names on these axes, the scores written onto genres, the 64 personas, and the vibe presets are the mapping made here.
           </p>
           <ol className="list-decimal space-y-1 pl-5 text-xs text-gray-500">
             <li>
@@ -233,6 +295,22 @@ export default function VacrsPage() {
             <li>
               Eerola, T., &amp; Vuoskoski, J. K. (2011). A comparison of the discrete and dimensional models of emotion in music. <span className="italic">Psychology of Music, 39</span>(1), 18–49.{' '}
               <a href="https://doi.org/10.1177/0305735610362821" className="text-gray-400 hover:text-gray-300" target="_blank" rel="noopener noreferrer">https://doi.org/10.1177/0305735610362821</a>
+            </li>
+            <li>
+              Greenberg, D. M., Kosinski, M., Stillwell, D. J., Monteiro, B. L., Levitin, D. J., &amp; Rentfrow, P. J. (2016). The song is you: Preferences for musical attribute dimensions reflect personality. <span className="italic">Social Psychological and Personality Science, 7</span>(6), 597–605.{' '}
+              <a href="https://doi.org/10.1177/1948550616641473" className="text-gray-400 hover:text-gray-300" target="_blank" rel="noopener noreferrer">https://doi.org/10.1177/1948550616641473</a>
+            </li>
+            <li>
+              Rentfrow, P. J., Goldberg, L. R., &amp; Levitin, D. J. (2011). The structure of musical preferences: A five-factor model. <span className="italic">Journal of Personality and Social Psychology, 100</span>(6), 1139–1157.{' '}
+              <a href="https://doi.org/10.1037/a0022406" className="text-gray-400 hover:text-gray-300" target="_blank" rel="noopener noreferrer">https://doi.org/10.1037/a0022406</a>
+            </li>
+            <li>
+              Bryant, G. A., &amp; Smaldino, P. E. (2025). The cultural evolution of distortion in music (and other norms of mixed appeal). <span className="italic">Philosophical Transactions of the Royal Society B, 380</span>, 20240014.{' '}
+              <a href="https://doi.org/10.1098/rstb.2024.0014" className="text-gray-400 hover:text-gray-300" target="_blank" rel="noopener noreferrer">https://doi.org/10.1098/rstb.2024.0014</a>
+            </li>
+            <li>
+              Schäfer, T., Sedlmeier, P., Städtler, C., &amp; Huron, D. (2013). The psychological functions of music listening. <span className="italic">Frontiers in Psychology, 4</span>, 511.{' '}
+              <a href="https://doi.org/10.3389/fpsyg.2013.00511" className="text-gray-400 hover:text-gray-300" target="_blank" rel="noopener noreferrer">https://doi.org/10.3389/fpsyg.2013.00511</a>
             </li>
           </ol>
         </div>
@@ -274,6 +352,32 @@ export default function VacrsPage() {
           {AXES.map(axis => (
             <Axis key={axis.name} {...axis} />
           ))}
+        </div>
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-lg font-semibold text-white">The vibe is the nearest preset</h3>
+            <p className="mt-2 text-sm leading-relaxed">
+              Fifteen presets sit in this same space. Each score is a position from 0 to 1, so the view and
+              each preset are points with five coordinates. Closest means the straight-line distance through
+              all five at once: square the gap on valence, arousal, complexity, rawness, and social presence,
+              add those squares, and take the square root. Every axis counts the same. A miss of 0.4 on
+              rawness moves the point as far as a miss of 0.4 on valence.
+            </p>
+            <p className="mt-2 text-sm leading-relaxed">
+              The shortest distance wins. Sitting on a preset is a 100% match. The opposite corner of the
+              space is √5 away, about 2.24, and that distance is 0%. The match percentage is 100 times one
+              minus the distance divided by √5. A tie keeps the preset earlier in the list. Three of them:
+            </p>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            {VIBE_EXAMPLES.map(vibe => (
+              <VibeExample key={vibe.id} vibe={vibe} />
+            ))}
+          </div>
+          <p className="text-sm leading-relaxed text-gray-400">
+            A persona only asks whether mood and energy are above the middle, then adds four facts about
+            the library. A vibe keeps all five scores.
+          </p>
         </div>
       </section>
 
@@ -376,23 +480,6 @@ export default function VacrsPage() {
           <span className="font-mono text-violet-300">2 × 2 × 2 × 2 × 2 × 2</span>
           <span className="h-px flex-1 bg-white/10" />
           <span className="font-semibold text-white">64 names</span>
-        </div>
-      </section>
-
-      <section className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl border border-white/10 p-5">
-          <h2 className="text-base font-semibold text-white">The portrait is a drawing of the name</h2>
-          <p className="mt-2 text-sm leading-relaxed">
-            The artwork does not remeasure the songs. It redraws the six answers: eclectic becomes complex,
-            niche becomes raw, and wandering becomes communal.
-          </p>
-        </div>
-        <div className="rounded-2xl border border-white/10 p-5">
-          <h2 className="text-base font-semibold text-white">A vibe is the nearest score</h2>
-          <p className="mt-2 text-sm leading-relaxed">
-            A vibe matches the five continuous scores to the closest preset. The persona is the named cell
-            in the six-answer table. They can sound alike and still not be the same result.
-          </p>
         </div>
       </section>
 

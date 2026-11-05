@@ -45,10 +45,13 @@ function generateGenreFlowCaption(tracks: FlowTrack[], mode: DataMode): string {
     (t.genres || []).forEach(g => genreCounts.set(g, (genreCounts.get(g) || 0) + 1));
   });
 
-  // Analyze early vs late distribution
-  const thirdMark = Math.floor(tracks.length / 3);
-  const earlyTracks = tracks.slice(0, thirdMark);
-  const lateTracks = tracks.slice(-thirdMark);
+  // Oldest on the left of the chart, newest on the right.
+  const chronological = [...tracks].sort(
+    (a, b) => new Date(a.playedAt).getTime() - new Date(b.playedAt).getTime()
+  );
+  const thirdMark = Math.floor(chronological.length / 3);
+  const earlyTracks = chronological.slice(0, thirdMark);
+  const lateTracks = chronological.slice(-thirdMark);
 
   const earlyGenres = getTopGenres(earlyTracks);
   const lateGenres = getTopGenres(lateTracks);

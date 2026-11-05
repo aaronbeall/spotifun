@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { BarChart3, ChevronDown, Music, Users, TrendingUp, Clock, Headphones, Star, LogOut, Settings, User, Bug, Tags, Check, Info, Sparkles } from 'lucide-react';
+import { Award, BarChart3, BookOpen, ChevronDown, History, LayoutGrid, Medal, MoreHorizontal, Music, Search, Star, TrendingUp, Users, Clock, Headphones, LogOut, Settings, User, Bug, Tags, Check, Info, Sparkles } from 'lucide-react';
 import { formatDuration, formatNumber, getGenreColorMap, getGenreColorClass } from '@/utils';
 import Image from 'next/image';
 import FunStats from '@/components/features/FunStats';
@@ -16,6 +16,11 @@ import { SpotifyPlayOverlay } from '@/components/SpotifyPlayOverlay';
 import { NowPlayingWidget } from '@/components/NowPlayingWidget';
 import { GenreDebugPanel } from '@/components/GenreDebugPanel';
 import { usePersistedToggle } from '@/hooks/usePersistedToggle';
+import { AnimatePresence } from 'framer-motion';
+import { AchievementPopup } from '@/components/AchievementPopup';
+import { AchievementBoard } from '@/components/features/AchievementBoard';
+import { UnlockBoard } from '@/components/features/UnlockBoard';
+import { noteApiCall, observeLogin, observeStatsResult, setActiveUser, type JournalNews } from '@/lib/records/observe';
 
 import { UserProfile, Stats, TimeRange, DataMode, PlaylistSelection, LIKED_SONGS_ID } from '@/types';
 
@@ -54,6 +59,26 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
   const [debugPanelEnabled, setDebugPanelEnabled] = usePersistedToggle('spotifun.debugPanel', false);
   const [lastFmEnabled, setLastFmEnabled] = usePersistedToggle('spotifun.lastFmEnrichment', true);
   const [debugPanelOpen, setDebugPanelOpen] = useState(false);
+  const [news, setNews] = useState<JournalNews | null>(null);
+  const [journalTick, setJournalTick] = useState(0);
+
+  const acceptStats = useCallback((statsData: Stats) => {
+    setStats(statsData);
+    setLastFetched(new Date());
+    if (demo) return;
+    void observeStatsResult(statsData)
+      .then(next => {
+        if (next.unlocks.length > 0 || next.achievements.length > 0) setNews(next);
+        setJournalTick(tick => tick + 1);
+      })
+      .catch(error => console.error('Could not record this look', error));
+  }, [demo]);
+
+  useEffect(() => {
+    if (!news) return;
+    const timer = window.setTimeout(() => setNews(null), 8000);
+    return () => window.clearTimeout(timer);
+  }, [news]);
 
   const buildStatsUrl = useCallback((
     range: TimeRange,
@@ -77,15 +102,21 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     if (userResponse.ok) {
       const userData = await userResponse.json();
       setUser(userData);
+      if (!demo) {
+        setActiveUser(userData.id);
+        void observeLogin(userData).finally(() => setJournalTick(tick => tick + 1));
+      }
+    } else if (!demo) {
+      noteApiCall('user', false);
     }
 
     if (statsResponse.ok) {
-      const statsData = await statsResponse.json();
-      setStats(statsData);
+      acceptStats(await statsResponse.json());
+    } else if (!demo) {
+      noteApiCall('stats', false);
+      setLastFetched(new Date());
     }
-
-    setLastFetched(new Date());
-  }, [apiBase, buildStatsUrl]);
+  }, [apiBase, acceptStats, buildStatsUrl, demo]);
 
   useEffect(() => {
     fetchAll(timeRange, playLimit, dataMode)
@@ -118,9 +149,9 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     try {
       const response = await fetch(buildStatsUrl(newTimeRange, playLimit, dataMode));
       if (response.ok) {
-        const data = await response.json();
-        setStats(data);
-        setLastFetched(new Date());
+        acceptStats(await response.json());
+      } else if (!demo) {
+        noteApiCall('stats', false);
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -152,12 +183,12 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
       }
       if (!response.ok) {
         console.error('Error fetching playlist stats:', response.status);
+        if (!demo) noteApiCall('stats', false);
         setSelectedPlaylist(previousPlaylist);
         setDataMode(previousMode);
         return;
       }
-      setStats(await response.json());
-      setLastFetched(new Date());
+      acceptStats(await response.json());
     } catch (error) {
       console.error('Error fetching playlist stats:', error);
       setSelectedPlaylist(previousPlaylist);
@@ -176,9 +207,9 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     try {
       const response = await fetch(buildStatsUrl(timeRange, playLimit, newMode));
       if (response.ok) {
-        const data = await response.json();
-        setStats(data);
-        setLastFetched(new Date());
+        acceptStats(await response.json());
+      } else if (!demo) {
+        noteApiCall('stats', false);
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -193,8 +224,9 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     try {
       const response = await fetch(buildStatsUrl(timeRange, playLimit, dataMode, enabled));
       if (response.ok) {
-        setStats(await response.json());
-        setLastFetched(new Date());
+        acceptStats(await response.json());
+      } else if (!demo) {
+        noteApiCall('stats', false);
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -251,6 +283,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
   }
 
   const handleLogout = () => {
+    setActiveUser(null);
     localStorage.removeItem('token');
     router.push('/');
   };
@@ -287,6 +320,20 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     );
   }
 
+  const sections = [
+    { id: 'profile', label: 'Profile', icon: Award, iconClass: 'text-pink-400' },
+    { id: 'artists', label: 'Artists', icon: Star, iconClass: 'text-yellow-400' },
+    { id: 'tracks', label: 'Tracks', icon: TrendingUp, iconClass: 'text-green-400' },
+    { id: 'genres', label: 'Genres', icon: BarChart3, iconClass: 'text-purple-400' },
+    { id: 'story', label: 'Story', icon: BookOpen, iconClass: 'text-sky-300' },
+    { id: 'findings', label: 'Findings', icon: Search, iconClass: 'text-emerald-300' },
+    ...(!demo ? [
+      { id: 'collection', label: 'Collection', icon: LayoutGrid, iconClass: 'text-fuchsia-300' },
+      { id: 'badges', label: 'Badges', icon: Medal, iconClass: 'text-amber-300' },
+    ] : []),
+    { id: 'time', label: 'Over time', icon: History, iconClass: 'text-cyan-300' },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-900">
       {/* Header - Always visible */}
@@ -311,6 +358,37 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
             <div className="flex-1 flex justify-center min-w-0">
               <NowPlayingWidget endpoint={`${apiBase}/player/current`} />
             </div>
+
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger asChild>
+                <button
+                  type="button"
+                  aria-label="Jump to a section"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-400 hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                >
+                  <MoreHorizontal className="h-5 w-5" />
+                </button>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Portal>
+                <DropdownMenu.Content
+                  align="end"
+                  sideOffset={8}
+                  className="min-w-[160px] bg-gray-800 border border-gray-700 rounded-lg shadow-xl py-1 z-50"
+                >
+                  {sections.map(section => (
+                    <DropdownMenu.Item key={section.id} asChild>
+                      <a
+                        href={`#${section.id}`}
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white outline-none"
+                      >
+                        <section.icon className={`h-4 w-4 shrink-0 ${section.iconClass}`} />
+                        {section.label}
+                      </a>
+                    </DropdownMenu.Item>
+                  ))}
+                </DropdownMenu.Content>
+              </DropdownMenu.Portal>
+            </DropdownMenu.Root>
 
             <div className="flex items-center bg-gray-900/60 border border-gray-700/50 rounded-full p-1.5 shrink-0">
               <DropdownMenu.Root>
@@ -428,7 +506,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
 
       <div className="container mx-auto px-4 py-8">
         {/* Recently Played Stats */}
-        <div className="mb-8">
+        <div id="profile" className="mb-8 scroll-mt-24">
           <MusicProfile
             stats={stats}
             isLoadingTimeRange={isLoadingTimeRange}
@@ -451,9 +529,9 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               try {
                 const response = await fetch(buildStatsUrl(timeRange, newLimit, dataMode));
                 if (response.ok) {
-                  const data = await response.json();
-                  setStats(data);
-                  setLastFetched(new Date());
+                  acceptStats(await response.json());
+                } else if (!demo) {
+                  noteApiCall('stats', false);
                 }
               } catch (error) {
                 console.error('Error fetching stats with new limit:', error);
@@ -465,7 +543,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
         </div>
 
         {/* Top Artists */}
-        <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
+        <div id="artists" className="scroll-mt-24 bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <Star className="w-5 h-5 text-yellow-400" />
@@ -534,7 +612,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
         </div>
 
         {/* Top Tracks */}
-        <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
+        <div id="tracks" className="scroll-mt-24 bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-green-400" />
@@ -613,7 +691,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
         </div>
 
         {/* Top Genres */}
-        <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
+        <div id="genres" className="scroll-mt-24 bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-purple-400" />
@@ -692,21 +770,50 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
         </div>
 
         {/* Fun Stats */}
-        <div className="mb-8">
+        <div id="story" className="mb-8 scroll-mt-24">
           <FunStats stats={stats} />
         </div>
 
         {/* Achievements */}
-        <div className="mb-8">
+        <div id="findings" className="mb-8 scroll-mt-24">
           <Achievements stats={stats} />
         </div>
 
+        {!demo && (
+          <div className="mb-8 space-y-8">
+            <div id="collection" className="scroll-mt-24 rounded-2xl border border-gray-700 bg-gray-800 p-6 shadow-lg sm:p-8">
+              <h2 className="flex items-center gap-2 text-2xl font-bold text-white">
+                <LayoutGrid className="h-6 w-6 text-fuchsia-300" />
+                Collection
+              </h2>
+              <p className="mt-1 mb-6 text-sm text-gray-400">
+                Vibes and personas this account has landed on. Personas you have not found stay hidden.
+              </p>
+              <UnlockBoard userId={user.id} refreshKey={journalTick} />
+            </div>
+            <div id="badges" className="scroll-mt-24 rounded-2xl border border-gray-700 bg-gray-800 p-6 shadow-lg sm:p-8">
+              <h2 className="flex items-center gap-2 text-2xl font-bold text-white">
+                <Medal className="h-6 w-6 text-amber-300" />
+                Badges
+              </h2>
+              <p className="mt-1 mb-6 text-sm text-gray-400">
+                For this Spotify account, on this browser. Another account signed in here keeps its own.
+              </p>
+              <AchievementBoard userId={user.id} refreshKey={journalTick} />
+            </div>
+          </div>
+        )}
+
         {/* Rankings */}
-        <div className="mb-8">
+        <div id="time" className="mb-8 scroll-mt-24">
           <Rankings stats={stats} />
         </div>
 
       </div>
+
+      <AnimatePresence>
+        {news && <AchievementPopup key="unlock-toast" news={news} onClose={() => setNews(null)} />}
+      </AnimatePresence>
 
       {isDev && debugPanelEnabled && (
         <GenreDebugPanel

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Stats } from '@/types';
 import { buildStorySlides, type StorySlide } from '@/utils/listeningFacts';
 
@@ -200,7 +200,10 @@ export default function FunStats({ stats }: FunStatsProps) {
   return (
     <div className="rounded-2xl border border-gray-700 bg-gray-800 p-4 shadow-lg sm:p-6">
       <div className="mb-4 px-1">
-        <h2 className="text-lg font-bold text-white">Your Music Story</h2>
+        <h2 className="flex items-center gap-2 text-lg font-bold text-white">
+          <BookOpen className="h-5 w-5 text-sky-300" />
+          Your Music Story
+        </h2>
         <p className="text-xs text-gray-400">Facts from this view, not a lifetime total.</p>
       </div>
 

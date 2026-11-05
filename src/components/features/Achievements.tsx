@@ -1,5 +1,6 @@
 'use client';
 
+import { Search } from 'lucide-react';
 import { Stats } from '@/types';
 import { buildFindings, viewScope, type Finding } from '@/utils/listeningFacts';
 
@@ -97,7 +98,10 @@ export default function Achievements({ stats }: AchievementsProps) {
     <div className="rounded-2xl border border-gray-700 bg-gray-800 p-6 shadow-lg sm:p-8">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-white">Findings</h2>
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-white">
+            <Search className="h-6 w-6 text-emerald-300" />
+            Findings
+          </h2>
           <p className="mt-1 text-sm text-gray-400">Patterns in this view. They change when the source changes.</p>
         </div>
         <span className="rounded-full border border-gray-600 bg-gray-900/70 px-3 py-1 text-xs font-medium text-gray-300">

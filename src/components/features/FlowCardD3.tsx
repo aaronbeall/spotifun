@@ -6,7 +6,7 @@ import { calculateGenreVACRSScore } from '@/utils/musicClassification';
 import { VACRS_DIMENSIONS, VACRS_COLORS, getDominantTrait } from '@/utils/vacrs';
 import { getGenreColor, formatRelativeTime } from '@/utils/format';
 import { MUSIC_VIBES } from '@/utils/musicVibes';
-import { FlowStreamChart, FlowChartMode, FlowTrack, getFlowData, getFlowDimensionsAndColors, getTopGenres } from './FlowStreamChart';
+import { FlowStreamChart, FlowChartMode, FlowTrack, GENRE_TRACK_COUNT, getFlowData, getFlowDimensionsAndColors, getTopGenres } from './FlowStreamChart';
 import { FlowLegend } from './FlowLegend';
 import { ThemedCardBackground } from '../ThemedCardBackground';
 import { CARD_THEMES } from '@/utils/cardThemes';
@@ -50,6 +50,15 @@ interface FlowCardProps {
 
 export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartModeChange, mode }) => {
   const [chartMode, setChartMode] = useState<FlowChartMode>('genres');
+  const [genreCount, setGenreCount] = useState(GENRE_TRACK_COUNT);
+  const [hidden, setHidden] = useState<ReadonlySet<string>>(() => new Set());
+  // "More" is local to the plays currently on screen. A new source (recent,
+  // top, playlist, or a different window) starts over at the first five.
+  const [sourceTracks, setSourceTracks] = useState(tracks);
+  if (tracks !== sourceTracks) {
+    setSourceTracks(tracks);
+    setGenreCount(GENRE_TRACK_COUNT);
+  }
 
   useEffect(() => {
     onChartModeChange?.(chartMode);
@@ -64,11 +73,20 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
   const width = 420;
   const height = 340;
 
-  const { colors } = getFlowDimensionsAndColors(chartMode, tracks);
-  const topGenres = getTopGenres(tracks);
+  const genreTotal = getTopGenres(tracks, Number.POSITIVE_INFINITY).length;
+  const { colors } = getFlowDimensionsAndColors(chartMode, tracks, genreCount);
+  const topGenres = getTopGenres(tracks, genreCount);
+  const toggleSeries = (id: string) => {
+    setHidden(current => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   if (!tracks?.length) return null;
-  const flowData = getFlowData(tracks, chartMode);
+  const flowData = getFlowData(tracks, chartMode, genreCount);
   const firstDate = formatRelativeTime(flowData[0].playedAt);
   const lastDate = formatRelativeTime(flowData[flowData.length - 1].playedAt);
 
@@ -128,9 +146,18 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
         </div>
       </div>
       <div className="w-full flex justify-center" style={{ position: 'relative' }}>
+        {(chartMode === 'genres'
+          ? topGenres.length > 0 && topGenres.every(genre => hidden.has(`genre:${genre}`))
+          : chartMode === 'traits' && VACRS_DIMENSIONS.every(dim => hidden.has(`trait:${dim}`))) && (
+          <p className="absolute inset-0 z-10 flex items-center justify-center text-sm text-gray-400">
+            Turn a legend item back on to see it here.
+          </p>
+        )}
         <FlowStreamChart
           tracks={tracks}
           chartMode={chartMode}
+          genreCount={genreCount}
+          hidden={hidden}
           width={width}
           height={height}
           onHover={(idx, x, y) => setTooltip(idx === null ? null : { idx, x, y })}
@@ -207,7 +234,7 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
                   // Sort by match percentage descending and show top 3
                   const topVibes = [...matchedVibes].sort((a, b) => b.match - a.match).slice(0, 3);
 
-                  return topVibes.map((vibeMatch) => {
+                  return topVibes.filter(vibeMatch => !hidden.has(`vibe:${vibeMatch.vibeId}`)).map((vibeMatch) => {
                     const vibe = MUSIC_VIBES.find(v => v.id === vibeMatch.vibeId);
                     if (!vibe) return null;
 
@@ -247,6 +274,7 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
               ) : chartMode === 'genres' ? (
                 // Genres mode: show the running presence of each tracked genre
                 topGenres.map((genre, i) => {
+                  if (hidden.has(`genre:${genre}`)) return null;
                   const rowData = flowData[tooltip.idx] as unknown as Record<string, number>;
                   const value = rowData[`genre_${i}`] || 0;
                   const color = colors[i];
@@ -272,6 +300,7 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
                 // dimension/score — a bidirectional bar growing from center
                 // toward whichever side (label + %) the average leans.
                 VACRS_DIMENSIONS.map((dim) => {
+                  if (hidden.has(`trait:${dim}`)) return null;
                   const originalRow = flowData[tooltip.idx];
                   if (!originalRow.genres || originalRow.genres.length === 0) {
                     return null;
@@ -310,7 +339,15 @@ export const FlowCardD3: React.FC<FlowCardProps> = ({ tracks, onShare, onChartMo
       </div>
       <div className="grid grid-cols-[1fr_auto_1fr] items-center mt-1 text-xs text-white/60">
         <span className="justify-self-start">{firstDate}</span>
-        <FlowLegend tracks={tracks} chartMode={chartMode} />
+        <FlowLegend
+          tracks={tracks}
+          chartMode={chartMode}
+          genreCount={genreCount}
+          hidden={hidden}
+          onToggle={toggleSeries}
+          onMore={chartMode === 'genres' && genreCount < genreTotal ? () => setGenreCount(count => count + GENRE_TRACK_COUNT) : undefined}
+          onReset={chartMode === 'genres' && genreCount > GENRE_TRACK_COUNT ? () => setGenreCount(GENRE_TRACK_COUNT) : undefined}
+        />
         <span className="justify-self-end">{lastDate}</span>
       </div>
       <div className="text-center mt-6">

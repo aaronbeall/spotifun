@@ -15,7 +15,6 @@ import { cn } from '@/utils';
 // Load them after the hero so the first paint stays light.
 const WrappedMusicProfile = dynamic(() => import('@/components/features/WrappedMusicProfile').then(m => m.WrappedMusicProfile), { ssr: false });
 const FunStats = dynamic(() => import('@/components/features/FunStats'), { ssr: false });
-const Achievements = dynamic(() => import('@/components/features/Achievements'), { ssr: false });
 const OnRepeat = dynamic(() => import('@/components/home/OnRepeat').then(m => m.OnRepeat), { ssr: false });
 const GroupChat = dynamic(() => import('@/components/home/GroupChat').then(m => m.GroupChat), { ssr: false });
 
@@ -103,12 +102,12 @@ export default function Home() {
         <div aria-hidden className="absolute inset-0 -z-20 bg-[radial-gradient(ellipse_at_70%_40%,rgba(124,58,237,0.28),transparent_60%),radial-gradient(ellipse_at_10%_90%,rgba(217,70,239,0.16),transparent_55%)]" />
         <HeroWaves anchorRef={globeRef} className="absolute inset-0 -z-10 h-full w-full opacity-90 lg:[mask-image:linear-gradient(90deg,rgba(0,0,0,0.15)_0%,rgba(0,0,0,0.35)_35%,black_60%)]" />
 
-        <header className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-5 sm:px-6">
-          <Link href="/" className="flex items-center gap-2.5">
+        <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-5 sm:px-6">
+          <Link href="/" className="flex shrink-0 items-center gap-2.5">
             <Image src="/logo.png" alt="" width={40} height={40} className="h-10 w-10" />
             <span className="text-2xl font-black italic lowercase tracking-tight text-violet-400">spotifun</span>
           </Link>
-          <Link href="/example" className="hidden rounded-full px-4 py-2 text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white sm:inline-flex">
+          <Link href="/example" className="hidden shrink-0 rounded-full px-4 py-2 text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white sm:inline-flex">
             Peek at Sam&apos;s profile
           </Link>
         </header>
@@ -158,7 +157,7 @@ export default function Home() {
       {!failed && (
         <main className="relative">
           {/* Profile carousel, live */}
-          <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-24">
+          <section id="profile" className="mx-auto max-w-6xl scroll-mt-8 px-4 py-14 sm:px-6 sm:py-24">
             <SectionTitle icon={Sparkles} iconClass="text-fuchsia-400" title="Flip through Sam's profile">
               This is the real thing, running on Sam&apos;s listening. Click around. Every card has a share button.
             </SectionTitle>
@@ -172,7 +171,7 @@ export default function Home() {
           </section>
 
           {/* Top artists and tracks */}
-          <section className="py-14 sm:py-20">
+          <section id="repeat" className="scroll-mt-8 py-14 sm:py-20">
             <div className="px-4 sm:px-6">
               <SectionTitle icon={Repeat} iconClass="text-green-400" title="Who's on repeat">
                 Top artists, tracks and genres, for the last four weeks, six months or all time.
@@ -182,7 +181,7 @@ export default function Home() {
           </section>
 
           {/* Sharing */}
-          <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-24">
+          <section id="chat" className="mx-auto max-w-6xl scroll-mt-8 px-4 py-14 sm:px-6 sm:py-24">
             <div className="grid items-center gap-12 lg:grid-cols-2">
               <motion.div {...reveal} className="text-center lg:text-left">
                 <h2 className="flex flex-col items-center justify-center gap-2 font-display text-3xl font-extrabold tracking-tight sm:flex-row sm:gap-3 sm:text-4xl lg:justify-start">
@@ -198,27 +197,12 @@ export default function Home() {
           </section>
 
           {/* Fun stats and achievements */}
-          <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-24">
+          <section id="facts" className="mx-auto max-w-6xl scroll-mt-8 px-4 py-14 sm:px-6 sm:py-24">
             <SectionTitle icon={Trophy} iconClass="text-yellow-400" title="Odd little facts">
-              A story from this view, and findings like a replay, a deep cut, or songs that span decades.
+              A story from this view.
             </SectionTitle>
-            <motion.div {...reveal} className="space-y-8">
-              {stats ? (
-                <>
-                  <FunStats stats={stats} />
-                  {/* Eight stacked badges is a lot of thumb-scrolling on a phone, so show a peek */}
-                  <div className="relative max-h-[560px] overflow-hidden sm:max-h-none sm:overflow-visible">
-                    <Achievements stats={stats} />
-                    <div className="absolute inset-x-0 bottom-0 flex h-40 items-end justify-center bg-gradient-to-t from-gray-950 via-gray-950/90 to-transparent pb-4 sm:hidden">
-                      <Link href="/example" className="rounded-full border border-white/15 bg-gray-800/90 px-5 py-2 text-sm font-medium text-gray-100">
-                        See the rest of Sam&apos;s findings
-                      </Link>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <Placeholder className="h-96" />
-              )}
+            <motion.div {...reveal}>
+              {stats ? <FunStats stats={stats} /> : <Placeholder className="h-96" />}
             </motion.div>
           </section>
         </main>

@@ -194,6 +194,17 @@ export async function computeStats(source: ListeningDataSource, options: Compute
   const coverageResult = calculateWeightedVACRSScoreWithCoverage(genreStats);
   stats.overview.genreCoverage = coverageResult.coverage;
 
+  const { unmatchedGenreNames } = await import('@/utils/improvedClassification');
+  const { isJunkTag } = await import('@/utils/lastfm');
+  const candidateNames = genreStats.map(genre => genre.genre);
+  for (const { artist } of artistStats) {
+    const tags = (artist as LastFmEnhancedArtist)._lastFmData?.rawTags ?? [];
+    for (const tag of tags) {
+      if (!isJunkTag(tag.name)) candidateNames.push(tag.name);
+    }
+  }
+  stats.unmatchedGenres = unmatchedGenreNames(candidateNames);
+
   // Debug data, derived from what the pipeline above already fetched (no extra requests)
   if (options.includeDebug) {
     const { classifyGenresWithDetails } = await import('@/utils/musicClassification');

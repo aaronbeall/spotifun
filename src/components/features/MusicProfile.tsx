@@ -8,6 +8,7 @@ import { WrappedMusicProfile } from "./WrappedMusicProfile";
 import { StatCard } from './StatCard';
 import { MetricInfo } from '../MetricInfo';
 import { getMetricDescription } from '@/utils/metricDescriptions';
+import { noteApiCall } from '@/lib/records/observe';
 
 const DATA_MODES = [
   { id: 'recent' as const, label: 'Recently Played', icon: Clock },
@@ -148,6 +149,7 @@ export default function MusicProfile({
     setPlaylistMenu(menu => ({ ...menu, status: 'loading' }));
     try {
       const response = await fetch('/api/playlists');
+      if (response.ok) noteApiCall('playlists', true);
       if (!response.ok) throw new Error('Failed to load playlists');
       const data: PlaylistsResponse = await response.json();
       setPlaylistMenu({ status: 'ready', likedSongs: data.likedSongs, playlists: data.playlists });

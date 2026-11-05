@@ -178,6 +178,8 @@ export interface Stats {
   playlist?: PlaylistAnalysis;
   /** Artists whose genres couldn't be enriched with Last.fm (rate limit or API error); omitted when 0 */
   lastFmUnavailableCount?: number;
+  /** Genre labels from this view that matched neither the taxonomy nor the mood vocabulary. */
+  unmatchedGenres?: string[];
   debugGenreData?: ArtistGenreDebugInfo[]; // Dev-only: always returned when NODE_ENV=development
   debugLastFmStatus?: LastFmDebugStatus;
 }

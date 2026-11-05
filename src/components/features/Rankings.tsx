@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { History } from 'lucide-react';
 import { EraSnapshot, ErasResponse, Stats } from '@/types';
 import {
   currentViewSnapshot,
@@ -8,6 +9,7 @@ import {
   type ShiftMetric,
   type ViewSnapshot,
 } from '@/utils/listeningFacts';
+import { noteApiCall } from '@/lib/records/observe';
 
 interface RankingsProps {
   stats: Stats;
@@ -76,6 +78,7 @@ export default function Rankings({ stats }: RankingsProps) {
     let cancelled = false;
     fetch('/api/stats/eras')
       .then(response => {
+        if (response.ok) noteApiCall('eras', true);
         if (!response.ok) throw new Error('eras failed');
         return response.json() as Promise<ErasResponse>;
       })
@@ -95,7 +98,10 @@ export default function Rankings({ stats }: RankingsProps) {
   return (
     <div className="rounded-2xl border border-gray-700 bg-gray-800 p-6 shadow-lg sm:p-8">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-white">You, over time</h2>
+        <h2 className="flex items-center gap-2 text-2xl font-bold text-white">
+          <History className="h-6 w-6 text-cyan-300" />
+          You, over time
+        </h2>
         <p className="mt-1 max-w-2xl text-sm text-gray-400">
           The diamond is the source selected above. The dots are your top tracks and top artists in each
           Spotify period, without Last.fm.

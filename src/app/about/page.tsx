@@ -15,7 +15,16 @@ export default function AboutPage() {
         <p className="mt-4 text-lg leading-relaxed text-gray-300">
           Spotifun reads a Spotify account and turns it into a profile: who you play, which genres show up,
           how mainstream or niche the songs are, and a named listener persona. It is a personal project,
-          built to make taste legible rather than to sell anything.
+          built to make taste legible.
+        </p>
+        <p className="mt-4 text-lg leading-relaxed text-gray-300">
+          The first aim was a whole play history. Spotify does not hand that over without clunky, costly
+          workarounds. Building another ingestion engine and charging for it was the other path. This one
+          stays free. It keeps nothing of you on a server, and it only knows the listening you open in the
+          app. If a paid version that ingested a full history is something you would want, write to{' '}
+          <a href="mailto:support@metamodernmonkey.com" className="text-violet-300 underline decoration-violet-300/40 underline-offset-2 hover:text-violet-200">
+            support@metamodernmonkey.com
+          </a>.
         </p>
       </header>
 
@@ -50,12 +59,17 @@ export default function AboutPage() {
 
       <section id="privacy" className="scroll-mt-8 space-y-3">
         <h2 className="text-xl font-semibold text-white">Privacy</h2>
-        <p className="text-sm text-gray-500">Last updated October 31, 2026.</p>
+        <p className="text-sm text-gray-500">Last updated November 4, 2026.</p>
         <p>
-          Spotifun does not keep its own user database. Connecting Spotify grants the app permission to read
+          Spotifun does not keep a user database on a server. Connecting Spotify grants the app permission to read
           your profile and email, top artists and tracks, recently played tracks, current playback, private
           and collaborative playlists, and Liked Songs. You can revoke that access from your Spotify account
           at any time.
+        </p>
+        <p>
+          This browser keeps a separate journal for each Spotify account you sign in with: sign-ins, the
+          profile requests you make, the persona and vibe each result lands on, and genre names that do not
+          match the trait list. The badges on your dashboard read that account&apos;s journal. It is not uploaded.
         </p>
         <p>
           Spotify access and refresh tokens are stored in httpOnly cookies so the server can request your

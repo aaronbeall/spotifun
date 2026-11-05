@@ -32,7 +32,7 @@ export function getTopGenres(tracks: FlowTrack[], n: number = GENRE_TRACK_COUNT)
     .map(([genre]) => genre);
 }
 
-export function getFlowData(tracks: FlowTrack[], mode: FlowChartMode = 'traits') {
+export function getFlowData(tracks: FlowTrack[], mode: FlowChartMode = 'traits', genreCount: number = GENRE_TRACK_COUNT) {
   // Sort tracks by playedAt ascending
   const sortedTracks = [...tracks].sort((a, b) => new Date(a.playedAt).getTime() - new Date(b.playedAt).getTime());
 
@@ -69,11 +69,11 @@ export function getFlowData(tracks: FlowTrack[], mode: FlowChartMode = 'traits')
   });
 
   if (mode === 'genres') {
-    const topGenres = getTopGenres(sortedTracks);
+    const topGenres = getTopGenres(sortedTracks, genreCount);
     const runningPresence = topGenres.map(() => 0);
 
-    // Smoothing runs oldest-to-newest (correct trend direction), then the
-    // finished rows are reversed so the chart reads most-recent-first, left to right.
+    // Smoothing runs oldest-to-newest, and the chart keeps that order:
+    // older plays on the left, the most recent on the right.
     return rawData.map((row, idx) => {
       const trackGenres = sortedTracks[idx].genres || [];
       const result = { ...row } as typeof row & Record<string, number>;
@@ -84,7 +84,7 @@ export function getFlowData(tracks: FlowTrack[], mode: FlowChartMode = 'traits')
         result[`genre_${i}`] = runningPresence[i];
       });
       return result;
-    }).reverse();
+    });
   }
 
   if (mode === 'vibes') {
@@ -180,9 +180,7 @@ export function getFlowData(tracks: FlowTrack[], mode: FlowChartMode = 'traits')
 
       vibesData.push(result);
     });
-    // Smoothing runs oldest-to-newest (correct trend direction), then the
-    // finished rows are reversed so the chart reads most-recent-first, left to right.
-    return vibesData.reverse();
+    return vibesData;
   }
 
   // traits: streams vary independently based on distance from 0.5
@@ -207,12 +205,12 @@ export function getFlowData(tracks: FlowTrack[], mode: FlowChartMode = 'traits')
       }
     });
     return result;
-  }).reverse();
+  });
 }
 
-export function getFlowDimensionsAndColors(chartMode: FlowChartMode, tracks: FlowTrack[] = []) {
+export function getFlowDimensionsAndColors(chartMode: FlowChartMode, tracks: FlowTrack[] = [], genreCount: number = GENRE_TRACK_COUNT) {
   if (chartMode === 'genres') {
-    const topGenres = getTopGenres(tracks);
+    const topGenres = getTopGenres(tracks, genreCount);
     return {
       dimensions: topGenres.map((_, i) => `genre_${i}`),
       // Same per-genre color used for genre badges/tags elsewhere in the app
@@ -238,9 +236,26 @@ export function getFlowDimensionsAndColors(chartMode: FlowChartMode, tracks: Flo
   };
 }
 
+/** Stable id for one legend entry. Trait pairs share an id so both streams toggle together. */
+export function flowSeriesId(chartMode: FlowChartMode, dimension: string, tracks: FlowTrack[], genreCount: number): string {
+  if (chartMode === 'genres') {
+    const index = Number(dimension.slice('genre_'.length));
+    return `genre:${getTopGenres(tracks, genreCount)[index] ?? dimension}`;
+  }
+  if (chartMode === 'vibes') {
+    const index = Number(dimension.slice('vibe_'.length));
+    return `vibe:${MUSIC_VIBES[index]?.id ?? dimension}`;
+  }
+  return `trait:${dimension.replace(/_(light|dark)$/, '')}`;
+}
+
 interface FlowStreamChartProps {
   tracks: FlowTrack[];
   chartMode?: FlowChartMode;
+  /** How many of the most common genres to draw. Defaults to the first five. */
+  genreCount?: number;
+  /** Series ids (`genre:name`, `trait:dimension`, `vibe:id`) left out of the stack. */
+  hidden?: ReadonlySet<string>;
   width?: number;
   height?: number;
   onHover?: (idx: number | null, x: number, y: number) => void;
@@ -248,14 +263,24 @@ interface FlowStreamChartProps {
 
 // The core D3 stream-graph visual, extracted so it can be reused both in the
 // live interactive Flow card and in the static share graphic.
-export function FlowStreamChart({ tracks, chartMode = 'traits', width = 420, height = 340, onHover }: FlowStreamChartProps) {
+export function FlowStreamChart({ tracks, chartMode = 'traits', genreCount = GENRE_TRACK_COUNT, hidden, width = 420, height = 340, onHover }: FlowStreamChartProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const verticalPadding = 72;
   // Stable per-instance id so the reveal clip-path never collides when this
   // component renders more than once on the page (e.g. live card + share modal).
   const clipIdRef = useRef(`flow-reveal-${Math.random().toString(36).slice(2)}`);
+  const revealKeyRef = useRef('');
 
-  const { dimensions, colors } = useMemo(() => getFlowDimensionsAndColors(chartMode, tracks), [chartMode, tracks]);
+  const { dimensions, colors } = useMemo(() => {
+    const series = getFlowDimensionsAndColors(chartMode, tracks, genreCount);
+    if (!hidden || hidden.size === 0) return series;
+    const kept = series.dimensions.map((dimension, index) => ({ dimension, color: series.colors[index] }))
+      .filter(entry => !hidden.has(flowSeriesId(chartMode, entry.dimension, tracks, genreCount)));
+    return {
+      dimensions: kept.map(entry => entry.dimension),
+      colors: kept.map(entry => entry.color),
+    };
+  }, [chartMode, tracks, genreCount, hidden]);
 
   // Keep the latest onHover in a ref so the draw effect below doesn't need to
   // depend on it directly — onHover is a new function identity on every parent
@@ -269,7 +294,12 @@ export function FlowStreamChart({ tracks, chartMode = 'traits', width = 420, hei
 
   useEffect(() => {
     if (!tracks?.length) return;
-    const flowData = getFlowData(tracks, chartMode);
+    const flowData = getFlowData(tracks, chartMode, genreCount);
+    if (dimensions.length === 0) {
+      d3.select(svgRef.current).selectAll('g').remove();
+      d3.select(svgRef.current).selectAll('defs').remove();
+      return;
+    }
     const x = d3.scaleLinear()
       .domain([0, flowData.length - 1])
       .range([0, width]);
@@ -299,6 +329,16 @@ export function FlowStreamChart({ tracks, chartMode = 'traits', width = 420, hei
     // The per-stream delay is derived from a fixed overall stagger range so
     // it shrinks automatically as more streams are shown (e.g. Vibes mode
     // with many layers) rather than dragging the whole reveal out further.
+    // Commit the key on the next frame. React Strict Mode runs this effect,
+    // cleans it up, then runs it again on the first mount (opening the Flow
+    // tab). Recording the key synchronously made that second run draw the
+    // chart already revealed, so the opening wipe never played.
+    const revealKey = `${chartMode}:${tracks.length}:${tracks[0]?.playedAt ?? ''}:${tracks[0]?.track ?? ''}:${tracks[tracks.length - 1]?.playedAt ?? ''}`;
+    const animateReveal = revealKeyRef.current !== revealKey;
+    const commitReveal = requestAnimationFrame(() => {
+      revealKeyRef.current = revealKey;
+    });
+
     const defs = svg.append("defs");
     const clipBaseId = clipIdRef.current;
     const revealEase = waveRevealEaseFn();
@@ -314,18 +354,23 @@ export function FlowStreamChart({ tracks, chartMode = 'traits', width = 420, hei
         .curve(d3.curveCatmullRom);
 
       const clipId = `${clipBaseId}-${i}`;
-      defs.append("clipPath")
+      const revealRect = defs.append("clipPath")
         .attr("id", clipId)
         .append("rect")
         .attr("x", 0)
         .attr("y", 0)
-        .attr("width", 0)
-        .attr("height", height)
-        .transition()
-        .delay(i * revealStaggerMs)
-        .duration(revealDurationMs)
-        .ease(revealEase)
-        .attr("width", width);
+        .attr("height", height);
+      if (animateReveal) {
+        revealRect
+          .attr("width", 0)
+          .transition()
+          .delay(i * revealStaggerMs)
+          .duration(revealDurationMs)
+          .ease(revealEase)
+          .attr("width", width);
+      } else {
+        revealRect.attr("width", width);
+      }
 
       svg.append("g")
         .attr("clip-path", `url(#${clipId})`)
@@ -361,7 +406,12 @@ export function FlowStreamChart({ tracks, chartMode = 'traits', width = 420, hei
           d3.select(this).attr("fill", "transparent");
         });
     }
-  }, [tracks, chartMode, colors, dimensions, width, height]);
+
+    return () => {
+      cancelAnimationFrame(commitReveal);
+      d3.select(svgRef.current).selectAll('*').interrupt();
+    };
+  }, [tracks, chartMode, genreCount, colors, dimensions, width, height]);
 
   if (!tracks?.length) return null;
 

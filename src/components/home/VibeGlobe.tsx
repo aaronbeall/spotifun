@@ -73,6 +73,53 @@ function drawHalo(ctx: CanvasRenderingContext2D, x: number, y: number, size: num
   ctx.fill();
 }
 
+/** Pentatonic bells from a low G to a high E. Close vibes stay consonant. */
+const CHIME_SCALE = [
+  196, 220, 246.94, 293.66, 329.63,
+  392, 440, 493.88, 587.33, 659.25,
+  783.99, 880, 987.77, 1174.66, 1318.51,
+];
+
+/** Calmer vibes get lower bells. Each vibe keeps its own pitch. */
+function chimeFrequencies(vibes: { targetScore: { arousal: number; valence: number } }[]): number[] {
+  const order = vibes
+    .map((vibe, index) => ({ index, arousal: vibe.targetScore.arousal, valence: vibe.targetScore.valence }))
+    .sort((a, b) => a.arousal - b.arousal || a.valence - b.valence || a.index - b.index);
+  const frequencies = new Array<number>(vibes.length);
+  order.forEach((item, rank) => {
+    frequencies[item.index] = CHIME_SCALE[Math.min(rank, CHIME_SCALE.length - 1)];
+  });
+  return frequencies;
+}
+
+/** A short sine bell. Even vibes ring with an octave, odd ones with a fifth. */
+function playChime(audio: AudioContext, frequency: number, variant: number) {
+  const now = audio.currentTime;
+  const master = audio.createGain();
+  master.gain.setValueAtTime(0.0001, now);
+  master.gain.exponentialRampToValueAtTime(0.065, now + 0.02);
+  master.gain.exponentialRampToValueAtTime(0.0001, now + 1.15);
+  master.connect(audio.destination);
+
+  const partials = [
+    { ratio: 1, gain: 0.85, decay: 1.1 },
+    { ratio: variant % 2 === 0 ? 2 : 1.5, gain: 0.2, decay: 0.5 },
+    { ratio: 3, gain: 0.05, decay: 0.22 },
+  ];
+  for (const partial of partials) {
+    const osc = audio.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(frequency * partial.ratio, now);
+    const gain = audio.createGain();
+    gain.gain.setValueAtTime(partial.gain, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + partial.decay);
+    osc.connect(gain);
+    gain.connect(master);
+    osc.start(now);
+    osc.stop(now + partial.decay + 0.05);
+  }
+}
+
 function makeSprite(image: HTMLImageElement, rim: string): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = SPRITE_SIZE;
@@ -111,6 +158,18 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
     if (!ctx || !octx) return;
 
     const vibes = MUSIC_VIBES.filter(v => v.image);
+    const frequencies = chimeFrequencies(vibes);
+    let audio: AudioContext | null = null;
+    let hoverSprite = -1;
+    let anchorX = 0;
+    let anchorY = 0;
+    let anchored = false;
+    let lastChimeAt = 0;
+    const armAudio = () => {
+      if (typeof AudioContext === 'undefined') return;
+      audio ??= new AudioContext();
+      if (audio.state === 'suspended') void audio.resume();
+    };
     const sprites: (HTMLCanvasElement | null)[] = vibes.map(() => null);
     vibes.forEach((vibe, i) => {
       const img = new Image();
@@ -197,6 +256,7 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
       pointer.clientX = e.clientX;
       pointer.clientY = e.clientY;
       pointer.active = true;
+      if (e.pointerType === 'mouse') armAudio();
     };
     const mapPointer = () => {
       const rect = canvas.getBoundingClientRect();
@@ -304,6 +364,35 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
       }
       ctx.globalAlpha = 1;
 
+      // A still cursor lets the globe spin underneath without ringing. A moved cursor
+      // rings the vibe it lands on, once, until it leaves or reaches a different vibe.
+      let hovered: (typeof charged)[number] | null = null;
+      for (const emblem of charged) {
+        if (!hovered || emblem.strength > hovered.strength) hovered = emblem;
+      }
+      const moved = anchored && Math.hypot(pointer.x - anchorX, pointer.y - anchorY) > 10;
+      if (!pointer.active) {
+        anchored = false;
+        hoverSprite = -1;
+      } else if (!anchored) {
+        anchorX = pointer.x;
+        anchorY = pointer.y;
+        anchored = true;
+      } else if (moved && !dragging && hovered && hovered.strength > 0.5 && audio && audio.state === 'running') {
+        if (hovered.sprite === hoverSprite) {
+          anchorX = pointer.x;
+          anchorY = pointer.y;
+        } else if (now - lastChimeAt > 280) {
+          anchorX = pointer.x;
+          anchorY = pointer.y;
+          hoverSprite = hovered.sprite;
+          lastChimeAt = now;
+          playChime(audio, frequencies[hovered.sprite], hovered.sprite);
+        }
+      } else if (!hovered || hovered.strength < 0.18) {
+        hoverSprite = -1;
+      }
+
       // Nearby emblems shed particles around their rim, faster the closer the cursor is
       if (pointer.active && !reducedMotion && charged.length > 0) {
         charged.sort((a, b) => b.strength - a.strength);
@@ -392,6 +481,7 @@ export function VibeGlobe({ className }: VibeGlobeProps) {
     frame = requestAnimationFrame(draw);
 
     return () => {
+      void audio?.close();
       cancelAnimationFrame(frame);
       resizeObserver.disconnect();
       intersection.disconnect();
