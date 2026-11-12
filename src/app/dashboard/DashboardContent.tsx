@@ -18,6 +18,10 @@ import { GenreDebugPanel } from '@/components/GenreDebugPanel';
 import { usePersistedToggle } from '@/hooks/usePersistedToggle';
 import { AnimatePresence } from 'framer-motion';
 import { AchievementPopup } from '@/components/AchievementPopup';
+import { SectionShareButton } from '@/components/SectionShareButton';
+import { ShareModal } from '@/components/ShareModal';
+import { topArtistsShare, topTracksShare } from '@/components/shareLists';
+import type { ShareContent } from '@/components/ShareCardTemplate';
 import { AchievementBoard } from '@/components/features/AchievementBoard';
 import { UnlockBoard } from '@/components/features/UnlockBoard';
 import { noteApiCall, observeLogin, observeStatsResult, setActiveUser, type JournalNews } from '@/lib/records/observe';
@@ -60,6 +64,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
   const [lastFmEnabled, setLastFmEnabled] = usePersistedToggle('spotifun.lastFmEnrichment', true);
   const [debugPanelOpen, setDebugPanelOpen] = useState(false);
   const [news, setNews] = useState<JournalNews | null>(null);
+  const [listShare, setListShare] = useState<ShareContent | null>(null);
   const [journalTick, setJournalTick] = useState(0);
 
   const acceptStats = useCallback((statsData: Stats) => {
@@ -595,13 +600,16 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               );
             })}
           </div>
-          <div className="mt-6 flex justify-center">
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
             <button
               onClick={() => setShowAllArtists(!showAllArtists)}
               className="text-sm text-gray-300 hover:text-white px-4 py-2 rounded-full border border-gray-600 hover:border-gray-400 transition-colors bg-gray-800/50 hover:bg-gray-700/50"
             >
               {showAllArtists ? 'Show Less' : `Show All ${stats.topArtists.length} Artists`}
             </button>
+            {stats.topArtists.length > 0 && (
+              <SectionShareButton onClick={() => setListShare(topArtistsShare(stats))} />
+            )}
           </div>
         </div>
 
@@ -674,13 +682,16 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               );
             })}
           </div>
-          <div className="mt-6 flex justify-center">
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
             <button
               onClick={() => setShowAllTracks(!showAllTracks)}
               className="text-sm text-gray-300 hover:text-white px-4 py-2 rounded-full border border-gray-600 hover:border-gray-400 transition-colors bg-gray-800/50 hover:bg-gray-700/50"
             >
               {showAllTracks ? 'Show Less' : `Show All ${stats.topTracks.length} Tracks`}
             </button>
+            {stats.topTracks.length > 0 && (
+              <SectionShareButton onClick={() => setListShare(topTracksShare(stats))} />
+            )}
           </div>
         </div>
 
@@ -808,6 +819,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
       <AnimatePresence>
         {news && <AchievementPopup key="unlock-toast" news={news} onClose={() => setNews(null)} />}
       </AnimatePresence>
+      <ShareModal content={listShare} onClose={() => setListShare(null)} />
 
       {isDev && debugPanelEnabled && (
         <GenreDebugPanel

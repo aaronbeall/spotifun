@@ -19,7 +19,7 @@ export function ShareModal({ content, onClose }: ShareModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-6 overflow-y-auto"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-6 overflow-y-auto"
       onClick={onClose}
     >
       <div className="relative my-auto" onClick={e => e.stopPropagation()}>

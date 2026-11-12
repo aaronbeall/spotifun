@@ -13,6 +13,9 @@ import { getMetricDescription } from '@/utils/metricDescriptions';
 import { getDominantTrait } from '@/utils/vacrs';
 import { ThemedCardBackground } from '../ThemedCardBackground';
 import { MetricInfo } from '../MetricInfo';
+import { SectionShareButton } from '../SectionShareButton';
+import { ShareModal } from '../ShareModal';
+import type { ShareContent } from '../ShareCardTemplate';
 import { PersonaPresentation, UnlockBadge } from './PersonaCard';
 
 const VIBE_TRAITS: Array<{ key: keyof VACRSScore; label: string; tooltip: string }> = [
@@ -42,6 +45,7 @@ function unlockDate(iso: string): string {
 export function UnlockBoard({ userId, refreshKey = 0 }: { userId: string; refreshKey?: number }) {
   const [unlocks, setUnlocks] = useState<UnlockRecord[] | null>(null);
   const [open, setOpen] = useState<OpenDetail | null>(null);
+  const [share, setShare] = useState<ShareContent | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -132,6 +136,11 @@ export function UnlockBoard({ userId, refreshKey = 0 }: { userId: string; refres
             );
           })}
         </ul>
+        {vibes.size > 0 && (
+          <div className="mt-4 flex justify-center">
+            <SectionShareButton onClick={() => setShare(vibeCollectionShare(vibes))} />
+          </div>
+        )}
       </section>
 
       <section>
@@ -174,6 +183,11 @@ export function UnlockBoard({ userId, refreshKey = 0 }: { userId: string; refres
             );
           })}
         </ul>
+        {personas.size > 0 && (
+          <div className="mt-4 flex justify-center">
+            <SectionShareButton onClick={() => setShare(personaCollectionShare(personas))} />
+          </div>
+        )}
       </section>
       {open && (
         <div
@@ -208,11 +222,95 @@ export function UnlockBoard({ userId, refreshKey = 0 }: { userId: string; refres
                 titleId="vibe-detail-title"
               />
             )}
+            <div className="mt-4 flex justify-center">
+              <SectionShareButton onClick={() => setShare(itemShare(open))} />
+            </div>
           </div>
         </div>
       )}
+      <ShareModal content={share} onClose={() => setShare(null)} />
     </div>
   );
+}
+
+function SharePortrait({ src, glow }: { src: string; glow: string }) {
+  return (
+    <div
+      className="h-48 w-48 overflow-hidden rounded-full border-4 border-white/10"
+      style={{ boxShadow: `0 0 60px ${glow}50` }}
+    >
+      <img src={src} alt="" className="h-full w-full object-cover" />
+    </div>
+  );
+}
+
+function ShareMosaic({ items }: { items: Array<{ src: string; round: boolean }> }) {
+  return (
+    <div className="flex max-w-[28rem] flex-wrap justify-center gap-2">
+      {items.slice(0, 18).map((item, index) => (
+        <img
+          key={`${item.src}-${index}`}
+          src={item.src}
+          alt=""
+          className={`h-14 w-14 object-cover ${item.round ? 'rounded-full' : 'rounded-xl'}`}
+        />
+      ))}
+    </div>
+  );
+}
+
+function vibeCollectionShare(found: Map<string, UnlockRecord>): ShareContent {
+  const vibes = MUSIC_VIBES.filter(vibe => found.has(vibe.id));
+  const lead = vibes[0];
+  return {
+    eyebrow: 'Vibe collection',
+    title: vibes.length === 1 ? lead.name : `${vibes.length} vibes`,
+    value: `${vibes.length} of ${MUSIC_VIBES.length}`,
+    description: 'Vibes this account has landed on.',
+    color: lead?.color ?? { light: '#f472b6', dark: '#831843' },
+    visual: (
+      <ShareMosaic items={vibes.flatMap(vibe => (vibe.image ? [{ src: vibe.image, round: true }] : []))} />
+    ),
+  };
+}
+
+function personaCollectionShare(found: Map<string, UnlockRecord>): ShareContent {
+  const personas = MUSIC_PERSONAS.filter(persona => found.has(persona.id));
+  const lead = personas[0];
+  const color = lead?.color ?? '#c4b5fd';
+  return {
+    eyebrow: 'Persona collection',
+    title: personas.length === 1 ? lead.name : `${personas.length} personas`,
+    value: `${personas.length} of ${MUSIC_PERSONAS.length}`,
+    description: 'Personas this account has landed on.',
+    color: { light: color, dark: darkenHex(color, 0.6) },
+    visual: (
+      <ShareMosaic items={personas.map(persona => ({ src: personaPortraitSrc(persona.id), round: false }))} />
+    ),
+  };
+}
+
+function itemShare(open: OpenDetail): ShareContent {
+  if (open.kind === 'persona') {
+    const { persona, at } = open;
+    return {
+      eyebrow: 'Listener persona',
+      title: persona.name,
+      value: `Unlocked ${unlockDate(at)}`,
+      description: persona.description,
+      color: { light: persona.color, dark: darkenHex(persona.color, 0.6) },
+      visual: <SharePortrait src={personaPortraitSrc(persona.id)} glow={persona.color} />,
+    };
+  }
+  const { vibe, at } = open;
+  return {
+    eyebrow: 'Vibe',
+    title: vibe.name,
+    value: `Unlocked ${unlockDate(at)}`,
+    description: vibe.description,
+    color: { light: vibe.color.light, dark: darkenHex(vibe.color.dark, 0.55) },
+    visual: vibe.image ? <SharePortrait src={vibe.image} glow={vibe.color.light} /> : undefined,
+  };
 }
 
 function VibePresentation({ vibe, unlockedOn, titleId }: { vibe: MusicVibe; unlockedOn?: string; titleId?: string }) {
