@@ -13,11 +13,10 @@ import { FlowStreamChart, FlowChartMode, FlowTrack } from "./FlowStreamChart";
 import { FlowLegend } from "./FlowLegend";
 import { ShareModal } from "../ShareModal";
 import { ShareContent } from "../ShareCardTemplate";
-import { GenerativeArt } from "../GenerativeArt";
 import { ImageBadge } from "../ImageBadge";
 import { findBestMatchingVibe } from "@/utils/musicVibesAnalyzer";
 import { analyzePopularity, getPopularityExtremes } from "@/utils/popularity";
-import { getUserPersona, personaToArtProfile } from "@/utils/musicPersonas";
+import { getUserPersona, personaPortraitSrc } from "@/utils/musicPersonas";
 import { darkenHex } from "@/utils/color";
 import { CARD_THEMES } from "@/utils/cardThemes";
 
@@ -256,7 +255,7 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
           color: colors,
           visual: (
             <CircularVisual glow={colors.light}>
-              <GenerativeArt seed={persona.id} colors={colors} profile={personaToArtProfile(persona)} className="w-full h-full" />
+              <img src={personaPortraitSrc(persona.id)} alt="" className="h-full w-full object-cover" />
             </CircularVisual>
           ),
         };

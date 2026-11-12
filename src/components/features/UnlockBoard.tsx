@@ -2,11 +2,30 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import * as Tooltip from '@radix-ui/react-tooltip';
+import { X } from 'lucide-react';
 import { getRecordStore } from '@/lib/records/indexedDbStore';
 import type { UnlockRecord } from '@/lib/records/types';
-import { MUSIC_PERSONAS } from '@/utils/musicPersonas';
+import type { MusicVibe, VACRSScore } from '@/types';
+import { MUSIC_PERSONAS, personaPortraitSrc, type Persona } from '@/utils/musicPersonas';
 import { MUSIC_VIBES } from '@/utils/musicVibes';
+import { darkenHex } from '@/utils/color';
+import { getMetricDescription } from '@/utils/metricDescriptions';
+import { getDominantTrait } from '@/utils/vacrs';
+import { ThemedCardBackground } from '../ThemedCardBackground';
+import { MetricInfo } from '../MetricInfo';
+import { PersonaPresentation } from './PersonaCard';
+
+const VIBE_TRAITS: Array<{ key: keyof VACRSScore; label: string; tooltip: string }> = [
+  { key: 'valence', label: 'Mood', tooltip: 'valence' },
+  { key: 'arousal', label: 'Energy', tooltip: 'arousal' },
+  { key: 'complexity', label: 'Depth', tooltip: 'complexity' },
+  { key: 'rawness', label: 'Texture', tooltip: 'rawness' },
+  { key: 'socialPresence', label: 'Setting', tooltip: 'social-presence' },
+];
+
+type OpenDetail =
+  | { kind: 'persona'; persona: Persona; at: string }
+  | { kind: 'vibe'; vibe: MusicVibe; at: string };
 
 function byKey(unlocks: UnlockRecord[], kind: UnlockRecord['kind']): Map<string, UnlockRecord> {
   const found = new Map<string, UnlockRecord>();
@@ -22,6 +41,21 @@ function unlockDate(iso: string): string {
 
 export function UnlockBoard({ userId, refreshKey = 0 }: { userId: string; refreshKey?: number }) {
   const [unlocks, setUnlocks] = useState<UnlockRecord[] | null>(null);
+  const [open, setOpen] = useState<OpenDetail | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
 
   useEffect(() => {
     let cancelled = false;
@@ -59,24 +93,41 @@ export function UnlockBoard({ userId, refreshKey = 0 }: { userId: string; refres
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {MUSIC_VIBES.map(vibe => {
             const unlock = vibes.get(vibe.id);
-            return (
-              <li
-                key={vibe.id}
-                className={`flex flex-col items-center rounded-2xl border px-3 py-4 text-center ${unlock ? 'border-white/15 bg-white/[0.04]' : 'border-white/5 bg-black/20'}`}
-              >
+            const date = unlock ? unlockDate(unlock.at) : 'Not yet';
+            const body = (
+              <>
                 {vibe.image && (
                   <Image
                     src={vibe.image}
                     alt=""
                     width={72}
                     height={72}
-                    className={`h-16 w-16 rounded-full ${unlock ? '' : 'opacity-35 grayscale'}`}
+                    className={`h-16 w-16 rounded-full transition duration-200 ${unlock ? 'group-hover:scale-110' : 'opacity-35 grayscale'}`}
                   />
                 )}
                 <p className={`mt-2 text-sm font-semibold leading-tight ${unlock ? 'text-white' : 'text-gray-500'}`}>{vibe.name}</p>
                 <p className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
-                  {unlock ? unlockDate(unlock.at) : 'Not yet'}
+                  {date}
                 </p>
+              </>
+            );
+            return (
+              <li key={vibe.id}>
+                {unlock ? (
+                  <button
+                    type="button"
+                    onClick={() => setOpen({ kind: 'vibe', vibe, at: unlock.at })}
+                    aria-label={`${vibe.name}, unlocked ${date}`}
+                    className="group flex w-full flex-col items-center rounded-2xl border border-white/15 bg-white/[0.04] px-3 py-4 text-center transition duration-200 hover:-translate-y-1 hover:border-white/40 hover:bg-white/[0.09] hover:shadow-[0_14px_28px_-14px_var(--tile)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                    style={{ ['--tile' as string]: vibe.color.light }}
+                  >
+                    {body}
+                  </button>
+                ) : (
+                  <div className="flex flex-col items-center rounded-2xl border border-white/5 bg-black/20 px-3 py-4 text-center">
+                    {body}
+                  </div>
+                )}
               </li>
             );
           })}
@@ -105,33 +156,107 @@ export function UnlockBoard({ userId, refreshKey = 0 }: { userId: string; refres
             const date = unlockDate(unlock.at);
             return (
               <li key={persona.id}>
-                <Tooltip.Root>
-                  <Tooltip.Trigger asChild>
-                    <button
-                      type="button"
-                      aria-label={`${persona.name}, unlocked ${date}`}
-                      className="h-12 w-12 rounded-lg border border-white/25 shadow-inner focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                      style={{ background: `radial-gradient(circle at 32% 28%, rgba(255,255,255,0.9), ${persona.color} 46%)` }}
-                    />
-                  </Tooltip.Trigger>
-                  <Tooltip.Portal>
-                    <Tooltip.Content
-                      className="z-50 max-w-xs rounded-lg border border-gray-700 bg-gray-900/98 px-3 py-2 text-xs leading-relaxed text-gray-200 shadow-xl"
-                      sideOffset={6}
-                      collisionPadding={10}
-                    >
-                      <p className="text-sm font-semibold text-white">{persona.name}</p>
-                      <p className="mt-1">{persona.description}</p>
-                      <p className="mt-1 text-gray-400">{date}</p>
-                      <Tooltip.Arrow className="fill-gray-900/98" width={12} height={6} />
-                    </Tooltip.Content>
-                  </Tooltip.Portal>
-                </Tooltip.Root>
+                <button
+                  type="button"
+                  onClick={() => setOpen({ kind: 'persona', persona, at: unlock.at })}
+                  aria-label={`${persona.name}, unlocked ${date}`}
+                  className="group relative z-0 h-12 w-12 overflow-hidden rounded-lg border transition duration-200 ease-out hover:z-10 hover:-translate-y-1 hover:scale-125 hover:ring-2 hover:ring-white hover:shadow-[0_12px_22px_-4px_var(--tile)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  style={{ borderColor: `${persona.color}99`, ['--tile' as string]: persona.color }}
+                >
+                  <img
+                    src={personaPortraitSrc(persona.id)}
+                    alt=""
+                    loading="lazy"
+                    className="h-full w-full object-cover transition duration-200 group-hover:scale-110"
+                  />
+                </button>
               </li>
             );
           })}
         </ul>
       </section>
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 p-6 backdrop-blur-sm"
+          onClick={() => setOpen(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={open.kind === 'persona' ? 'persona-detail-title' : 'vibe-detail-title'}
+            className="relative my-auto w-full max-w-4xl"
+            onClick={event => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setOpen(null)}
+              aria-label="Close"
+              className="absolute -top-3 -right-3 z-10 rounded-full border border-white/10 bg-gray-800 p-2 text-white shadow-lg hover:bg-gray-700"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            {open.kind === 'persona' ? (
+              <PersonaPresentation
+                persona={open.persona}
+                note={`Unlocked ${unlockDate(open.at)}`}
+                titleId="persona-detail-title"
+              />
+            ) : (
+              <VibePresentation
+                vibe={open.vibe}
+                note={`Unlocked ${unlockDate(open.at)}`}
+                titleId="vibe-detail-title"
+              />
+            )}
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+function VibePresentation({ vibe, note, titleId }: { vibe: MusicVibe; note?: string; titleId?: string }) {
+  const colors = { light: vibe.color.light, dark: darkenHex(vibe.color.dark, 0.55) };
+
+  return (
+    <ThemedCardBackground
+      color={colors}
+      className="rounded-3xl border shadow-2xl"
+      style={{ borderColor: `${colors.light}30` }}
+    >
+      <div className="flex flex-col items-center px-6 py-8 text-center sm:px-10 sm:py-10">
+        <p className="text-xs font-medium uppercase tracking-[0.22em] text-white/45">Vibe</p>
+        {vibe.image && (
+          <div
+            className="mt-5 h-40 w-40 overflow-hidden rounded-full border-4"
+            style={{ borderColor: `${colors.light}66`, boxShadow: `0 0 48px ${colors.light}55` }}
+          >
+            <img src={vibe.image} alt="" className="h-full w-full object-cover" />
+          </div>
+        )}
+        <h2 id={titleId} className="mt-5 text-3xl font-black tracking-tight sm:text-5xl" style={{ color: colors.light }}>
+          {vibe.name}
+        </h2>
+        <p className="mt-3 max-w-md text-base leading-relaxed text-white/85">{vibe.description}</p>
+        {note && <p className="mt-2 text-sm leading-relaxed text-white/50">{note}</p>}
+        <dl className="mt-8 grid w-full max-w-2xl grid-cols-2 gap-3 sm:grid-cols-5">
+          {VIBE_TRAITS.map(trait => (
+            <div
+              key={trait.key}
+              className="rounded-2xl border px-3 py-2.5"
+              style={{ borderColor: `${colors.light}28`, backgroundColor: `${colors.light}10` }}
+            >
+              <dt className="flex items-center justify-center gap-1 text-[11px] uppercase tracking-wider text-white/45">
+                {trait.label}
+                <MetricInfo description={getMetricDescription(trait.tooltip)} />
+              </dt>
+              <dd className="mt-0.5 text-sm font-semibold" style={{ color: colors.light }}>
+                {getDominantTrait(trait.key, vibe.targetScore[trait.key]).label}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </ThemedCardBackground>
   );
 }

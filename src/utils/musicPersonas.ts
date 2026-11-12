@@ -165,6 +165,14 @@ export function getUserPersona(stats: Stats): Persona {
   return classifyPersona(computePersonaInput(stats));
 }
 
+/** Portrait set the app shows. The other tries sit beside it in `public/personas`. */
+const PERSONA_PORTRAIT_STYLE = 'animal';
+
+/** Hand-drawn portrait for a persona, served from `public/personas`. */
+export function personaPortraitSrc(id: string): string {
+  return `/personas/${PERSONA_PORTRAIT_STYLE}/${id}.jpg`;
+}
+
 // Maps a persona's dimensions onto the generative-art profile shape, so the
 // same persona always renders the same abstract artwork.
 export function personaToArtProfile(persona: Persona): ArtProfile {
