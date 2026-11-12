@@ -30,6 +30,7 @@
   - [ ] Send messages
 
 ## Enhancements
+- [ ] Google Analytics
 - [ ] Music vibe dimension relevance based on range
 - [ ] Recently Played time frame
 - [ ] Vibes for liked songs
