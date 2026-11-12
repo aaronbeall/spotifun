@@ -74,5 +74,11 @@ export function createMemoryRecordStore(
         unlocks: journal.unlocks.map(unlock => ({ ...unlock })),
       };
     },
+
+    async clearJournal() {
+      journal.genreMisses.length = 0;
+      journal.activity.length = 0;
+      journal.unlocks.length = 0;
+    },
   };
 }

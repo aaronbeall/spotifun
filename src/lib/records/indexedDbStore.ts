@@ -149,6 +149,21 @@ export function createIndexedDbRecordStore(userId: string): RecordStore {
       activity.sort((a, b) => a.at.localeCompare(b.at));
       return { genreMisses, activity, unlocks };
     },
+
+    async clearJournal() {
+      const db = await database();
+      const transaction = db.transaction(STORES, 'readwrite');
+      for (const name of STORES) {
+        const request = transaction.objectStore(name).index('byUser').openCursor(userId);
+        request.onsuccess = () => {
+          const cursor = request.result;
+          if (!cursor) return;
+          cursor.delete();
+          cursor.continue();
+        };
+      }
+      await transactionDone(transaction);
+    },
   };
 }
 

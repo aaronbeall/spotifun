@@ -52,12 +52,26 @@ function inkFor(hex: string): string {
   return luminance > 170 ? '#1c1917' : '#fff';
 }
 
+/** Notched end of an unlock ribbon, held in a flat shade so it sits behind the bright center. */
+export function RibbonTail({ side, color, className, notch = 70 }: { side: 'left' | 'right'; color: string; className: string; notch?: number }) {
+  const clip = side === 'left'
+    ? `polygon(0 0, 100% 0, 100% 100%, 0 ${notch}%)`
+    : `polygon(0 0, 100% 0, 100% ${notch}%, 0 100%)`;
+  return (
+    <span
+      aria-hidden
+      className={`w-2.5 shrink-0 ${className}`}
+      style={{ background: darkenHex(color, 0.42), clipPath: clip }}
+    />
+  );
+}
+
 /** Ribbon on a collection detail card marking when that persona or vibe was found. */
 export function UnlockBadge({ label, color }: { label: string; color: string }) {
   const ink = inkFor(color);
   return (
     <p className="mt-4 inline-flex items-end">
-      <span aria-hidden className="h-7 w-2.5" style={{ background: color, clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 70%)' }} />
+      <RibbonTail side="left" color={color} className="h-7" />
       <span
         className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em]"
         style={{ background: color, color: ink }}
@@ -65,7 +79,7 @@ export function UnlockBadge({ label, color }: { label: string; color: string }) 
         <LockOpen className="h-3.5 w-3.5" aria-hidden />
         {label}
       </span>
-      <span aria-hidden className="h-7 w-2.5" style={{ background: color, clipPath: 'polygon(0 0, 100% 0, 100% 70%, 0 100%)' }} />
+      <RibbonTail side="right" color={color} className="h-7" />
     </p>
   );
 }

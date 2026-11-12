@@ -21,6 +21,12 @@ export function setActiveUser(userId: string | null): void {
   activeUserId = userId || null;
 }
 
+/** Lets the next profile look record again after the journal is forgotten. */
+export function resetObservation(): void {
+  lastFingerprint = '';
+  lastFingerprintAt = 0;
+}
+
 function fingerprint(userId: string, stats: Stats, personaId: string, vibeId: string): string {
   return [userId, stats.mode, stats.timeRange, stats.playlist?.id ?? '', personaId, vibeId].join('|');
 }

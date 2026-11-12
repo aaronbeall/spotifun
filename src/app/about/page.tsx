@@ -59,7 +59,7 @@ export default function AboutPage() {
 
       <section id="privacy" className="scroll-mt-8 space-y-3">
         <h2 className="text-xl font-semibold text-white">Privacy</h2>
-        <p className="text-sm text-gray-500">Last updated November 4, 2026.</p>
+        <p className="text-sm text-gray-500">Last updated November 12, 2026.</p>
         <p>
           Spotifun does not keep a user database on a server. Connecting Spotify grants the app permission to read
           your profile and email, top artists and tracks, recently played tracks, current playback, private
@@ -70,11 +70,17 @@ export default function AboutPage() {
           This browser keeps a separate journal for each Spotify account you sign in with: sign-ins, the
           profile requests you make, the persona and vibe each result lands on, and genre names that do not
           match the trait list. The badges on your dashboard read that account&apos;s journal. It is not uploaded.
+          Settings on the dashboard can forget it.
         </p>
         <p>
           Spotify access and refresh tokens are stored in httpOnly cookies so the server can request your
           library on your behalf. The access cookie lasts as long as Spotify says the token does. The refresh
           cookie lasts 30 days. Spotifun does not sell this data and does not use it for advertising.
+        </p>
+        <p>
+          The site loads Google Tag Manager (GTM-5ZH965VP) to measure how the site is used: which pages are
+          opened, which buttons are clicked, and which personas, vibes, and badges are unlocked. That usage
+          data is sent to Google. The listening journal stored in this browser is not uploaded.
         </p>
         <p>
           When Spotify returns few genres for an artist, the server may look that artist up on Last.fm and
@@ -90,7 +96,8 @@ export default function AboutPage() {
         </p>
         <p>
           You are responsible for the Spotify account you connect. Do not use Spotifun to scrape accounts that
-          are not yours, or in a way that breaks Spotify&apos;s own terms.
+          are not yours, or in a way that breaks Spotify&apos;s own terms. Visits are measured as described in
+          the privacy section.
         </p>
         <p>
           VACRS, the trait model described on the{' '}

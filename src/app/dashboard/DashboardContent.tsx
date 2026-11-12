@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { Award, BarChart3, BookOpen, ChevronDown, History, LayoutGrid, Medal, MoreHorizontal, Music, Star, TrendingUp, Users, Clock, Headphones, LogOut, Settings, User, Bug, Tags, Check, Info, Sparkles } from 'lucide-react';
+import { Award, BarChart3, BookOpen, ChevronDown, History, LayoutGrid, Medal, MoreHorizontal, Music, Star, TrendingUp, Users, Clock, Headphones, LogOut, Settings, User, Info, Sparkles } from 'lucide-react';
 import { formatDuration, formatNumber, getGenreColorMap, getGenreColorClass } from '@/utils';
 import Image from 'next/image';
 import FunStats from '@/components/features/FunStats';
@@ -19,12 +19,14 @@ import { AnimatePresence } from 'framer-motion';
 import { AchievementPopup } from '@/components/AchievementPopup';
 import { RankMark } from '@/components/RankMark';
 import { SectionShareButton } from '@/components/SectionShareButton';
+import { SettingsDialog } from '@/components/SettingsDialog';
 import { ShareModal } from '@/components/ShareModal';
 import { topArtistsShare, topGenresShare, topTracksShare } from '@/components/shareLists';
 import type { ShareContent } from '@/components/ShareCardTemplate';
 import { AchievementBoard } from '@/components/features/AchievementBoard';
 import { UnlockBoard, UnlockMeter } from '@/components/features/UnlockBoard';
-import { noteApiCall, observeLogin, observeStatsResult, setActiveUser, type JournalNews } from '@/lib/records/observe';
+import { trackUnlock } from '@/lib/analytics';
+import { noteApiCall, observeLogin, observeStatsResult, resetObservation, setActiveUser, type JournalNews } from '@/lib/records/observe';
 
 import { UserProfile, Stats, TimeRange, DataMode, PlaylistSelection, LIKED_SONGS_ID } from '@/types';
 
@@ -71,6 +73,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     setBadgeCounts(current => current?.found === found && current?.total === total ? current : { found, total });
   }, []);
   const [journalTick, setJournalTick] = useState(0);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const acceptStats = useCallback((statsData: Stats) => {
     setStats(statsData);
@@ -78,6 +81,8 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     if (demo) return;
     void observeStatsResult(statsData)
       .then(next => {
+        for (const unlock of next.unlocks) trackUnlock(unlock.kind, unlock.key, unlock.name);
+        for (const achievement of next.achievements) trackUnlock('badge', achievement.id, achievement.title);
         if (next.unlocks.length > 0 || next.achievements.length > 0) setNews(next);
         setJournalTick(tick => tick + 1);
       })
@@ -292,9 +297,10 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     router.push('/');
   };
 
-  const handleSettings = () => {
-    // TODO: Navigate to settings page when available
-    console.log('Settings clicked');
+  const handleJournalCleared = () => {
+    resetObservation();
+    setNews(null);
+    setJournalTick(tick => tick + 1);
   };
 
   if (!user || !stats) {
@@ -430,35 +436,6 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                     <div className="px-3 py-2 text-sm text-gray-300 border-b border-gray-700">
                       Welcome, {user.display_name}
                     </div>
-                    {!demo && (
-                    <DropdownMenu.CheckboxItem
-                      checked={lastFmEnabled}
-                      onCheckedChange={handleLastFmToggle}
-                      onSelect={e => e.preventDefault()}
-                      className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer outline-none"
-                    >
-                      <Tags className="w-4 h-4" />
-                      <span className="flex-1">Enrich genres with Last.fm</span>
-                      <DropdownMenu.ItemIndicator>
-                        <Check className="w-4 h-4 text-green-400" />
-                      </DropdownMenu.ItemIndicator>
-                    </DropdownMenu.CheckboxItem>
-                    )}
-                    {isDev && (
-                      <DropdownMenu.CheckboxItem
-                        checked={debugPanelEnabled}
-                        onCheckedChange={setDebugPanelEnabled}
-                        onSelect={e => e.preventDefault()}
-                        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer outline-none"
-                      >
-                        <Bug className="w-4 h-4" />
-                        <span className="flex-1">Genre debug panel</span>
-                        <DropdownMenu.ItemIndicator>
-                          <Check className="w-4 h-4 text-green-400" />
-                        </DropdownMenu.ItemIndicator>
-                      </DropdownMenu.CheckboxItem>
-                    )}
-                    <DropdownMenu.Separator className="h-px bg-gray-700 my-1" />
                     <DropdownMenu.Item asChild>
                       <Link
                         href="/about"
@@ -469,7 +446,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                       </Link>
                     </DropdownMenu.Item>
                     <DropdownMenu.Item
-                      onSelect={handleSettings}
+                      onSelect={() => setSettingsOpen(true)}
                       className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer outline-none"
                     >
                       <Settings className="w-4 h-4" />
@@ -843,6 +820,22 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
         {news && <AchievementPopup key="unlock-toast" news={news} onClose={() => setNews(null)} />}
       </AnimatePresence>
       <ShareModal content={listShare} onClose={() => setListShare(null)} />
+      {user && (
+        <SettingsDialog
+          open={settingsOpen}
+          demo={demo}
+          isDev={isDev}
+          displayName={user.display_name || 'this account'}
+          userId={user.id}
+          journalTick={journalTick}
+          lastFmEnabled={lastFmEnabled}
+          debugPanelEnabled={debugPanelEnabled}
+          onLastFmChange={handleLastFmToggle}
+          onDebugChange={setDebugPanelEnabled}
+          onJournalCleared={handleJournalCleared}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
 
       {isDev && debugPanelEnabled && (
         <GenreDebugPanel

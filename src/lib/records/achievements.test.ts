@@ -78,4 +78,21 @@ describe('evaluateAchievements', () => {
     expect((await bea.readJournal()).unlocks).toHaveLength(0);
     expect((await bea.readJournal()).activity.map(event => event.userId)).toEqual(['bea']);
   });
+
+  it('forgets one account without touching another', async () => {
+    const ada = createMemoryRecordStore('ada', () => at(2));
+    const bea = createMemoryRecordStore('bea', () => at(2));
+    await ada.recordActivity({ kind: 'login', name: 'spotify', ok: true });
+    await ada.recordUnlocks([{ kind: 'vibe', key: 'euphoria', name: 'Pure Euphoria', color: '#fff' }]);
+    await ada.recordGenreMisses(['vaporwave']);
+    await bea.recordActivity({ kind: 'login', name: 'spotify', ok: true });
+
+    await ada.clearJournal();
+
+    const forgotten = await ada.readJournal();
+    expect(forgotten.activity).toHaveLength(0);
+    expect(forgotten.unlocks).toHaveLength(0);
+    expect(forgotten.genreMisses).toHaveLength(0);
+    expect((await bea.readJournal()).activity).toHaveLength(1);
+  });
 });

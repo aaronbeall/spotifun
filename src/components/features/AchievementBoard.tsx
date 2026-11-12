@@ -8,7 +8,7 @@ import { darkenHex } from '@/utils/color';
 import type { ShareContent } from '../ShareCardTemplate';
 import { ShareModal } from '../ShareModal';
 import { ThemedCardBackground } from '../ThemedCardBackground';
-import { UnlockBadge } from './PersonaCard';
+import { RibbonTail, UnlockBadge } from './PersonaCard';
 import { badgeShare, badgesShare } from '../shareLists';
 import { BadgeMark, BadgeTileWash, badgeArt } from './BadgeMedal';
 
@@ -33,11 +33,11 @@ function BadgeCard({ achievement, onOpen }: { achievement: AchievementView; onOp
     <>
       <BadgeTileWash id={achievement.id} />
       <div className="relative z-10 mb-3 flex items-end" aria-hidden>
-        <span className="h-5 w-2.5" style={{ background: art.ribbon, clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 72%)' }} />
+        <RibbonTail side="left" color={art.ribbon} className="h-5" notch={72} />
         <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ background: art.ribbon, color: art.ink }}>
           {earned ? 'Earned' : 'Locked'}
         </span>
-        <span className="h-5 w-2.5" style={{ background: art.ribbon, clipPath: 'polygon(0 0, 100% 0, 100% 72%, 0 100%)' }} />
+        <RibbonTail side="right" color={art.ribbon} className="h-5" notch={72} />
       </div>
       <BadgeMark id={achievement.id} className="relative h-20 w-20" />
       <h3 className="relative z-10 mt-3 text-sm font-semibold text-white">{achievement.title}</h3>

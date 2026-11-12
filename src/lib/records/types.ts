@@ -73,6 +73,8 @@ export interface RecordStore {
   /** Inserts unlocks that are not already stored. Returns the new ones. */
   recordUnlocks(unlocks: NewUnlock[]): Promise<UnlockRecord[]>;
   readJournal(): Promise<Journal>;
+  /** Removes this account's journal from the browser. Other accounts are left alone. */
+  clearJournal(): Promise<void>;
 }
 
 export function emptyJournal(): Journal {
