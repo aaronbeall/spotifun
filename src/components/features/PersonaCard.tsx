@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Share2 } from 'lucide-react';
+import { LockOpen, Share2 } from 'lucide-react';
 import { Stats } from "@/types";
 import { getUserPersona, personaPortraitSrc } from "@/utils/musicPersonas";
 import { darkenHex } from "@/utils/color";
@@ -32,14 +32,41 @@ function traitValue(persona: Persona, key: keyof PersonaDimensions, words: Recor
   return words[persona.dimensions[key]] ?? persona.dimensions[key];
 }
 
+function inkFor(hex: string): string {
+  const rgb = hex.match(/\w\w/g)?.map(part => parseInt(part, 16));
+  if (!rgb || rgb.length < 3) return '#1c1917';
+  const luminance = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
+  return luminance > 170 ? '#1c1917' : '#fff';
+}
+
+/** Ribbon on a collection detail card marking when that persona or vibe was found. */
+export function UnlockBadge({ label, color }: { label: string; color: string }) {
+  const ink = inkFor(color);
+  return (
+    <p className="mt-4 inline-flex items-end">
+      <span aria-hidden className="h-7 w-2.5" style={{ background: color, clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 70%)' }} />
+      <span
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em]"
+        style={{ background: color, color: ink }}
+      >
+        <LockOpen className="h-3.5 w-3.5" aria-hidden />
+        {label}
+      </span>
+      <span aria-hidden className="h-7 w-2.5" style={{ background: color, clipPath: 'polygon(0 0, 100% 0, 100% 70%, 0 100%)' }} />
+    </p>
+  );
+}
+
 export function PersonaPresentation({
   persona,
   note,
+  unlockedOn,
   onShare,
   titleId,
 }: {
   persona: Persona;
   note?: string;
+  unlockedOn?: string;
   onShare?: () => void;
   titleId?: string;
 }) {
@@ -78,6 +105,7 @@ export function PersonaPresentation({
           </h2>
           <p className="mt-3 text-base leading-relaxed text-white/85">{persona.description}</p>
           {note && <p className="mt-2 text-sm leading-relaxed text-white/50">{note}</p>}
+          {unlockedOn && <UnlockBadge label={`Unlocked ${unlockedOn}`} color={colors.light} />}
           <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {TRAITS.map(trait => (
               <div

@@ -13,7 +13,7 @@ import { getMetricDescription } from '@/utils/metricDescriptions';
 import { getDominantTrait } from '@/utils/vacrs';
 import { ThemedCardBackground } from '../ThemedCardBackground';
 import { MetricInfo } from '../MetricInfo';
-import { PersonaPresentation } from './PersonaCard';
+import { PersonaPresentation, UnlockBadge } from './PersonaCard';
 
 const VIBE_TRAITS: Array<{ key: keyof VACRSScore; label: string; tooltip: string }> = [
   { key: 'valence', label: 'Mood', tooltip: 'valence' },
@@ -198,13 +198,13 @@ export function UnlockBoard({ userId, refreshKey = 0 }: { userId: string; refres
             {open.kind === 'persona' ? (
               <PersonaPresentation
                 persona={open.persona}
-                note={`Unlocked ${unlockDate(open.at)}`}
+                unlockedOn={unlockDate(open.at)}
                 titleId="persona-detail-title"
               />
             ) : (
               <VibePresentation
                 vibe={open.vibe}
-                note={`Unlocked ${unlockDate(open.at)}`}
+                unlockedOn={unlockDate(open.at)}
                 titleId="vibe-detail-title"
               />
             )}
@@ -215,7 +215,7 @@ export function UnlockBoard({ userId, refreshKey = 0 }: { userId: string; refres
   );
 }
 
-function VibePresentation({ vibe, note, titleId }: { vibe: MusicVibe; note?: string; titleId?: string }) {
+function VibePresentation({ vibe, unlockedOn, titleId }: { vibe: MusicVibe; unlockedOn?: string; titleId?: string }) {
   const colors = { light: vibe.color.light, dark: darkenHex(vibe.color.dark, 0.55) };
 
   return (
@@ -238,7 +238,7 @@ function VibePresentation({ vibe, note, titleId }: { vibe: MusicVibe; note?: str
           {vibe.name}
         </h2>
         <p className="mt-3 max-w-md text-base leading-relaxed text-white/85">{vibe.description}</p>
-        {note && <p className="mt-2 text-sm leading-relaxed text-white/50">{note}</p>}
+        {unlockedOn && <UnlockBadge label={`Unlocked ${unlockedOn}`} color={colors.light} />}
         <dl className="mt-8 grid w-full max-w-2xl grid-cols-2 gap-3 sm:grid-cols-5">
           {VIBE_TRAITS.map(trait => (
             <div

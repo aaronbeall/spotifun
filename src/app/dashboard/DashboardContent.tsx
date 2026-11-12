@@ -74,12 +74,6 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
       .catch(error => console.error('Could not record this look', error));
   }, [demo]);
 
-  useEffect(() => {
-    if (!news) return;
-    const timer = window.setTimeout(() => setNews(null), 8000);
-    return () => window.clearTimeout(timer);
-  }, [news]);
-
   const buildStatsUrl = useCallback((
     range: TimeRange,
     limit: number,
