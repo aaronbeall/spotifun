@@ -1,276 +1,141 @@
 'use client';
 
-import { useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import { Stats } from '@/types';
-import { buildStorySlides, type StorySlide } from '@/utils/listeningFacts';
+import { SectionShareButton } from '@/components/SectionShareButton';
+import type { ShareContent } from '@/components/ShareCardTemplate';
+import { musicStoryShare } from '@/components/shareLists';
+import { StoryTrail, type StoryNode } from '@/components/features/StoryTrail';
+import { darkenHex } from '@/utils/color';
+import {
+  buildFindings,
+  buildStorySlides,
+  viewScope,
+  type Finding,
+  type StorySlide,
+} from '@/utils/listeningFacts';
 
 interface FunStatsProps {
   stats: Stats;
+  onShare?: (content: ShareContent) => void;
 }
 
-function HourFace({ hour }: { hour: number }) {
-  return (
-    <svg viewBox="0 0 120 120" className="h-28 w-28 shrink-0" aria-hidden>
-      <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1" />
-      {Array.from({ length: 24 }, (_, index) => {
-        const angle = (index / 24) * Math.PI * 2 - Math.PI / 2;
-        const active = index === hour;
-        const inner = active ? 38 : 44;
-        const outer = active ? 54 : 50;
-        return (
-          <line
-            key={index}
-            x1={60 + Math.cos(angle) * inner}
-            y1={60 + Math.sin(angle) * inner}
-            x2={60 + Math.cos(angle) * outer}
-            y2={60 + Math.sin(angle) * outer}
-            stroke={active ? '#fde68a' : 'rgba(255,255,255,0.4)'}
-            strokeWidth={active ? 4 : 1.5}
-            strokeLinecap="round"
-          />
-        );
-      })}
-    </svg>
-  );
+function fromSlide(slide: StorySlide, role: StoryNode['role']): StoryNode {
+  return {
+    id: slide.id,
+    kicker: slide.kicker,
+    headline: slide.headline,
+    note: slide.detail,
+    image: slide.image,
+    images: slide.images,
+    role,
+    replayCount: slide.replayCount,
+    hour: slide.hour,
+    yearFrom: slide.yearFrom,
+    yearTo: slide.yearTo,
+    yearFromTitle: slide.yearFromTitle,
+    yearToTitle: slide.yearToTitle,
+    accent: slide.accent,
+  };
 }
 
-function SlideBody({ slide }: { slide: StorySlide }) {
-  if (slide.kind === 'persona') {
-    return (
-      <div className="relative">
-        <div
-          className="pointer-events-none absolute -left-10 -top-16 h-56 w-56 rounded-full blur-3xl"
-          style={{ background: slide.accent ?? '#f472b6', opacity: 0.55 }}
-        />
-        <p className="relative text-4xl font-black italic leading-none tracking-tight text-white sm:text-6xl">
-          {slide.headline}
-        </p>
-      </div>
-    );
-  }
-
-  if (slide.kind === 'replay') {
-    return (
-      <div className="relative pr-24">
-        <div className="absolute right-0 top-0 rotate-12 rounded-lg border-4 border-white/80 px-3 py-1 text-sm font-black tracking-[0.2em] text-white">
-          ×{slide.replayCount}
-        </div>
-        <p className="text-4xl font-black leading-none tracking-tight text-white sm:text-5xl">{slide.headline}</p>
-      </div>
-    );
-  }
-
-  if (slide.kind === 'once') {
-    return (
-      <p className="font-serif text-5xl font-light italic tracking-tight text-white sm:text-7xl">
-        {slide.headline}
-      </p>
-    );
-  }
-
-  if (slide.kind === 'run' || slide.kind === 'concentration') {
-    const marks = Math.min(slide.runCount ?? 0, 12);
-    return (
-      <div>
-        <div className="mb-4 flex items-end gap-1.5" aria-hidden>
-          {Array.from({ length: marks }, (_, index) => (
-            <span
-              key={index}
-              className="w-2.5 rounded-full bg-white"
-              style={{ height: `${18 + index * 4}px`, opacity: 0.35 + (index / Math.max(marks, 1)) * 0.65 }}
-            />
-          ))}
-        </div>
-        <p className="text-4xl font-black leading-none tracking-tight text-white sm:text-5xl">{slide.headline}</p>
-      </div>
-    );
-  }
-
-  if (slide.kind === 'hour' && slide.hour != null) {
-    return (
-      <div className="flex items-center gap-6">
-        <HourFace hour={slide.hour} />
-        <p className="text-4xl font-black leading-none text-amber-100 sm:text-5xl">{slide.headline}</p>
-      </div>
-    );
-  }
-
-  if (slide.kind === 'window' || slide.kind === 'built') {
-    return (
-      <div>
-        <div className="mb-4 flex items-center gap-3" aria-hidden>
-          <span className="h-2.5 w-2.5 rounded-full bg-white" />
-          <span className="h-px flex-1 bg-gradient-to-r from-white via-white/40 to-white" />
-          <span className="h-2.5 w-2.5 rounded-full bg-white" />
-        </div>
-        <p className="text-4xl font-black leading-none tracking-tight text-white sm:text-6xl">{slide.headline}</p>
-      </div>
-    );
-  }
-
-  if (slide.kind === 'years' && slide.yearFrom != null && slide.yearTo != null) {
-    return (
-      <div>
-        <div className="flex items-end justify-between gap-4">
-          <span className="text-4xl font-black tabular-nums text-amber-100 sm:text-6xl">{slide.yearFrom}</span>
-          <span className="mb-3 h-px flex-1 bg-gradient-to-r from-amber-200 to-sky-300" />
-          <span className="text-4xl font-black tabular-nums text-sky-100 sm:text-6xl">{slide.yearTo}</span>
-        </div>
-        <div className="mt-2 flex justify-between gap-6 text-xs text-white/70">
-          <span className="max-w-[45%] truncate">{slide.yearFromTitle}</span>
-          <span className="max-w-[45%] truncate text-right">{slide.yearToTitle}</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (slide.kind === 'drift') {
-    return (
-      <div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl bg-black/25 px-4 py-3">
-            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">Earlier</div>
-            <div className="text-4xl font-black tabular-nums text-white">{slide.earlyPopularity}</div>
-          </div>
-          <div className="rounded-2xl bg-white/15 px-4 py-3">
-            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70">Later</div>
-            <div className="text-4xl font-black tabular-nums text-white">{slide.latePopularity}</div>
-          </div>
-        </div>
-        <p className="mt-4 text-2xl font-black text-white">{slide.headline}</p>
-      </div>
-    );
-  }
-
-  if (slide.kind === 'length') {
-    return (
-      <div>
-        <div className="mb-3 flex gap-px" aria-hidden>
-          {Array.from({ length: 28 }, (_, index) => (
-            <span
-              key={index}
-              className="w-px bg-white/70"
-              style={{ height: index % 4 === 0 ? 16 : 8 }}
-            />
-          ))}
-        </div>
-        <p className="font-mono text-4xl font-bold tracking-tight text-white sm:text-6xl">{slide.headline}</p>
-      </div>
-    );
-  }
-
-  return (
-    <p className="text-4xl font-black leading-none tracking-tight text-white sm:text-6xl">{slide.headline}</p>
-  );
+function fromFinding(finding: Finding): StoryNode {
+  return {
+    id: finding.id,
+    kicker: finding.title,
+    headline: finding.name ?? finding.fact,
+    note: finding.name ? finding.fact : finding.detail,
+    image: finding.image,
+    images: finding.images,
+    role: finding.hit ? 'place' : 'pin',
+    quiet: !finding.hit,
+    yearFrom: finding.from,
+    yearTo: finding.to,
+    replayCount: finding.kind === 'replay' ? finding.count : undefined,
+  };
 }
 
-const SLIDE_BACKGROUNDS: Record<StorySlide['kind'], string> = {
-  persona: 'bg-gray-950',
-  replay: 'bg-gradient-to-br from-rose-600 via-fuchsia-700 to-orange-500',
-  once: 'bg-[#14110e]',
-  run: 'bg-gradient-to-br from-violet-700 via-indigo-800 to-slate-900',
-  hour: 'bg-[#1a1408]',
-  window: 'bg-gradient-to-r from-slate-800 to-cyan-950',
-  years: 'bg-[#10141c]',
-  built: 'bg-gradient-to-br from-emerald-800 to-teal-950',
-  drift: 'bg-gradient-to-br from-orange-700 via-rose-800 to-slate-950',
-  length: 'bg-[#121418]',
-  concentration: 'bg-gradient-to-br from-pink-700 to-purple-950',
-  empty: 'bg-gray-900',
-};
-
-export default function FunStats({ stats }: FunStatsProps) {
+function buildMap(stats: Stats): { nodes: StoryNode[]; citation: string | null } {
   const slides = buildStorySlides(stats);
-  const storyKey = `${stats.mode}:${stats.timeRange}:${stats.playlist?.id ?? ''}`;
-  const [current, setCurrent] = useState(0);
-  const [seenKey, setSeenKey] = useState(storyKey);
-  const [isPaused, setIsPaused] = useState(false);
-  const reduceMotion = useReducedMotion();
-  if (seenKey !== storyKey) {
-    setSeenKey(storyKey);
-    setCurrent(0);
+  if (slides.length === 1 && slides[0].kind === 'empty') {
+    return { nodes: [fromSlide(slides[0], 'landmark')], citation: null };
   }
-  const index = slides.length === 0 ? 0 : current % slides.length;
-  const active = slides[index];
 
-  const goTo = (next: number) => setCurrent((next + slides.length) % slides.length);
+  const kinds = new Set(slides.map(slide => slide.kind));
+  const nodes = slides
+    .filter(slide => slide.kind !== 'empty')
+    .map(slide => fromSlide(slide, slide.kind === 'persona' ? 'landmark' : 'place'));
+
+  let citation: string | null = null;
+  for (const finding of buildFindings(stats)) {
+    if (finding.kind === 'coverage') {
+      citation = finding.percent != null ? `${finding.percent}% of genre weight mapped.` : finding.fact;
+      continue;
+    }
+    if (finding.kind === 'replay' && (kinds.has('replay') || kinds.has('once'))) continue;
+    if (finding.kind === 'streak' && kinds.has('run')) continue;
+    if (finding.kind === 'span' && kinds.has('years')) continue;
+    nodes.push(fromFinding(finding));
+  }
+
+  const landmark = nodes.filter(node => node.role === 'landmark');
+  const places = nodes.filter(node => node.role === 'place');
+  const pins = nodes.filter(node => node.role === 'pin');
+  return { nodes: [...landmark, ...places, ...pins], citation };
+}
+
+function StoryDepth({ accent }: { accent: string }) {
+  const deep = darkenHex(accent, 0.62);
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0">
+      <div
+        className="absolute inset-0"
+        style={{
+          background: [
+            `radial-gradient(ellipse 95% 38% at 88% -8%, ${accent}66, transparent 62%)`,
+            `radial-gradient(ellipse 75% 32% at -8% 42%, ${accent}40, transparent 64%)`,
+            `radial-gradient(ellipse 80% 36% at 108% 78%, ${deep}, transparent 60%)`,
+            `linear-gradient(168deg, ${deep} 0%, #0c1220 34%, #162033 62%, #0c1220 100%)`,
+          ].join(', '),
+        }}
+      />
+    </div>
+  );
+}
+
+export default function FunStats({ stats, onShare }: FunStatsProps) {
+  const { nodes, citation } = buildMap(stats);
+  const trailhead = nodes.find(node => node.role === 'landmark');
+  const shareable = nodes.some(node => node.id !== 'empty');
+  const accent = trailhead?.accent?.startsWith('#') ? trailhead.accent : '#7dd3fc';
 
   return (
-    <div className="rounded-2xl border border-gray-700 bg-gray-800 p-4 shadow-lg sm:p-6">
-      <div className="mb-4 px-1">
-        <h2 className="flex items-center gap-2 text-lg font-bold text-white">
-          <BookOpen className="h-5 w-5 text-sky-300" />
-          Your Music Story
-        </h2>
-        <p className="text-xs text-gray-400">Facts from this view, not a lifetime total.</p>
-      </div>
-
-      <div className="mb-3 flex gap-1.5 px-1">
-        {slides.map((slide, slideIndex) => (
-          <button
-            key={slide.id}
-            onClick={() => goTo(slideIndex)}
-            aria-label={`Go to ${slide.kicker}`}
-            aria-current={slideIndex === index ? 'step' : undefined}
-            className="h-1 flex-1 overflow-hidden rounded-full bg-white/15 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/60"
-          >
-            {slideIndex === index && !reduceMotion ? (
-              <div
-                key={`${slide.id}-${index}`}
-                onAnimationEnd={() => {
-                  if (!isPaused && slides.length > 1) goTo(index + 1);
-                }}
-                className="h-full animate-progress-fill rounded-full bg-white"
-                style={{ animationPlayState: isPaused ? 'paused' : 'running' }}
-              />
-            ) : slideIndex <= index ? (
-              <div className="h-full w-full rounded-full bg-white" />
-            ) : null}
-          </button>
-        ))}
-      </div>
-
-      <div
-        className="group relative rounded-2xl"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-      >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={active.id}
-            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
-            className={`relative min-h-[240px] overflow-hidden rounded-2xl p-6 sm:p-8 ${SLIDE_BACKGROUNDS[active.kind]}`}
-          >
-            <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.22em] text-white/60">{active.kicker}</p>
-            <SlideBody slide={active} />
-            <p className="mt-4 max-w-md text-sm leading-relaxed text-white/75">{active.detail}</p>
-          </motion.div>
-        </AnimatePresence>
-
-        {slides.length > 1 && (
-          <>
-            <button
-              onClick={() => goTo(index - 1)}
-              aria-label="Previous story"
-              className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/25 p-2 text-white opacity-0 transition-opacity hover:bg-black/45 focus:opacity-100 focus:outline-none group-hover:opacity-100"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => goTo(index + 1)}
-              aria-label="Next story"
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/25 p-2 text-white opacity-0 transition-opacity hover:bg-black/45 focus:opacity-100 focus:outline-none group-hover:opacity-100"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </>
+    <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0c1220] p-4 shadow-lg sm:p-6">
+      <StoryDepth accent={accent} />
+      <div className="relative mb-6 flex items-start justify-between gap-3 px-1">
+        <div>
+          <h2 className="flex items-center gap-2 text-lg font-bold text-white">
+            <BookOpen className="h-5 w-5 text-sky-300" />
+            Music Story
+          </h2>
+          <p className="text-xs text-gray-400">{viewScope(stats)}.</p>
+        </div>
+        {onShare && shareable && trailhead && (
+          <SectionShareButton
+            onClick={() => onShare(musicStoryShare({
+              title: trailhead.headline,
+              accent: trailhead.accent,
+              scope: viewScope(stats),
+              nodes,
+              citation,
+            }))}
+          />
         )}
       </div>
-    </div>
+
+      <div className="relative z-10 mx-auto max-w-4xl">
+        <StoryTrail nodes={nodes} citation={citation} />
+      </div>
+    </section>
   );
 }

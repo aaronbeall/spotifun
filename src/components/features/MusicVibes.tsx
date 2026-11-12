@@ -253,6 +253,7 @@ export function MusicVibes({
 
   const isPlaylistMode = mode === 'playlist';
   const isTopMode = mode === 'topArtists' || mode === 'topTracks';
+  const countLabel = isPlaylistMode ? 'songs' : 'recent plays';
   const vibeLabel = isPlaylistMode ? 'Playlist Vibe' : isTopMode ? 'Top Vibe' : 'Current Vibe';
   const vibeDescription = isPlaylistMode
     ? 'Your musical personality based on this playlist'
@@ -379,6 +380,7 @@ export function MusicVibes({
                 title="Top Artist"
                 color="#a78bfa"
                 icon={Users}
+                countLabel={countLabel}
               />
             )}
           </motion.div>
@@ -412,6 +414,7 @@ export function MusicVibes({
                 title="Top Genre"
                 color="#60a5fa"
                 icon={Palette}
+                countLabel={countLabel}
               />
             )}
           </motion.div>

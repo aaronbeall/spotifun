@@ -82,7 +82,11 @@ export const SpectrumCard: React.FC<SpectrumCardProps> = ({ genreStats, onShare,
       </div>
 
       <div>
-        <SpectrumDimensionBars genreStats={genreStats} showPlayCounts={stats.mode === 'recent' || stats.mode === 'playlist'} />
+        <SpectrumDimensionBars
+          genreStats={genreStats}
+          showPlayCounts={stats.mode === 'recent' || stats.mode === 'playlist'}
+          countLabel={stats.mode === 'playlist' ? 'songs' : 'recent plays'}
+        />
       </div>
 
       {/* Headline stat, migrated from the old top-right badge, flanked by

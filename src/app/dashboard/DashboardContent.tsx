@@ -4,12 +4,11 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { Award, BarChart3, BookOpen, ChevronDown, History, LayoutGrid, Medal, MoreHorizontal, Music, Search, Star, TrendingUp, Users, Clock, Headphones, LogOut, Settings, User, Bug, Tags, Check, Info, Sparkles } from 'lucide-react';
+import { Award, BarChart3, BookOpen, ChevronDown, History, LayoutGrid, Medal, MoreHorizontal, Music, Star, TrendingUp, Users, Clock, Headphones, LogOut, Settings, User, Bug, Tags, Check, Info, Sparkles } from 'lucide-react';
 import { formatDuration, formatNumber, getGenreColorMap, getGenreColorClass } from '@/utils';
 import Image from 'next/image';
 import FunStats from '@/components/features/FunStats';
 import TimeRangeToggle from '@/components/TimeRangeToggle';
-import Achievements from '@/components/features/Achievements';
 import Rankings from '@/components/features/Rankings';
 import MusicProfile from '@/components/features/MusicProfile';
 import { SpotifyPlayOverlay } from '@/components/SpotifyPlayOverlay';
@@ -18,12 +17,13 @@ import { GenreDebugPanel } from '@/components/GenreDebugPanel';
 import { usePersistedToggle } from '@/hooks/usePersistedToggle';
 import { AnimatePresence } from 'framer-motion';
 import { AchievementPopup } from '@/components/AchievementPopup';
+import { RankMark } from '@/components/RankMark';
 import { SectionShareButton } from '@/components/SectionShareButton';
 import { ShareModal } from '@/components/ShareModal';
-import { topArtistsShare, topTracksShare } from '@/components/shareLists';
+import { topArtistsShare, topGenresShare, topTracksShare } from '@/components/shareLists';
 import type { ShareContent } from '@/components/ShareCardTemplate';
 import { AchievementBoard } from '@/components/features/AchievementBoard';
-import { UnlockBoard } from '@/components/features/UnlockBoard';
+import { UnlockBoard, UnlockMeter } from '@/components/features/UnlockBoard';
 import { noteApiCall, observeLogin, observeStatsResult, setActiveUser, type JournalNews } from '@/lib/records/observe';
 
 import { UserProfile, Stats, TimeRange, DataMode, PlaylistSelection, LIKED_SONGS_ID } from '@/types';
@@ -65,6 +65,11 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
   const [debugPanelOpen, setDebugPanelOpen] = useState(false);
   const [news, setNews] = useState<JournalNews | null>(null);
   const [listShare, setListShare] = useState<ShareContent | null>(null);
+  const [badgeShare, setBadgeShare] = useState<ShareContent | null>(null);
+  const [badgeCounts, setBadgeCounts] = useState<{ found: number; total: number } | null>(null);
+  const onBadgeCounts = useCallback((found: number, total: number) => {
+    setBadgeCounts(current => current?.found === found && current?.total === total ? current : { found, total });
+  }, []);
   const [journalTick, setJournalTick] = useState(0);
 
   const acceptStats = useCallback((statsData: Stats) => {
@@ -325,7 +330,6 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     { id: 'tracks', label: 'Tracks', icon: TrendingUp, iconClass: 'text-green-400' },
     { id: 'genres', label: 'Genres', icon: BarChart3, iconClass: 'text-purple-400' },
     { id: 'story', label: 'Story', icon: BookOpen, iconClass: 'text-sky-300' },
-    { id: 'findings', label: 'Findings', icon: Search, iconClass: 'text-emerald-300' },
     ...(!demo ? [
       { id: 'collection', label: 'Collection', icon: LayoutGrid, iconClass: 'text-fuchsia-300' },
       { id: 'badges', label: 'Badges', icon: Medal, iconClass: 'text-amber-300' },
@@ -543,17 +547,22 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
 
         {/* Top Artists */}
         <div id="artists" className="scroll-mt-24 bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <Star className="w-5 h-5 text-yellow-400" />
               Top Artists
             </h2>
-            <TimeRangeToggle
-              value={timeRange}
-              onChange={handleTimeRangeChange}
-              disabled={isLoadingTimeRange}
-              isLoading={isLoadingTimeRange}
-            />
+            <div className="flex items-center gap-2">
+              {stats.topArtists.length > 0 && (
+                <SectionShareButton onClick={() => setListShare(topArtistsShare(stats))} />
+              )}
+              <TimeRangeToggle
+                value={timeRange}
+                onChange={handleTimeRangeChange}
+                disabled={isLoadingTimeRange}
+                isLoading={isLoadingTimeRange}
+              />
+            </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-4">
             {stats.topArtists.slice(0, showAllArtists ? stats.topArtists.length : ARTISTS_TO_SHOW).map((artist, index) => {
@@ -581,20 +590,18 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                     </div>
                   )}
                   <SpotifyPlayOverlay />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-bold text-white text-lg">{artist.name}</h3>
-                        {recentPlays > 0 && (
-                          <p className="text-sm text-gray-300">
-                            {recentPlays} recent {recentPlays === 1 ? 'play' : 'plays'}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-black/60 flex items-center justify-center text-white font-bold text-sm">
-                        {index + 1}
-                      </div>
+                  {index < 3 && (
+                    <div className="absolute top-3 left-3 z-10">
+                      <RankMark rank={(index + 1) as 1 | 2 | 3} />
                     </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-4">
+                      <h3 className="font-bold text-white text-lg">{artist.name}</h3>
+                      {recentPlays > 0 && (
+                        <p className="text-sm text-gray-300">
+                          {recentPlays} recent {recentPlays === 1 ? 'play' : 'plays'}
+                        </p>
+                      )}
                   </div>
                 </a>
               );
@@ -607,25 +614,27 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
             >
               {showAllArtists ? 'Show Less' : `Show All ${stats.topArtists.length} Artists`}
             </button>
-            {stats.topArtists.length > 0 && (
-              <SectionShareButton onClick={() => setListShare(topArtistsShare(stats))} />
-            )}
           </div>
         </div>
 
         {/* Top Tracks */}
         <div id="tracks" className="scroll-mt-24 bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-green-400" />
               Top Tracks
             </h2>
-            <TimeRangeToggle
-              value={timeRange}
-              onChange={handleTimeRangeChange}
-              disabled={isLoadingTimeRange}
-              isLoading={isLoadingTimeRange}
-            />
+            <div className="flex items-center gap-2">
+              {stats.topTracks.length > 0 && (
+                <SectionShareButton onClick={() => setListShare(topTracksShare(stats))} />
+              )}
+              <TimeRangeToggle
+                value={timeRange}
+                onChange={handleTimeRangeChange}
+                disabled={isLoadingTimeRange}
+                isLoading={isLoadingTimeRange}
+              />
+            </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
             {stats.topTracks.slice(0, showAllTracks ? stats.topTracks.length : TRACKS_TO_SHOW).map((track, index) => {
@@ -674,9 +683,11 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                         )}
                       </div>
                     </div>
-                    <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center text-white text-xs font-bold">
-                      {index + 1}
-                    </div>
+                    {index < 3 && (
+                      <div className="absolute top-2 right-2 z-10">
+                        <RankMark rank={(index + 1) as 1 | 2 | 3} size="sm" />
+                      </div>
+                    )}
                   </div>
                 </a>
               );
@@ -689,31 +700,32 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
             >
               {showAllTracks ? 'Show Less' : `Show All ${stats.topTracks.length} Tracks`}
             </button>
-            {stats.topTracks.length > 0 && (
-              <SectionShareButton onClick={() => setListShare(topTracksShare(stats))} />
-            )}
           </div>
         </div>
 
         {/* Top Genres */}
         <div id="genres" className="scroll-mt-24 bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-purple-400" />
               Top Genres
             </h2>
-            <TimeRangeToggle
-              value={timeRange}
-              onChange={handleTimeRangeChange}
-              disabled={isLoadingTimeRange}
-              isLoading={isLoadingTimeRange}
-              className="mr-2"
-            />
+            <div className="flex items-center gap-2">
+              {stats.topGenres.length > 0 && (
+                <SectionShareButton onClick={() => setListShare(topGenresShare(stats, genreImages))} />
+              )}
+              <TimeRangeToggle
+                value={timeRange}
+                onChange={handleTimeRangeChange}
+                disabled={isLoadingTimeRange}
+                isLoading={isLoadingTimeRange}
+              />
+            </div>
           </div>
 
           {/* Genre Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
-            {stats.topGenres.slice(0, showAllGenres ? stats.topGenres.length : GENRES_TO_SHOW).map(({ genre, count }) => {
+            {stats.topGenres.slice(0, showAllGenres ? stats.topGenres.length : GENRES_TO_SHOW).map(({ genre, count }, index) => {
               const colorClass = getGenreColorClass(genre, 'bg');
               const percentage = Math.round((count / stats.topGenres[0]?.count) * 100);
               const imageUrl = genreImages.get(genre);
@@ -725,8 +737,13 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Open ${genre} on Spotify`}
-                  className="bg-gray-800/40 hover:bg-gray-800/80 border border-gray-700/50 rounded-lg p-4 transition-colors group block"
+                  className="relative bg-gray-800/40 hover:bg-gray-800/80 border border-gray-700/50 rounded-lg p-4 transition-colors group block"
                 >
+                  {index < 3 && (
+                    <div className="absolute top-2 right-2 z-10">
+                      <RankMark rank={(index + 1) as 1 | 2 | 3} size="sm" />
+                    </div>
+                  )}
                   <div className="flex items-center gap-3 mb-2">
                     <div className="relative w-10 h-10 rounded-lg bg-gray-700 flex items-center justify-center overflow-hidden shrink-0">
                       {imageUrl ? (
@@ -740,7 +757,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                       )}
                       <SpotifyPlayOverlay size="sm" />
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className={`min-w-0 flex-1 ${index < 3 ? 'pr-6' : ''}`}>
                       <h3 className="font-medium text-white capitalize truncate">
                         {genre}
                       </h3>
@@ -774,14 +791,8 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
           )}
         </div>
 
-        {/* Fun Stats */}
         <div id="story" className="mb-8 scroll-mt-24">
-          <FunStats stats={stats} />
-        </div>
-
-        {/* Achievements */}
-        <div id="findings" className="mb-8 scroll-mt-24">
-          <Achievements stats={stats} />
+          <FunStats stats={stats} onShare={setListShare} />
         </div>
 
         {!demo && (
@@ -797,14 +808,26 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               <UnlockBoard userId={user.id} refreshKey={journalTick} />
             </div>
             <div id="badges" className="scroll-mt-24 rounded-2xl border border-gray-700 bg-gray-800 p-6 shadow-lg sm:p-8">
-              <h2 className="flex items-center gap-2 text-2xl font-bold text-white">
-                <Medal className="h-6 w-6 text-amber-300" />
-                Badges
-              </h2>
-              <p className="mt-1 mb-6 text-sm text-gray-400">
-                For this Spotify account, on this browser. Another account signed in here keeps its own.
-              </p>
-              <AchievementBoard userId={user.id} refreshKey={journalTick} />
+              <div className="mb-6 flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="flex items-center gap-2 text-2xl font-bold text-white">
+                    <Medal className="h-6 w-6 text-amber-300" />
+                    Badges
+                  </h2>
+                  <p className="mt-1 text-sm text-gray-400">
+                    For this Spotify account, on this browser. Another account signed in here keeps its own.
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  {badgeCounts && badgeCounts.total > 0 && (
+                    <UnlockMeter found={badgeCounts.found} total={badgeCounts.total} accent="#fbbf24" label="badges" />
+                  )}
+                  {badgeShare && (
+                    <SectionShareButton onClick={() => setListShare(badgeShare)} />
+                  )}
+                </div>
+              </div>
+              <AchievementBoard userId={user.id} refreshKey={journalTick} onShareContent={setBadgeShare} onCounts={onBadgeCounts} />
             </div>
           </div>
         )}

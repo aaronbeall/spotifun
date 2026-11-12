@@ -86,6 +86,7 @@ export const PopularityCard: React.FC<PopularityCardProps> = ({ tracks, onShare,
             icon={Gem}
             className="scale-90"
             percent={Math.round(leastPopularTrack.popularity || 0)}
+            countLabel="tracks"
           />
         </motion.div>
         {/* Histogram Chart */}
@@ -113,6 +114,7 @@ export const PopularityCard: React.FC<PopularityCardProps> = ({ tracks, onShare,
             icon={Star}
             className="scale-90"
             percent={Math.round(mostPopularTrack.popularity || 0)}
+            countLabel="tracks"
           />
         </motion.div>
       </div>

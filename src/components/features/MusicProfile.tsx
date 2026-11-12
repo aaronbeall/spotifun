@@ -116,6 +116,8 @@ export default function MusicProfile({
   const playlistSelected = dataMode === 'playlist';
   const isPlaylistMode = displayedMode === 'playlist';
   const isTopMode = displayedMode === 'topArtists' || displayedMode === 'topTracks';
+  const countLabel = isPlaylistMode ? 'songs' : 'recent plays';
+  const countListLabel = isPlaylistMode ? 'In Playlist' : isTopMode ? 'Top' : 'Recent plays';
   const sourceChanged = dataMode !== displayedMode
     || (dataMode === 'playlist' && selectedPlaylist.id !== stats.playlist?.id);
   const loadingLabel = !sourceChanged
@@ -410,9 +412,9 @@ export default function MusicProfile({
             score={stats.overview.artistDiversity}
             scoreLabel="Diversity"
             scoreMetricKey="artist-diversity"
-            listLabel={isPlaylistMode ? 'In Playlist' : isTopMode ? 'Top' : undefined}
+            listLabel={countListLabel}
             showCounts={!isTopMode}
-            countLabel={isPlaylistMode ? 'songs' : 'plays'}
+            countLabel={countLabel}
             mostPlayed={stats.artists
               .sort((a, b) => b.playCount - a.playCount)
               .map(artist => ({
@@ -441,9 +443,9 @@ export default function MusicProfile({
             score={stats.overview.uniqueTracks / Math.max(stats.overview.totalPlays, 1)}
             scoreLabel="Uniqueness"
             scoreMetricKey="track-uniqueness"
-            listLabel={isPlaylistMode ? 'In Playlist' : isTopMode ? 'Top' : undefined}
+            listLabel={countListLabel}
             showCounts={!isTopMode}
-            countLabel={isPlaylistMode ? 'songs' : 'plays'}
+            countLabel={countLabel}
             mostPlayed={stats.tracks
               .sort((a, b) => b.playCount - a.playCount)
               .map(track => ({
@@ -486,9 +488,9 @@ export default function MusicProfile({
             score={stats.overview.genreDiversity}
             scoreLabel="Diversity"
             scoreMetricKey="genre-diversity"
-            listLabel={isPlaylistMode ? 'In Playlist' : isTopMode ? 'Top' : undefined}
+            listLabel={countListLabel}
             showCounts={!isTopMode}
-            countLabel={isPlaylistMode ? 'songs' : 'plays'}
+            countLabel={countLabel}
             mostPlayed={stats.genres
               .map(genre => ({
                 name: genre.genre,
@@ -509,6 +511,7 @@ export default function MusicProfile({
             score={stats.overview.averagePopularity / 100}
             scoreLabel="Average Popularity"
             scoreMetricKey="average-popularity"
+            countLabel="popularity"
             badge={{
               label: popularity.label,
               description: popularity.description,

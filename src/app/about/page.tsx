@@ -36,8 +36,8 @@ export default function AboutPage() {
           artists, tracks, genres, popularity, a trait spectrum, a vibe, and a persona.
         </p>
         <p>
-          Findings describe the view you have open: replays, streaks, deep cuts, and how many years the
-          songs span. A separate comparison sets that view next to your own top artists across Spotify&apos;s
+          Music Story maps the view you have open: the persona, replays, streaks, deep cuts, and how many
+          years the songs span. A separate comparison sets that view next to your own top artists across Spotify&apos;s
           three time ranges. There is no global leaderboard.
         </p>
       </section>

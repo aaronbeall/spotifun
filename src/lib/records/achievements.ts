@@ -9,6 +9,8 @@ export interface AchievementView {
   progress: number;
   goal: number;
   earned: boolean;
+  /** When the journal first crossed this badge's goal. Absent while it is locked. */
+  earnedAt?: string;
 }
 
 const VIBE_TOTAL = MUSIC_VIBES.length;
@@ -204,9 +206,31 @@ const ACHIEVEMENTS: AchievementSpec[] = [
   },
 ];
 
+function journalThrough(journal: Journal, at: string): Journal {
+  return {
+    genreMisses: journal.genreMisses,
+    activity: journal.activity.filter(event => event.at <= at),
+    unlocks: journal.unlocks.filter(unlock => unlock.at <= at),
+  };
+}
+
+/** Earliest journal timestamp at which this badge's progress reached its goal. */
+function firstEarnedAt(spec: AchievementSpec, journal: Journal): string | undefined {
+  if (spec.progress(journal) < spec.goal) return undefined;
+  const times = [...journal.activity.map(event => event.at), ...journal.unlocks.map(unlock => unlock.at)].sort();
+  let previous = '';
+  for (const at of times) {
+    if (at === previous) continue;
+    previous = at;
+    if (spec.progress(journalThrough(journal, at)) >= spec.goal) return at;
+  }
+  return undefined;
+}
+
 export function evaluateAchievements(journal: Journal): AchievementView[] {
   return ACHIEVEMENTS.map(spec => {
     const progress = Math.min(spec.goal, spec.progress(journal));
+    const earned = progress >= spec.goal;
     return {
       id: spec.id,
       title: spec.title,
@@ -214,7 +238,8 @@ export function evaluateAchievements(journal: Journal): AchievementView[] {
       group: spec.group,
       progress,
       goal: spec.goal,
-      earned: progress >= spec.goal,
+      earned,
+      earnedAt: earned ? firstEarnedAt(spec, journal) : undefined,
     };
   });
 }

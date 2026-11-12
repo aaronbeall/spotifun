@@ -5,13 +5,18 @@ interface ImageBadgeProps {
   image?: string;
   /** Shown as "N plays". Omit when there is no real play count. */
   count?: number;
+  /** Plural noun after the count. Recent-window counts should say "recent plays". */
+  countLabel?: string;
   color: string;
   icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   className?: string;
   percent?: number;
 }
 
-export const ImageBadge = ({ title, name, subtitle, image, count, color, icon: Icon, className = '', percent }: ImageBadgeProps) => {
+export const ImageBadge = ({ title, name, subtitle, image, count, countLabel = 'plays', color, icon: Icon, className = '', percent }: ImageBadgeProps) => {
+  const countNoun = typeof count === 'number' && count === 1 && countLabel.endsWith('s')
+    ? countLabel.slice(0, -1)
+    : countLabel;
   return (
     <div className={`flex flex-col items-center group hover:scale-105 transition-all max-w-[9rem] ${className}`}>
       {/* Header with icon and title */}
@@ -71,7 +76,7 @@ export const ImageBadge = ({ title, name, subtitle, image, count, color, icon: I
         )}
         {typeof count === 'number' && (
           <div className="text-xs text-white/60 mt-1 group-hover:text-white/70 transition-colors">
-            {count} {count === 1 ? 'play' : 'plays'}
+            {count} {countNoun}
           </div>
         )}
       </div>

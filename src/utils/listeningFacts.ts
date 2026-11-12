@@ -1,6 +1,6 @@
 import { EraSnapshot, Stats, TimeRange } from '@/types';
 import { calculateWeightedVACRSScore } from './musicClassification';
-import { getUserPersona } from './musicPersonas';
+import { getUserPersona, personaPortraitSrc } from './musicPersonas';
 
 export type StoryKind =
   | 'persona'
@@ -34,6 +34,10 @@ export interface StorySlide {
   yearToTitle?: string;
   earlyPopularity?: number;
   latePopularity?: number;
+  /** One cover, portrait, or artist photo when the slide is about a single thing. */
+  image?: string;
+  /** Several covers when the slide compares or samples the view. */
+  images?: string[];
 }
 
 export type FindingKind = 'replay' | 'streak' | 'deepcut' | 'span' | 'coverage';
@@ -51,6 +55,8 @@ export interface Finding {
   name?: string;
   artist?: string;
   percent?: number;
+  image?: string;
+  images?: string[];
 }
 
 export interface ViewSnapshot {
@@ -132,8 +138,50 @@ function hasMusic(stats: Stats): boolean {
   return stats.tracks.length > 0 || stats.artists.length > 0 || stats.recentlyPlayed.length > 0;
 }
 
-function longestRun(stats: Stats): { count: number; name: string } {
-  let best = { count: 0, name: '' };
+function albumArt(track: { album?: { images?: Array<{ url?: string | null }> } } | undefined): string | undefined {
+  const url = track?.album?.images?.[0]?.url;
+  return url || undefined;
+}
+
+function artistArt(stats: Stats, id: string, name: string): string | undefined {
+  const listed = stats.artists.find(item => item.artist.id === id || item.artist.name === name);
+  const listedImage = listed?.artist.images?.[0]?.url;
+  if (listedImage) return listedImage;
+  const top = stats.topArtists.find(artist => artist.id === id || artist.name === name);
+  if (top?.images?.[0]?.url) return top.images[0].url;
+  const played = stats.recentlyPlayed.find(item => item.track.artists.some(artist => artist.id === id || artist.name === name));
+  return albumArt(played?.track);
+}
+
+function sampleAlbumArts(stats: Stats, limit: number): string[] {
+  const images: string[] = [];
+  const push = (url?: string) => {
+    if (url && !images.includes(url) && images.length < limit) images.push(url);
+  };
+  for (const item of stats.tracks) push(albumArt(item.track));
+  if (images.length === 0) {
+    for (const item of stats.recentlyPlayed) push(albumArt(item.track));
+  }
+  return images;
+}
+
+function genreArts(stats: Stats, limit = 4): string[] {
+  const images: string[] = [];
+  const push = (url?: string) => {
+    if (url && !images.includes(url) && images.length < limit) images.push(url);
+  };
+  for (const { genre } of stats.topGenres) {
+    const match = stats.artists.find(item => item.genres.includes(genre) || item.artist.genres?.includes(genre));
+    push(match?.artist.images?.[0]?.url);
+  }
+  if (images.length === 0) {
+    for (const artist of stats.topArtists) push(artist.images?.[0]?.url);
+  }
+  return images;
+}
+
+function longestRun(stats: Stats): { count: number; name: string; id: string } {
+  let best = { count: 0, name: '', id: '' };
   let run = 0;
   let id = '';
   let name = '';
@@ -146,7 +194,7 @@ function longestRun(stats: Stats): { count: number; name: string } {
       name = artist?.name ?? '';
       run = artist ? 1 : 0;
     }
-    if (run > best.count) best = { count: run, name };
+    if (run > best.count) best = { count: run, name, id };
   }
   return best;
 }
@@ -157,17 +205,21 @@ function playTimestamps(stats: Stats): number[] {
     .filter(time => Number.isFinite(time));
 }
 
-function addedTimestamps(stats: Stats): { at: number; popularity: number }[] {
+function addedTimestamps(stats: Stats): { at: number; popularity: number; image?: string }[] {
   return stats.tracks
-    .map(item => ({ at: Date.parse(item.firstPlayed), popularity: item.track.popularity ?? 0 }))
+    .map(item => ({
+      at: Date.parse(item.firstPlayed),
+      popularity: item.track.popularity ?? 0,
+      image: albumArt(item.track),
+    }))
     .filter(item => Number.isFinite(item.at))
     .sort((a, b) => a.at - b.at);
 }
 
-function datedTracks(stats: Stats): { year: number; title: string }[] {
+function datedTracks(stats: Stats): { year: number; title: string; image?: string }[] {
   return stats.tracks.flatMap(item => {
     const year = releaseYear(item.track);
-    return year == null ? [] : [{ year, title: item.track.name }];
+    return year == null ? [] : [{ year, title: item.track.name, image: albumArt(item.track) }];
   });
 }
 
@@ -180,6 +232,7 @@ function personaSlide(stats: Stats): StorySlide {
     headline: persona.name,
     detail: persona.description,
     accent: persona.color,
+    image: personaPortraitSrc(persona.id),
   };
 }
 
@@ -195,6 +248,7 @@ function replaySlide(stats: Stats): StorySlide | null {
       kicker: 'Repeats in this window',
       headline: 'Once each',
       detail: `All ${stats.tracks.length} songs show up a single time.`,
+      images: sampleAlbumArts(stats, 5),
     };
   }
   return {
@@ -202,8 +256,9 @@ function replaySlide(stats: Stats): StorySlide | null {
     kind: 'replay',
     kicker: 'On repeat',
     headline: top.track.name,
-    detail: `${top.playCount} plays in these ${stats.overview.totalPlays}. ${oneOffs} ${oneOffs === 1 ? 'song shows' : 'songs show'} up once.`,
+    detail: `${top.playCount} recent ${top.playCount === 1 ? 'play' : 'plays'} in these ${stats.overview.totalPlays}. ${oneOffs} ${oneOffs === 1 ? 'song shows' : 'songs show'} up once.`,
     replayCount: top.playCount,
+    image: albumArt(top.track),
   };
 }
 
@@ -215,8 +270,9 @@ function runSlide(stats: Stats): StorySlide | null {
     kind: 'run',
     kicker: 'Back to back',
     headline: run.name,
-    detail: `${run.count} plays in a row, with no other artist between them.`,
+    detail: `${run.count} recent plays in a row, with no other artist between them.`,
     runCount: run.count,
+    image: artistArt(stats, run.id, run.name),
   };
 }
 
@@ -234,12 +290,18 @@ function hourSlide(stats: Stats): StorySlide | null {
   return {
     id: 'hour',
     kind: 'hour',
-    kicker: 'When these plays happened',
+    kicker: 'When these recent plays happened',
     headline: formatHour(hour),
-    detail: `${count} of ${stamps.length} plays fall in that hour.`,
+    detail: `${count} of ${stamps.length} recent plays fall in that hour.`,
     hour,
     hourCount: count,
     hourTotal: stamps.length,
+    images: [...new Set(
+      stats.recentlyPlayed
+        .filter(item => new Date(item.played_at).getHours() === hour)
+        .map(item => albumArt(item.track))
+        .filter((url): url is string => Boolean(url)),
+    )].slice(0, 4),
   };
 }
 
@@ -249,12 +311,15 @@ function windowSlide(stats: Stats): StorySlide | null {
   const min = Math.min(...stamps);
   const max = Math.max(...stamps);
   if (max - min < 60_000) return null;
+  const ordered = [...stats.recentlyPlayed].sort((a, b) => Date.parse(a.played_at) - Date.parse(b.played_at));
+  const ends = [albumArt(ordered[0]?.track), albumArt(ordered[ordered.length - 1]?.track)].filter((url): url is string => Boolean(url));
   return {
     id: 'window',
     kind: 'window',
     kicker: 'How long this window is',
     headline: formatSpan(max - min),
     detail: `From ${formatWhen(min)} to ${formatWhen(max)}.`,
+    images: [...new Set(ends)],
   };
 }
 
@@ -274,6 +339,7 @@ function yearsSlide(stats: Stats): StorySlide | null {
     yearTo: newest.year,
     yearFromTitle: oldest.title,
     yearToTitle: newest.title,
+    images: [oldest.image, newest.image].filter((url): url is string => Boolean(url)),
   };
 }
 
@@ -285,6 +351,7 @@ function lengthSlide(stats: Stats): StorySlide | null {
     kicker: 'Length of these tracks',
     headline: formatDuration(stats.overview.totalDuration),
     detail: 'The songs added together. This is not time spent listening.',
+    images: sampleAlbumArts(stats, 6),
   };
 }
 
@@ -292,6 +359,7 @@ function builtSlide(stats: Stats): StorySlide | null {
   const dated = addedTimestamps(stats);
   if (dated.length < 2) return null;
   const span = dated[dated.length - 1].at - dated[0].at;
+  const images = [dated[0].image, dated[dated.length - 1].image].filter((url): url is string => Boolean(url));
   if (span < 12 * 60 * 60 * 1000) {
     return {
       id: 'built',
@@ -299,6 +367,7 @@ function builtSlide(stats: Stats): StorySlide | null {
       kicker: 'How it was collected',
       headline: 'One sitting',
       detail: `The dated songs were added between ${formatWhen(dated[0].at)} and ${formatWhen(dated[dated.length - 1].at)}.`,
+      images: [...new Set(images)],
     };
   }
   return {
@@ -307,6 +376,7 @@ function builtSlide(stats: Stats): StorySlide | null {
     kicker: 'How it was collected',
     headline: formatSpan(span),
     detail: `From ${formatWhen(dated[0].at)} to ${formatWhen(dated[dated.length - 1].at)}.`,
+    images: [...new Set(images)],
   };
 }
 
@@ -316,8 +386,12 @@ function driftSlide(stats: Stats): StorySlide | null {
   const mid = Math.floor(dated.length / 2);
   const mean = (items: { popularity: number }[]) =>
     Math.round(items.reduce((sum, item) => sum + item.popularity, 0) / items.length);
-  const early = mean(dated.slice(0, mid));
-  const late = mean(dated.slice(mid));
+  const earlyHalf = dated.slice(0, mid);
+  const lateHalf = dated.slice(mid);
+  const early = mean(earlyHalf);
+  const late = mean(lateHalf);
+  const images = [earlyHalf.find(item => item.image)?.image, lateHalf.find(item => item.image)?.image]
+    .filter((url): url is string => Boolean(url));
   const delta = late - early;
   let headline = 'Same band';
   let detail = `Earlier songs average ${early}. Later songs average ${late}.`;
@@ -336,16 +410,17 @@ function driftSlide(stats: Stats): StorySlide | null {
     detail,
     earlyPopularity: early,
     latePopularity: late,
+    images: [...new Set(images)],
   };
 }
 
 function concentrationSlide(stats: Stats): StorySlide | null {
   if (stats.mode !== 'topTracks' || stats.tracks.length < 5) return null;
-  const counts = new Map<string, { name: string; count: number }>();
+  const counts = new Map<string, { id: string; name: string; count: number }>();
   for (const item of stats.tracks) {
     const artist = item.track.artists[0];
     if (!artist) continue;
-    const current = counts.get(artist.id) ?? { name: artist.name, count: 0 };
+    const current = counts.get(artist.id) ?? { id: artist.id, name: artist.name, count: 0 };
     current.count += 1;
     counts.set(artist.id, current);
   }
@@ -358,6 +433,7 @@ function concentrationSlide(stats: Stats): StorySlide | null {
     headline: top.name,
     detail: `${top.count} of these ${stats.tracks.length} songs.`,
     runCount: top.count,
+    image: artistArt(stats, top.id, top.name),
   };
 }
 
@@ -406,7 +482,7 @@ export function viewScope(stats: Stats): string {
   }
   if (stats.mode === 'recent') {
     const n = stats.recentlyPlayed.length;
-    return `In these ${n} ${n === 1 ? 'play' : 'plays'}`;
+    return `In these ${n} recent ${n === 1 ? 'play' : 'plays'}`;
   }
   const range = stats.timeRange === 'short_term'
     ? 'last 4 weeks'
@@ -429,14 +505,15 @@ export function buildFindings(stats: Stats): Finding[] {
       hit,
       title: 'Replay',
       fact: hit
-        ? `${top.playCount} plays of “${top.track.name}”`
-        : `Most played is “${top.track.name}”, ${top.playCount} ${top.playCount === 1 ? 'time' : 'times'}`,
+        ? `${top.playCount} recent plays of “${top.track.name}”`
+        : `Most played recently is “${top.track.name}”, ${top.playCount} ${top.playCount === 1 ? 'time' : 'times'}`,
       detail: hit
-        ? `In these ${stats.overview.totalPlays} plays. The mark is ${REPLAY_FINDING}.`
-        : `Nothing in this window reaches ${REPLAY_FINDING} plays.`,
+        ? `In these ${stats.overview.totalPlays} recent plays. The mark is ${REPLAY_FINDING}.`
+        : `Nothing in this window reaches ${REPLAY_FINDING} recent plays.`,
       count: top.playCount,
       name: top.track.name,
       artist: top.track.artists[0]?.name,
+      image: albumArt(top.track),
     });
 
     const run = longestRun(stats);
@@ -447,13 +524,14 @@ export function buildFindings(stats: Stats): Finding[] {
       hit: streak,
       title: 'Streak',
       fact: run.name
-        ? `${run.count} ${run.name} ${run.count === 1 ? 'play' : 'plays'} in a row`
+        ? `${run.count} recent ${run.name} ${run.count === 1 ? 'play' : 'plays'} in a row`
         : 'No artist run',
       detail: streak
         ? `Consecutive plays, with nobody else in between. The mark is ${STREAK_FINDING}.`
         : `The longest run in this window is ${run.count}. The mark is ${STREAK_FINDING}.`,
       count: run.count,
       name: run.name,
+      image: run.id ? artistArt(stats, run.id, run.name) : undefined,
     });
   }
 
@@ -473,27 +551,29 @@ export function buildFindings(stats: Stats): Finding[] {
       count: popularity,
       name: lowest.track.name,
       artist: lowest.track.artists[0]?.name,
+      image: albumArt(lowest.track),
     });
   }
 
   const dated = datedTracks(stats);
   if (dated.length >= 2) {
-    const from = Math.min(...dated.map(item => item.year));
-    const to = Math.max(...dated.map(item => item.year));
-    const span = to - from;
+    const oldest = dated.reduce((a, b) => (a.year <= b.year ? a : b));
+    const newest = dated.reduce((a, b) => (a.year >= b.year ? a : b));
+    const span = newest.year - oldest.year;
     const hit = span >= YEAR_FINDING_SPAN;
     findings.push({
       id: 'span',
       kind: 'span',
       hit,
       title: 'Year span',
-      fact: `${from} to ${to}`,
+      fact: `${oldest.year} to ${newest.year}`,
       detail: hit
         ? `${span} years between the oldest and newest release here.`
         : `${span} years between releases. The mark is ${YEAR_FINDING_SPAN}.`,
-      from,
-      to,
+      from: oldest.year,
+      to: newest.year,
       count: span,
+      images: [oldest.image, newest.image].filter((url): url is string => Boolean(url)),
     });
   }
 
@@ -510,6 +590,7 @@ export function buildFindings(stats: Stats): Finding[] {
       ? 'Enough of the tags landed on a known trait to clear 80%.'
       : 'The mark is 80% of genre weight on a known trait.',
     percent,
+    images: genreArts(stats),
   });
 
   return findings;

@@ -1,12 +1,26 @@
 import React, { useMemo } from "react";
-import { LockOpen, Share2 } from 'lucide-react';
+import {
+  CassetteTape,
+  Feather,
+  Flame,
+  Focus,
+  Footprints,
+  Heart,
+  Landmark,
+  LockOpen,
+  Moon,
+  Radio,
+  Share2,
+  Shuffle,
+  Sparkles,
+  Sun,
+  type LucideIcon,
+} from 'lucide-react';
 import { Stats } from "@/types";
 import { getUserPersona, personaPortraitSrc } from "@/utils/musicPersonas";
 import { darkenHex } from "@/utils/color";
 import { ThemedCardBackground } from "../ThemedCardBackground";
 import { generatePersonaCaption } from "@/utils/visualizationCaptions";
-import { MetricInfo } from '../MetricInfo';
-import { getMetricDescription } from '@/utils/metricDescriptions';
 import type { Persona, PersonaDimensions } from "@/utils/musicPersonas";
 
 interface PersonaCardProps {
@@ -16,16 +30,15 @@ interface PersonaCardProps {
 
 const TRAITS: Array<{
   key: keyof PersonaDimensions;
-  label: string;
-  tooltip: string;
   words: Record<string, string>;
+  icons: Record<string, LucideIcon>;
 }> = [
-  { key: 'genreDiversity', label: 'Taste', tooltip: 'persona-genre-diversity', words: { high: 'Eclectic', low: 'Focused' } },
-  { key: 'trackPopularity', label: 'Scene', tooltip: 'persona-popularity', words: { high: 'Mainstream', low: 'Underground' } },
-  { key: 'artistConsistency', label: 'Loyalty', tooltip: 'persona-artist-loyalty', words: { high: 'Devoted', low: 'Wandering' } },
-  { key: 'era', label: 'Era', tooltip: 'persona-era', words: { new: 'Modern', old: 'Classic' } },
-  { key: 'valence', label: 'Mood', tooltip: 'persona-mood', words: { positive: 'Bright', negative: 'Somber' } },
-  { key: 'arousal', label: 'Energy', tooltip: 'persona-energy', words: { energetic: 'Lively', calm: 'Gentle' } },
+  { key: 'genreDiversity', words: { high: 'Eclectic', low: 'Focused' }, icons: { high: Shuffle, low: Focus } },
+  { key: 'trackPopularity', words: { high: 'Mainstream', low: 'Underground' }, icons: { high: Radio, low: CassetteTape } },
+  { key: 'artistConsistency', words: { high: 'Devoted', low: 'Wandering' }, icons: { high: Heart, low: Footprints } },
+  { key: 'era', words: { new: 'Modern', old: 'Classic' }, icons: { new: Sparkles, old: Landmark } },
+  { key: 'valence', words: { positive: 'Bright', negative: 'Somber' }, icons: { positive: Sun, negative: Moon } },
+  { key: 'arousal', words: { energetic: 'Lively', calm: 'Gentle' }, icons: { energetic: Flame, calm: Feather } },
 ];
 
 function traitValue(persona: Persona, key: keyof PersonaDimensions, words: Record<string, string>): string {
@@ -106,23 +119,22 @@ export function PersonaPresentation({
           <p className="mt-3 text-base leading-relaxed text-white/85">{persona.description}</p>
           {note && <p className="mt-2 text-sm leading-relaxed text-white/50">{note}</p>}
           {unlockedOn && <UnlockBadge label={`Unlocked ${unlockedOn}`} color={colors.light} />}
-          <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {TRAITS.map(trait => (
-              <div
-                key={trait.key}
-                className="rounded-2xl border px-3 py-2.5"
-                style={{ borderColor: `${colors.light}28`, backgroundColor: `${colors.light}10` }}
-              >
-                <dt className="flex items-center justify-center gap-1 text-[11px] uppercase tracking-wider text-white/45 md:justify-start">
-                  {trait.label}
-                  <MetricInfo description={getMetricDescription(trait.tooltip)} />
-                </dt>
-                <dd className="mt-0.5 text-sm font-semibold" style={{ color: colors.light }}>
+          <ul className="mt-6 flex flex-wrap justify-center gap-2 md:justify-start">
+            {TRAITS.map(trait => {
+              const side = persona.dimensions[trait.key];
+              const Icon = trait.icons[side];
+              return (
+                <li
+                  key={trait.key}
+                  className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold"
+                  style={{ borderColor: `${colors.light}55`, backgroundColor: `${colors.light}18`, color: colors.light }}
+                >
+                  {Icon && <Icon className="h-3.5 w-3.5" aria-hidden />}
                   {traitValue(persona, trait.key, trait.words)}
-                </dd>
-              </div>
-            ))}
-          </dl>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       </div>
     </ThemedCardBackground>

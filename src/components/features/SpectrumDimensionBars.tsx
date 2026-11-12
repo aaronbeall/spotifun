@@ -89,11 +89,13 @@ interface SpectrumDimensionBarsProps {
   compact?: boolean;
   /** Tooltip play counts. Off in top modes, where the number is not a play count. */
   showPlayCounts?: boolean;
+  /** Plural noun for a count in the tooltip. Recent-window counts should say "recent plays". */
+  countLabel?: string;
 }
 
 // The core Spectrum visual, extracted so it can be reused both in the live
 // interactive Spectrum card and in the static share graphic.
-export function SpectrumDimensionBars({ genreStats, interactive = true, compact = false, showPlayCounts = true }: SpectrumDimensionBarsProps) {
+export function SpectrumDimensionBars({ genreStats, interactive = true, compact = false, showPlayCounts = true, countLabel = 'plays' }: SpectrumDimensionBarsProps) {
   const tooltip = useTooltip();
   const waveClipId = useId();
   const { spread, values, weightedScore } = useMemo(() => {
@@ -260,7 +262,7 @@ export function SpectrumDimensionBars({ genreStats, interactive = true, compact 
                             {showPlayCounts && (
                               <div className="flex items-center gap-1">
                                 <span className="text-xs text-slate-400 whitespace-nowrap">
-                                  {v.playCount} {v.playCount === 1 ? 'play' : 'plays'}
+                                  {v.playCount} {v.playCount === 1 && countLabel.endsWith('s') ? countLabel.slice(0, -1) : countLabel}
                                 </span>
                               </div>
                             )}

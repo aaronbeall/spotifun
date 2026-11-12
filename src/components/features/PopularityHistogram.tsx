@@ -76,7 +76,7 @@ export function PopularityHistogram({ tracks, large, interactive = true }: Popul
                 tooltip.show(
                   <div className="min-w-[120px] max-w-[220px]">
                     <div className="text-xs text-purple-300 mb-1">{minPop}-{maxPop}% Popularity</div>
-                    <div className="text-sm font-bold text-white mb-1">{count} plays</div>
+                    <div className="text-sm font-bold text-white mb-1">{count} {count === 1 ? 'track' : 'tracks'}</div>
                     <ul className="text-xs text-slate-300/90 space-y-0.5">
                       {tracksInBin.slice(0, 8).map(track => (
                         <li key={track.id} className="truncate max-w-[200px]">{track.name}</li>

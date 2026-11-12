@@ -52,6 +52,7 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
   const [flowChartMode, setFlowChartMode] = useState<FlowChartMode>('genres');
 
   const showCollectionCounts = stats.mode === 'recent' || stats.mode === 'playlist';
+  const countLabel = stats.mode === 'playlist' ? 'songs' : 'recent plays';
 
   const recentlyPlayedGenres = useMemo(() => stats.recentlyPlayed.map(t => {
     const artistId = t.track.artists[0]?.id;
@@ -144,6 +145,7 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
                   color="#a78bfa"
                   icon={Users}
                   className="scale-90 mt-9"
+                  countLabel={countLabel}
                 />
               )}
               {vibe.image && (
@@ -158,6 +160,7 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
                   color="#60a5fa"
                   icon={Palette}
                   className="scale-90 mt-9"
+                  countLabel={countLabel}
                 />
               )}
             </div>
@@ -172,7 +175,7 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
           value: `${Math.round(rangeScore)}%`,
           description: 'How your listening spreads across valence, arousal, complexity, rawness, and social presence.',
           color: CARD_THEMES.spectrum,
-          visual: <SpectrumDimensionBars genreStats={stats.genres} interactive={false} compact showPlayCounts={showCollectionCounts} />,
+          visual: <SpectrumDimensionBars genreStats={stats.genres} interactive={false} compact showPlayCounts={showCollectionCounts} countLabel={countLabel} />,
         };
       }
       case 2: {
@@ -181,6 +184,10 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
           title: CHART_MODE_TITLES[flowChartMode],
           description: stats.mode === 'playlist'
             ? 'How this playlist shifts as songs were added.'
+            : stats.mode === 'recent'
+            ? CHART_MODE_DESCRIPTIONS[flowChartMode]
+            : flowChartMode === 'genres'
+            ? 'Tracks how your top genres ebb and flow across this list.'
             : CHART_MODE_DESCRIPTIONS[flowChartMode],
           color: CARD_THEMES.flow,
           visual: (
@@ -217,6 +224,7 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
                 subtitle={leastPopularTrack.artists?.[0]?.name}
                 image={leastPopularTrack.album?.images?.[0]?.url}
                 count={leastPopularCount}
+                countLabel="tracks"
                 color="#818cf8"
                 icon={Gem}
                 className="scale-75"
@@ -235,6 +243,7 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
                 subtitle={mostPopularTrack.artists?.[0]?.name}
                 image={mostPopularTrack.album?.images?.[0]?.url}
                 count={mostPopularCount}
+                countLabel="tracks"
                 color="#f472b6"
                 icon={Star}
                 className="scale-75"
@@ -261,7 +270,7 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
         };
       }
     }
-  }, [currentCard, stats, flowTracks, topArtist, topGenre, flowChartMode, showCollectionCounts]);
+  }, [currentCard, stats, flowTracks, topArtist, topGenre, flowChartMode, showCollectionCounts, countLabel]);
 
   const openShare = () => setShareOpen(true);
 

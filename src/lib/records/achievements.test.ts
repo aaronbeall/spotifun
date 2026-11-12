@@ -11,7 +11,7 @@ describe('evaluateAchievements', () => {
   it('starts with every badge locked', () => {
     const views = evaluateAchievements(emptyJournal());
     expect(views.length).toBeGreaterThan(10);
-    expect(views.every(view => !view.earned)).toBe(true);
+    expect(views.every(view => !view.earned && !view.earnedAt)).toBe(true);
   });
 
   it('earns visit, look, persona, and vibe badges from the journal', async () => {
@@ -51,11 +51,13 @@ describe('evaluateAchievements', () => {
     };
     const byId = new Map(evaluateAchievements(journal).map(view => [view.id, view]));
     expect(byId.get('back-again')?.earned).toBe(true);
-    expect(byId.get('four-shelves')?.earned).toBe(true);
+    expect(byId.get('back-again')?.earnedAt).toBe(at(2));
+    expect(byId.get('four-shelves')?.earnedAt).toBe(at(1));
     expect(byId.get('three-eras')?.earned).toBe(true);
-    expect(byId.get('both-moods')?.earned).toBe(true);
-    expect(byId.get('both-energies')?.earned).toBe(true);
+    expect(byId.get('both-moods')?.earnedAt).toBe(at(2));
+    expect(byId.get('both-energies')?.earnedAt).toBe(at(2));
     expect(byId.get('three-names')?.earned).toBe(false);
+    expect(byId.get('three-names')?.earnedAt).toBeUndefined();
   });
 
   it('does not record the same unlock twice', async () => {

@@ -26,7 +26,7 @@ export function ShareModal({ content, onClose }: ShareModalProps) {
         <button
           onClick={onClose}
           aria-label="Close"
-          className="absolute -top-3 -right-3 z-10 p-2 rounded-full bg-gray-800 border border-white/10 text-white hover:bg-gray-700 shadow-lg"
+          className="absolute -top-3 -right-3 z-30 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-gray-800 text-white shadow-lg hover:bg-gray-700"
         >
           <X className="w-4 h-4" />
         </button>

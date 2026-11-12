@@ -95,7 +95,7 @@ function generateGenreFlowCaption(tracks: FlowTrack[], mode: DataMode): string {
     const ratio = Math.round((topCount / (topCount + secondCount)) * 100);
     return `Split ${ratio}% ${dominantGenre}, ${100 - ratio}% ${secondGenre} ${byMode(mode, {
       recent: 'recently',
-      top: 'in your top plays',
+      top: 'in your top tracks',
       playlist: 'in this playlist',
     })}.`;
   }
