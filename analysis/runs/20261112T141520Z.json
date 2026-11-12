@@ -1,0 +1,1412 @@
+{
+  "id": "20261112T141520Z",
+  "at": "2026-11-12T14:15:20.735Z",
+  "label": "add VACRS distributions",
+  "corpusFetchedAt": "2026-11-12T14:05:30.278Z",
+  "eraYear": 2026,
+  "thresholds": {
+    "genreDiversityHighAbove": 0.5,
+    "popularityHighAbove": 50,
+    "artistConsistencyWhenArtistDiversityBelow": 0.5,
+    "newEraWithinYears": 5,
+    "valencePositiveAbove": 0.5,
+    "arousalEnergeticAbove": 0.5
+  },
+  "vibeTargets": [
+    {
+      "name": "Tranquil Serenity",
+      "valence": 0.7,
+      "arousal": 0.2,
+      "complexity": 0.3,
+      "rawness": 0.2,
+      "socialPresence": 0.2
+    },
+    {
+      "name": "Pure Euphoria",
+      "valence": 0.95,
+      "arousal": 0.8,
+      "complexity": 0.4,
+      "rawness": 0.3,
+      "socialPresence": 0.7
+    },
+    {
+      "name": "Melancholic Reflection",
+      "valence": 0.3,
+      "arousal": 0.4,
+      "complexity": 0.6,
+      "rawness": 0.5,
+      "socialPresence": 0.3
+    },
+    {
+      "name": "Raw Intensity",
+      "valence": 0.5,
+      "arousal": 0.9,
+      "complexity": 0.7,
+      "rawness": 0.95,
+      "socialPresence": 0.6
+    },
+    {
+      "name": "Childlike Wonder",
+      "valence": 0.8,
+      "arousal": 0.6,
+      "complexity": 0.7,
+      "rawness": 0.4,
+      "socialPresence": 0.3
+    },
+    {
+      "name": "Naked Vulnerability",
+      "valence": 0.4,
+      "arousal": 0.3,
+      "complexity": 0.3,
+      "rawness": 0.9,
+      "socialPresence": 0.1
+    },
+    {
+      "name": "Wistful Nostalgia",
+      "valence": 0.5,
+      "arousal": 0.4,
+      "complexity": 0.5,
+      "rawness": 0.3,
+      "socialPresence": 0.2
+    },
+    {
+      "name": "Triumphant Resolve",
+      "valence": 0.8,
+      "arousal": 0.9,
+      "complexity": 0.6,
+      "rawness": 0.7,
+      "socialPresence": 0.8
+    },
+    {
+      "name": "Peaceful Solitude",
+      "valence": 0.6,
+      "arousal": 0.2,
+      "complexity": 0.5,
+      "rawness": 0.3,
+      "socialPresence": 0.1
+    },
+    {
+      "name": "Ecstatic Release",
+      "valence": 0.95,
+      "arousal": 0.9,
+      "complexity": 0.7,
+      "rawness": 0.5,
+      "socialPresence": 0.8
+    },
+    {
+      "name": "Mystical Reverie",
+      "valence": 0.6,
+      "arousal": 0.3,
+      "complexity": 0.8,
+      "rawness": 0.2,
+      "socialPresence": 0.2
+    },
+    {
+      "name": "Fierce Determination",
+      "valence": 0.7,
+      "arousal": 0.85,
+      "complexity": 0.5,
+      "rawness": 0.8,
+      "socialPresence": 0.4
+    },
+    {
+      "name": "Playful Whimsy",
+      "valence": 0.9,
+      "arousal": 0.7,
+      "complexity": 0.3,
+      "rawness": 0.4,
+      "socialPresence": 0.6
+    },
+    {
+      "name": "Solemn Majesty",
+      "valence": 0.5,
+      "arousal": 0.4,
+      "complexity": 0.8,
+      "rawness": 0.3,
+      "socialPresence": 0.3
+    },
+    {
+      "name": "Rebellious Defiance",
+      "valence": 0.4,
+      "arousal": 0.95,
+      "complexity": 0.4,
+      "rawness": 0.9,
+      "socialPresence": 0.7
+    }
+  ],
+  "headline": {
+    "personasHit": 13,
+    "personaTotal": 64,
+    "vibesHit": 12,
+    "vibeTotal": 15,
+    "top3SongShare": 51,
+    "top3Names": [
+      "Pure Euphoria",
+      "Playful Whimsy",
+      "Triumphant Resolve"
+    ],
+    "playlists": 41,
+    "songs": 1121
+  },
+  "switches": [
+    {
+      "name": "Genre diversity",
+      "majority": "low",
+      "minority": "high",
+      "majorityCount": 39,
+      "minorityCount": 2,
+      "total": 41,
+      "stuck": true
+    },
+    {
+      "name": "Artist consistency",
+      "majority": "low",
+      "minority": "high",
+      "majorityCount": 38,
+      "minorityCount": 3,
+      "total": 41,
+      "stuck": true
+    },
+    {
+      "name": "Era",
+      "majority": "old",
+      "minority": "new",
+      "majorityCount": 31,
+      "minorityCount": 10,
+      "total": 41,
+      "stuck": true
+    },
+    {
+      "name": "Valence",
+      "majority": "positive",
+      "minority": "negative",
+      "majorityCount": 33,
+      "minorityCount": 8,
+      "total": 41,
+      "stuck": true
+    },
+    {
+      "name": "Energy",
+      "majority": "energetic",
+      "minority": "calm",
+      "majorityCount": 32,
+      "minorityCount": 9,
+      "total": 41,
+      "stuck": true
+    },
+    {
+      "name": "Popularity",
+      "majority": "low",
+      "minority": "high",
+      "majorityCount": 21,
+      "minorityCount": 20,
+      "total": 41,
+      "stuck": false
+    }
+  ],
+  "gaps": [
+    {
+      "name": "Pure Euphoria",
+      "gap": 14.1,
+      "basin": 4.6,
+      "songs": 18.6,
+      "stations": 19.5
+    },
+    {
+      "name": "Triumphant Resolve",
+      "gap": 11.2,
+      "basin": 4.2,
+      "songs": 15.4,
+      "stations": 9.8
+    },
+    {
+      "name": "Playful Whimsy",
+      "gap": 8.1,
+      "basin": 8.9,
+      "songs": 16.9,
+      "stations": 22
+    },
+    {
+      "name": "Mystical Reverie",
+      "gap": 4.6,
+      "basin": 3.8,
+      "songs": 8.4,
+      "stations": 9.8
+    },
+    {
+      "name": "Rebellious Defiance",
+      "gap": 3.7,
+      "basin": 8.1,
+      "songs": 11.8,
+      "stations": 9.8
+    },
+    {
+      "name": "Peaceful Solitude",
+      "gap": 3.3,
+      "basin": 1.8,
+      "songs": 5.2,
+      "stations": 4.9
+    },
+    {
+      "name": "Childlike Wonder",
+      "gap": 2.4,
+      "basin": 6.9,
+      "songs": 9.3,
+      "stations": 4.9
+    },
+    {
+      "name": "Ecstatic Release",
+      "gap": 0.6,
+      "basin": 3.1,
+      "songs": 3.7,
+      "stations": 2.4
+    },
+    {
+      "name": "Raw Intensity",
+      "gap": -1.6,
+      "basin": 5.2,
+      "songs": 3.6,
+      "stations": 2.4
+    },
+    {
+      "name": "Wistful Nostalgia",
+      "gap": -4.3,
+      "basin": 5.5,
+      "songs": 1.2,
+      "stations": 2.4
+    },
+    {
+      "name": "Fierce Determination",
+      "gap": -5.1,
+      "basin": 5.9,
+      "songs": 0.8,
+      "stations": 4.9
+    },
+    {
+      "name": "Tranquil Serenity",
+      "gap": -5.7,
+      "basin": 7.5,
+      "songs": 1.9,
+      "stations": 0
+    },
+    {
+      "name": "Solemn Majesty",
+      "gap": -8.3,
+      "basin": 8.5,
+      "songs": 0.2,
+      "stations": 0
+    },
+    {
+      "name": "Naked Vulnerability",
+      "gap": -9.4,
+      "basin": 9.5,
+      "songs": 0.1,
+      "stations": 0
+    },
+    {
+      "name": "Melancholic Reflection",
+      "gap": -13.6,
+      "basin": 16.5,
+      "songs": 2.9,
+      "stations": 7.3
+    }
+  ],
+  "vacrs": {
+    "bins": [
+      "0–.1",
+      ".1–.2",
+      ".2–.3",
+      ".3–.4",
+      ".4–.5",
+      ".5–.6",
+      ".6–.7",
+      ".7–.8",
+      ".8–.9",
+      ".9–1"
+    ],
+    "scoredPlaylists": 40,
+    "unscoredPlaylists": 1,
+    "reading": "Songs average 0.64 on Social presence; the 15 vibe targets average 0.42 there. The tightest song pile is Valence, where 31% of songs sit in a single tenth.",
+    "axes": [
+      {
+        "name": "Valence",
+        "songMean": 0.65,
+        "playlistMean": 0.65,
+        "targetMean": 0.64,
+        "songPeak": 31,
+        "songs": [
+          0,
+          0,
+          0.1,
+          6.6,
+          8.9,
+          5.6,
+          27.6,
+          31,
+          18.5,
+          1.8
+        ],
+        "playlists": [
+          0,
+          0,
+          0,
+          5,
+          10,
+          15,
+          35,
+          30,
+          5,
+          0
+        ],
+        "targets": [
+          0,
+          0,
+          0,
+          6.7,
+          13.3,
+          20,
+          13.3,
+          13.3,
+          13.3,
+          20
+        ]
+      },
+      {
+        "name": "Arousal",
+        "songMean": 0.63,
+        "playlistMean": 0.63,
+        "targetMean": 0.59,
+        "songPeak": 21.9,
+        "songs": [
+          0,
+          2.8,
+          4.1,
+          4.6,
+          9.6,
+          12.9,
+          14.5,
+          21.9,
+          21.5,
+          8
+        ],
+        "playlists": [
+          0,
+          2.5,
+          2.5,
+          7.5,
+          7.5,
+          12.5,
+          22.5,
+          35,
+          7.5,
+          2.5
+        ],
+        "targets": [
+          0,
+          0,
+          13.3,
+          13.3,
+          20,
+          0,
+          6.7,
+          6.7,
+          13.3,
+          26.7
+        ]
+      },
+      {
+        "name": "Complexity",
+        "songMean": 0.5,
+        "playlistMean": 0.52,
+        "targetMean": 0.54,
+        "songPeak": 24.1,
+        "songs": [
+          0,
+          0,
+          3.9,
+          23.6,
+          24.1,
+          16.9,
+          18.6,
+          2.1,
+          2.1,
+          8.5
+        ],
+        "playlists": [
+          0,
+          0,
+          2.5,
+          20,
+          25,
+          30,
+          10,
+          2.5,
+          5,
+          5
+        ],
+        "targets": [
+          0,
+          0,
+          0,
+          20,
+          13.3,
+          20,
+          13.3,
+          20,
+          13.3,
+          0
+        ]
+      },
+      {
+        "name": "Rawness",
+        "songMean": 0.47,
+        "playlistMean": 0.46,
+        "targetMean": 0.51,
+        "songPeak": 19.9,
+        "songs": [
+          0,
+          10,
+          3.5,
+          17.8,
+          19.9,
+          15.8,
+          13.8,
+          11,
+          5.6,
+          2.7
+        ],
+        "playlists": [
+          0,
+          10,
+          5,
+          15,
+          32.5,
+          12.5,
+          12.5,
+          7.5,
+          5,
+          0
+        ],
+        "targets": [
+          0,
+          0,
+          13.3,
+          26.7,
+          13.3,
+          13.3,
+          0,
+          6.7,
+          6.7,
+          20
+        ]
+      },
+      {
+        "name": "Social presence",
+        "songMean": 0.64,
+        "playlistMean": 0.63,
+        "targetMean": 0.42,
+        "songPeak": 22.8,
+        "songs": [
+          0,
+          3.2,
+          12.3,
+          0.6,
+          4.4,
+          9.2,
+          15.2,
+          19.4,
+          22.8,
+          12.8
+        ],
+        "playlists": [
+          0,
+          5,
+          10,
+          2.5,
+          2.5,
+          10,
+          17.5,
+          25,
+          27.5,
+          0
+        ],
+        "targets": [
+          0,
+          13.3,
+          20,
+          20,
+          6.7,
+          0,
+          13.3,
+          13.3,
+          13.3,
+          0
+        ]
+      }
+    ]
+  },
+  "reading": "Pure Euphoria, Triumphant Resolve, Playful Whimsy draw more songs than their share of the vibe space. Melancholic Reflection, Naked Vulnerability, Solemn Majesty have room in the model that these tags barely reach.",
+  "personas": [
+    {
+      "name": "The Trend Voyager",
+      "count": 0
+    },
+    {
+      "name": "The Chill Curator",
+      "count": 0
+    },
+    {
+      "name": "The Electric Escapist",
+      "count": 0
+    },
+    {
+      "name": "The Reflective Dreamer",
+      "count": 0
+    },
+    {
+      "name": "The Golden Revivalist",
+      "count": 0
+    },
+    {
+      "name": "The Vintage Enthusiast",
+      "count": 0
+    },
+    {
+      "name": "The Restless Romantic",
+      "count": 1
+    },
+    {
+      "name": "The Sentimental Archivist",
+      "count": 0
+    },
+    {
+      "name": "The Playlist Hopper",
+      "count": 0
+    },
+    {
+      "name": "The Easy Explorer",
+      "count": 0
+    },
+    {
+      "name": "The Chaos Seeker",
+      "count": 0
+    },
+    {
+      "name": "The Moody Mixer",
+      "count": 0
+    },
+    {
+      "name": "The Retro Nomad",
+      "count": 1
+    },
+    {
+      "name": "The Gentle Nostalgic",
+      "count": 0
+    },
+    {
+      "name": "The Haunted DJ",
+      "count": 0
+    },
+    {
+      "name": "The Fading Wanderer",
+      "count": 0
+    },
+    {
+      "name": "The Indie Devotee",
+      "count": 0
+    },
+    {
+      "name": "The Ambient Collector",
+      "count": 0
+    },
+    {
+      "name": "The Subculture Rebel",
+      "count": 0
+    },
+    {
+      "name": "The Shadow Curator",
+      "count": 0
+    },
+    {
+      "name": "The Vintage Explorer",
+      "count": 0
+    },
+    {
+      "name": "The Gentle Historian",
+      "count": 0
+    },
+    {
+      "name": "The Underground Romantic",
+      "count": 0
+    },
+    {
+      "name": "The Obscure Archivist",
+      "count": 0
+    },
+    {
+      "name": "The Sonic Wanderer",
+      "count": 0
+    },
+    {
+      "name": "The Modern Daydreamer",
+      "count": 0
+    },
+    {
+      "name": "The Noise Nomad",
+      "count": 0
+    },
+    {
+      "name": "The Fadeaway Listener",
+      "count": 0
+    },
+    {
+      "name": "The Eclectic Retrohead",
+      "count": 0
+    },
+    {
+      "name": "The Vinyl Drifter",
+      "count": 0
+    },
+    {
+      "name": "The Obscure Punk",
+      "count": 0
+    },
+    {
+      "name": "The Lost Listener",
+      "count": 0
+    },
+    {
+      "name": "The Pop Loyalist",
+      "count": 0
+    },
+    {
+      "name": "The Chart Regular",
+      "count": 1
+    },
+    {
+      "name": "The Modern Melancholic",
+      "count": 0
+    },
+    {
+      "name": "The Brooding Fan",
+      "count": 0
+    },
+    {
+      "name": "The Classic Loyalist",
+      "count": 0
+    },
+    {
+      "name": "The Vintage Devotee",
+      "count": 0
+    },
+    {
+      "name": "The Dramatic Traditionalist",
+      "count": 0
+    },
+    {
+      "name": "The Melancholy Purist",
+      "count": 0
+    },
+    {
+      "name": "The Mainstream Hopper",
+      "count": 5
+    },
+    {
+      "name": "The Easy Listener",
+      "count": 1
+    },
+    {
+      "name": "The Doom Dancer",
+      "count": 0
+    },
+    {
+      "name": "The Lofi Drifter",
+      "count": 0
+    },
+    {
+      "name": "The Retro Socialite",
+      "count": 8
+    },
+    {
+      "name": "The Classic Radio Fan",
+      "count": 0
+    },
+    {
+      "name": "The Torchbearer",
+      "count": 3
+    },
+    {
+      "name": "The Reflective Listener",
+      "count": 0
+    },
+    {
+      "name": "The Minimalist Creator",
+      "count": 0
+    },
+    {
+      "name": "The Soft Collector",
+      "count": 0
+    },
+    {
+      "name": "The Niche Rebel",
+      "count": 0
+    },
+    {
+      "name": "The Shadow Follower",
+      "count": 1
+    },
+    {
+      "name": "The Revival Purist",
+      "count": 0
+    },
+    {
+      "name": "The Vintage Collector",
+      "count": 0
+    },
+    {
+      "name": "The Obscure Devotee",
+      "count": 0
+    },
+    {
+      "name": "The Preservationist",
+      "count": 0
+    },
+    {
+      "name": "The Curious Casual",
+      "count": 0
+    },
+    {
+      "name": "The Gentle Dabbler",
+      "count": 1
+    },
+    {
+      "name": "The Glitch Drifter",
+      "count": 1
+    },
+    {
+      "name": "The Quiet Ghost",
+      "count": 0
+    },
+    {
+      "name": "The Retro Casual",
+      "count": 11
+    },
+    {
+      "name": "The Soft Traditionalist",
+      "count": 5
+    },
+    {
+      "name": "The Restless Historian",
+      "count": 2
+    },
+    {
+      "name": "The Fading Whisperer",
+      "count": 0
+    }
+  ],
+  "stations": [
+    {
+      "query": "rap",
+      "name": "Fire rap playlist ️‍",
+      "owner": "Carson Wilbur",
+      "tracks": 40,
+      "vibe": "Rebellious Defiance",
+      "persona": "The Torchbearer"
+    },
+    {
+      "query": "hip hop",
+      "name": "90’s & 2000’s Hip Hop Bangers",
+      "owner": "Johnny Thunder",
+      "tracks": 40,
+      "vibe": "Triumphant Resolve",
+      "persona": "The Retro Socialite"
+    },
+    {
+      "query": "country",
+      "name": "COUNTRY HITS 2026 New Country Songs + Top Hits",
+      "owner": "Spot",
+      "tracks": 40,
+      "vibe": "Playful Whimsy",
+      "persona": "The Mainstream Hopper"
+    },
+    {
+      "query": "rock",
+      "name": "Top Classic Rock Hits Of All Time",
+      "owner": "Tom Schumacher",
+      "tracks": 40,
+      "vibe": "Fierce Determination",
+      "persona": "The Retro Socialite"
+    },
+    {
+      "query": "metal",
+      "name": "The actual good metal playlist",
+      "owner": "Sleekful",
+      "tracks": 40,
+      "vibe": "Raw Intensity",
+      "persona": "The Torchbearer"
+    },
+    {
+      "query": "punk",
+      "name": "Punk Classics",
+      "owner": "Filtr Legacy Sweden",
+      "tracks": 40,
+      "vibe": "Rebellious Defiance",
+      "persona": "The Restless Historian"
+    },
+    {
+      "query": "pop",
+      "name": "POPULAR CHRISTMAS MUSIC 🏻 HITS 2026",
+      "owner": "Clark Shipley",
+      "tracks": 40,
+      "vibe": "Playful Whimsy",
+      "persona": "The Retro Socialite"
+    },
+    {
+      "query": "k-pop",
+      "name": "Kpop demon hunters",
+      "owner": "Evelinavasiltsov",
+      "tracks": 40,
+      "vibe": "Pure Euphoria",
+      "persona": "The Mainstream Hopper"
+    },
+    {
+      "query": "latin",
+      "name": "Latin Party 2026 🏻",
+      "owner": "Off The Wall",
+      "tracks": 37,
+      "vibe": "Pure Euphoria",
+      "persona": "The Mainstream Hopper"
+    },
+    {
+      "query": "r&b",
+      "name": "R&B Classics 90s & 2000s - Best Old School RnB Hits Playlist - Usher, Chris Brown, Ne-Yo, Mario",
+      "owner": "Esydia",
+      "tracks": 40,
+      "vibe": "Playful Whimsy",
+      "persona": "The Retro Socialite"
+    },
+    {
+      "query": "soul",
+      "name": "100 Greatest Soul Songs",
+      "owner": "Topsify Australia",
+      "tracks": 40,
+      "vibe": "Playful Whimsy",
+      "persona": "The Retro Socialite"
+    },
+    {
+      "query": "jazz",
+      "name": "autumn vintage jazz",
+      "owner": "mrsjennaredish",
+      "tracks": 40,
+      "vibe": "Childlike Wonder",
+      "persona": "The Retro Casual"
+    },
+    {
+      "query": "blues",
+      "name": "TOP 100 Greatest Blues Songs Of All Time: Best Blues Music",
+      "owner": "Kamilgla",
+      "tracks": 40,
+      "vibe": "Melancholic Reflection",
+      "persona": "The Restless Historian"
+    },
+    {
+      "query": "classical",
+      "name": "Classical Bangers",
+      "owner": "Classical Bangers",
+      "tracks": 40,
+      "vibe": "Mystical Reverie",
+      "persona": "The Easy Listener"
+    },
+    {
+      "query": "opera",
+      "name": "Most Famous Opera Songs",
+      "owner": "ElGuineo84",
+      "tracks": 15,
+      "vibe": "Mystical Reverie",
+      "persona": "The Soft Traditionalist"
+    },
+    {
+      "query": "ambient",
+      "name": "japanese ambient 1980s-90s",
+      "owner": "hannahmollet",
+      "tracks": 40,
+      "vibe": "Peaceful Solitude",
+      "persona": "The Soft Traditionalist"
+    },
+    {
+      "query": "piano",
+      "name": "The Most Beautiful Piano Pieces",
+      "owner": "Gabriel R. Quijas",
+      "tracks": 40,
+      "vibe": "Mystical Reverie",
+      "persona": "The Soft Traditionalist"
+    },
+    {
+      "query": "techno",
+      "name": "Popular 90's/2000's Techno/House",
+      "owner": "Cassanovasanchor",
+      "tracks": 40,
+      "vibe": "Pure Euphoria",
+      "persona": "The Retro Casual"
+    },
+    {
+      "query": "house",
+      "name": "HOUSE MUSIC",
+      "owner": "aryo",
+      "tracks": 40,
+      "vibe": "Pure Euphoria",
+      "persona": "The Retro Casual"
+    },
+    {
+      "query": "edm",
+      "name": "100 Most Iconic EDM Songs",
+      "owner": "Ray Fontaine",
+      "tracks": 40,
+      "vibe": "Triumphant Resolve",
+      "persona": "The Retro Casual"
+    },
+    {
+      "query": "dance",
+      "name": "🇯🇲 Best Dancehall Songs Ever",
+      "owner": "DJ Noize",
+      "tracks": 40,
+      "vibe": "Playful Whimsy",
+      "persona": "The Retro Casual"
+    },
+    {
+      "query": "indie",
+      "name": "Indie playlist",
+      "owner": "SallyFaceGame.lover",
+      "tracks": 40,
+      "vibe": "Fierce Determination",
+      "persona": "The Retro Socialite"
+    },
+    {
+      "query": "folk",
+      "name": "folklore & evermore",
+      "owner": "anna richardson",
+      "tracks": 34,
+      "vibe": "Melancholic Reflection",
+      "persona": "The Restless Romantic"
+    },
+    {
+      "query": "singer-songwriter",
+      "name": "The Best of Singer-Songwriters",
+      "owner": "Atenista78",
+      "tracks": 40,
+      "vibe": "Playful Whimsy",
+      "persona": "The Retro Socialite"
+    },
+    {
+      "query": "reggae",
+      "name": "Reggae Classics 70s 80s & 90s | The Best Reggae Songs Of All Time | Reggae Music Hits | Top Reggae",
+      "owner": "Seu Gosto Pop",
+      "tracks": 40,
+      "vibe": "Playful Whimsy",
+      "persona": "The Retro Casual"
+    },
+    {
+      "query": "afrobeats",
+      "name": "Afrobeats Hits",
+      "owner": "EMA Records",
+      "tracks": 40,
+      "vibe": "Pure Euphoria",
+      "persona": "The Mainstream Hopper"
+    },
+    {
+      "query": "reggaeton",
+      "name": "Regatón 2000’s",
+      "owner": "dianarios777",
+      "tracks": 37,
+      "vibe": "Pure Euphoria",
+      "persona": "The Retro Casual"
+    },
+    {
+      "query": "gospel",
+      "name": "Gospel",
+      "owner": "swag",
+      "tracks": 40,
+      "vibe": "Playful Whimsy",
+      "persona": "The Retro Casual"
+    },
+    {
+      "query": "disco",
+      "name": "1970's Disco HITS",
+      "owner": "Oscar Mesta",
+      "tracks": 40,
+      "vibe": "Pure Euphoria",
+      "persona": "The Retro Socialite"
+    },
+    {
+      "query": "funk",
+      "name": "TOP 10 MOST VIRAL PHONK/FUNK 2026",
+      "owner": "Hitsi",
+      "tracks": 40,
+      "vibe": "Pure Euphoria",
+      "persona": "The Mainstream Hopper"
+    },
+    {
+      "query": "emo",
+      "name": "Emo Songs Everyone Knows",
+      "owner": "nisha",
+      "tracks": 40,
+      "vibe": "Rebellious Defiance",
+      "persona": "The Torchbearer"
+    },
+    {
+      "query": "hyperpop",
+      "name": "actual hyperpop",
+      "owner": "chemical0",
+      "tracks": 40,
+      "vibe": "Ecstatic Release",
+      "persona": "The Retro Casual"
+    },
+    {
+      "query": "drill",
+      "name": "NYC DRILL",
+      "owner": "drillmusic",
+      "tracks": 40,
+      "vibe": "Rebellious Defiance",
+      "persona": "The Glitch Drifter"
+    },
+    {
+      "query": "bluegrass",
+      "name": "Appalachian Bluegrass",
+      "owner": "TC Huff",
+      "tracks": 40,
+      "vibe": "Playful Whimsy",
+      "persona": "The Retro Casual"
+    },
+    {
+      "query": "bossa nova",
+      "name": "Bosa Nova Covers 2026 bossa nova music",
+      "owner": "Bossanova Covers",
+      "tracks": 40,
+      "vibe": "Childlike Wonder",
+      "persona": "The Chart Regular"
+    },
+    {
+      "query": "soundtrack",
+      "name": "Best Soundtracks of All Time",
+      "owner": "Suntzu",
+      "tracks": 40,
+      "vibe": "Mystical Reverie",
+      "persona": "The Soft Traditionalist"
+    },
+    {
+      "query": "lo-fi",
+      "name": "Lo Fi Hip Hop",
+      "owner": "Lo Fi Hip Hop Studio",
+      "tracks": 40,
+      "vibe": "Peaceful Solitude",
+      "persona": "The Soft Traditionalist"
+    },
+    {
+      "query": "sleep",
+      "name": "Thunderstorm Sounds - 10 Hours for Sleeping",
+      "owner": "Edy Boman",
+      "tracks": 40,
+      "vibe": "Melancholic Reflection",
+      "persona": "The Shadow Follower"
+    },
+    {
+      "query": "focus",
+      "name": "ADHD Focus Music (No Lyrics)",
+      "owner": "Preston",
+      "tracks": 40,
+      "vibe": "Wistful Nostalgia",
+      "persona": "The Gentle Dabbler"
+    },
+    {
+      "query": "workout",
+      "name": "HOT GIRL GYM PLAYLIST 🏻‍️ Girly Gym Pump, Workout Songs 2026, Beast Mode Baddie Gym Music",
+      "owner": "BAD KITTY 😈",
+      "tracks": 40,
+      "vibe": "Triumphant Resolve",
+      "persona": "The Retro Nomad"
+    },
+    {
+      "query": "kids",
+      "name": "Fun Toddler Songs",
+      "owner": "Joe Lei Magi",
+      "tracks": 40,
+      "vibe": "Triumphant Resolve",
+      "persona": "The Retro Casual"
+    }
+  ],
+  "charts": [
+    {
+      "id": "6UeSakyzhiEt4NB3UAd6NQ",
+      "name": "Billboard Hot 100",
+      "owner": "Billboard",
+      "tracks": 40,
+      "vibe": "Playful Whimsy",
+      "persona": "The Playlist Hopper",
+      "coverage": 0.931,
+      "popularity": 88,
+      "year": 2023
+    },
+    {
+      "id": "5VFjprCLCaXC6sTTUbrIj5",
+      "name": "Billboard Global 200",
+      "owner": "Top Lists",
+      "tracks": 40,
+      "vibe": "Pure Euphoria",
+      "persona": "The Retro Nomad",
+      "coverage": 0.879,
+      "popularity": 90,
+      "year": 2020
+    },
+    {
+      "id": "4LZtDy62wDvQ4o8JB4UrcR",
+      "name": "Billboard 200 Albums",
+      "owner": "Billboard",
+      "tracks": 40,
+      "vibe": "Playful Whimsy",
+      "persona": "The Retro Socialite",
+      "coverage": 0.583,
+      "popularity": 56,
+      "year": 2009
+    },
+    {
+      "id": "3qVzuSvpTZZ7EVlmn1gQ5r",
+      "name": "Billboards R&B/Hip-Hop Top 100",
+      "owner": "Billboards",
+      "tracks": 40,
+      "vibe": "Rebellious Defiance",
+      "persona": "The Retro Socialite",
+      "coverage": 0.921,
+      "popularity": 53,
+      "year": 2020
+    },
+    {
+      "id": "3OzwBC0Z89VvYv0HU0F4aJ",
+      "name": "Billboard's 100 Best Dance Songs of All-Time (Staff Picks)",
+      "owner": "Billboard",
+      "tracks": 40,
+      "vibe": "Pure Euphoria",
+      "persona": "The Retro Socialite",
+      "coverage": 0.765,
+      "popularity": 55,
+      "year": 2001
+    },
+    {
+      "id": "3QSmfNR2XtpoADu0QPGVJK",
+      "name": "Official Trending Chart",
+      "owner": "Official Charts",
+      "tracks": 20,
+      "vibe": "Pure Euphoria",
+      "persona": "The Mainstream Hopper",
+      "coverage": 0.879,
+      "popularity": 81,
+      "year": 2026
+    }
+  ],
+  "hot100": [
+    {
+      "name": "Choosin' Texas",
+      "artists": "Ella Langley",
+      "year": 2025
+    },
+    {
+      "name": "Housewife",
+      "artists": "Tate McRae",
+      "year": 2026
+    },
+    {
+      "name": "Boston",
+      "artists": "STELLA LEFTY",
+      "year": 2026
+    },
+    {
+      "name": "Been By Now",
+      "artists": "Morgan Wallen",
+      "year": 2026
+    },
+    {
+      "name": "Dracula (with JENNIE)",
+      "artists": "Tame Impala, JENNIE",
+      "year": 2026
+    },
+    {
+      "name": "Nicole Kidman",
+      "artists": "ADÉLA",
+      "year": 2026
+    },
+    {
+      "name": "expectations (feat. Chappell Roan)",
+      "artists": "Olivia Rodrigo, Chappell Roan",
+      "year": 2026
+    },
+    {
+      "name": "Patient Zero",
+      "artists": "Taylor Swift",
+      "year": 2026
+    },
+    {
+      "name": "BbY WOW",
+      "artists": "KAROL G, Judeline, rusowsky",
+      "year": 2026
+    },
+    {
+      "name": "hate that i made you love me",
+      "artists": "Ariana Grande",
+      "year": 2026
+    },
+    {
+      "name": "Lies (feat. Lana Del Rey)",
+      "artists": "Zach Bryan, Lana Del Rey",
+      "year": 2026
+    },
+    {
+      "name": "stupid song",
+      "artists": "Olivia Rodrigo",
+      "year": 2026
+    },
+    {
+      "name": "Babydoll",
+      "artists": "Dominic Fike",
+      "year": 2018
+    },
+    {
+      "name": "I Just Might",
+      "artists": "Bruno Mars",
+      "year": 2026
+    },
+    {
+      "name": "Jaded (feat. Ella Langley)",
+      "artists": "Koe Wetzel, Ella Langley",
+      "year": 2026
+    },
+    {
+      "name": "Loving Life Again",
+      "artists": "Ella Langley",
+      "year": 2026
+    },
+    {
+      "name": "Be Her",
+      "artists": "Ella Langley",
+      "year": 2026
+    },
+    {
+      "name": "Midnight Sun",
+      "artists": "Zara Larsson",
+      "year": 2025
+    },
+    {
+      "name": "Risk It All",
+      "artists": "Bruno Mars",
+      "year": 2026
+    },
+    {
+      "name": "Thriller",
+      "artists": "Michael Jackson",
+      "year": 1982
+    },
+    {
+      "name": "Earrings",
+      "artists": "Malcolm Todd",
+      "year": 2024
+    },
+    {
+      "name": "Last Thing You Need (from GTAVI: The Album)",
+      "artists": "Morgan Wallen, Grand Theft Auto VI",
+      "year": 2026
+    },
+    {
+      "name": "Stop The Wedding!",
+      "artists": "Ashe",
+      "year": 2026
+    },
+    {
+      "name": "Ain't In LA",
+      "artists": "ADÉLA",
+      "year": 2026
+    },
+    {
+      "name": "Janice STFU",
+      "artists": "Drake",
+      "year": 2026
+    },
+    {
+      "name": "Mr. Know It All",
+      "artists": "Teddy Swims",
+      "year": 2026
+    },
+    {
+      "name": "Animal",
+      "artists": "KATSEYE",
+      "year": 2026
+    },
+    {
+      "name": "drop dead",
+      "artists": "Olivia Rodrigo",
+      "year": 2026
+    },
+    {
+      "name": "Rethink Some Things",
+      "artists": "Luke Combs",
+      "year": 2026
+    },
+    {
+      "name": "the cure",
+      "artists": "Olivia Rodrigo",
+      "year": 2026
+    },
+    {
+      "name": "Loser",
+      "artists": "Tame Impala",
+      "year": 2025
+    },
+    {
+      "name": "Dead Fresh",
+      "artists": "Lil Baby",
+      "year": 2026
+    },
+    {
+      "name": "Orbiter",
+      "artists": "Noah Kahan",
+      "year": 2026
+    },
+    {
+      "name": "My Body Isn't Ready",
+      "artists": "sombr",
+      "year": 2026
+    },
+    {
+      "name": "Solar Eclipse (feat. Don Toliver)",
+      "artists": "Drake, Don Toliver",
+      "year": 2026
+    },
+    {
+      "name": "Lush Life",
+      "artists": "Zara Larsson",
+      "year": 2017
+    },
+    {
+      "name": "petal",
+      "artists": "Ariana Grande",
+      "year": 2026
+    },
+    {
+      "name": "So Good (feat. Kendrick Lamar)",
+      "artists": "Jhené Aiko, Kendrick Lamar",
+      "year": 2026
+    },
+    {
+      "name": "Somebody's Watching Me",
+      "artists": "Rockwell",
+      "year": 1984
+    },
+    {
+      "name": "Great Expectation",
+      "artists": "SIENNA SPIRO",
+      "year": 2026
+    }
+  ],
+  "comparison": {
+    "previousId": "20261112T140531Z",
+    "previousLabel": "baseline",
+    "lines": []
+  }
+}

@@ -1,6 +1,15 @@
 {
   "runs": [
     {
+      "id": "20261112T141520Z",
+      "at": "2026-11-12T14:15:20.735Z",
+      "label": "add VACRS distributions",
+      "personasHit": 13,
+      "vibesHit": 12,
+      "topVibe": "Pure Euphoria",
+      "file": "analysis/runs/20261112T141520Z.json"
+    },
+    {
       "id": "20261112T140531Z",
       "at": "2026-11-12T14:05:31.098Z",
       "label": "baseline",

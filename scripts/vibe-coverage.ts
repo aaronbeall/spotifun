@@ -249,6 +249,7 @@ function classifyPlaylist(playlist: CorpusPlaylist, corpus: Corpus) {
     vibe: vibe.vibe.name,
     persona: persona.name,
     dimensions: persona.dimensions,
+    score: coverage.scores,
     coverage: round(coverage.coverage, 3),
     margin: round(ranked[1].distance - ranked[0].distance, 3),
     averagePopularity: Math.round(averagePopularity),
@@ -256,7 +257,7 @@ function classifyPlaylist(playlist: CorpusPlaylist, corpus: Corpus) {
   };
 }
 
-function trackVibe(track: CorpusTrack, corpus: Corpus): string | null {
+function trackVibe(track: CorpusTrack, corpus: Corpus): { name: string; score: VACRSScore } | null {
   const genres: string[] = [];
   for (const id of track.artistIds) {
     for (const genre of corpus.artists[id]?.genres ?? []) {
@@ -269,7 +270,58 @@ function trackVibe(track: CorpusTrack, corpus: Corpus): string | null {
   }));
   const coverage = calculateWeightedVACRSScoreWithCoverage(stats);
   if (coverage.coverage <= 0) return null;
-  return findBestMatchingVibe(stats).vibe.name;
+  return { name: findBestMatchingVibe(stats).vibe.name, score: coverage.scores };
+}
+
+const VACRS_AXES = [
+  ['valence', 'Valence'],
+  ['arousal', 'Arousal'],
+  ['complexity', 'Complexity'],
+  ['rawness', 'Rawness'],
+  ['socialPresence', 'Social presence'],
+] as const;
+
+const VACRS_BINS = ['0–.1', '.1–.2', '.2–.3', '.3–.4', '.4–.5', '.5–.6', '.6–.7', '.7–.8', '.8–.9', '.9–1'];
+
+function shareBins(values: number[]): number[] {
+  const counts = Array(10).fill(0);
+  for (const value of values) counts[Math.min(9, Math.max(0, Math.floor(value * 10)))]++;
+  const total = values.length || 1;
+  return counts.map(count => round(count / total * 100));
+}
+
+function meanOf(values: number[]): number {
+  if (values.length === 0) return 0;
+  return round(values.reduce((sum, value) => sum + value, 0) / values.length, 2);
+}
+
+function vacrsSpace(songs: VACRSScore[], playlists: VACRSScore[], unscoredPlaylists: number) {
+  const axes = VACRS_AXES.map(([key, name]) => {
+    const songValues = songs.map(score => score[key]);
+    const playlistValues = playlists.map(score => score[key]);
+    const targetValues = MUSIC_VIBES.map(vibe => vibe.targetScore[key]);
+    const songShares = shareBins(songValues);
+    const peak = Math.max(...songShares);
+    return {
+      name,
+      songMean: meanOf(songValues),
+      playlistMean: meanOf(playlistValues),
+      targetMean: meanOf(targetValues),
+      songPeak: peak,
+      songs: songShares,
+      playlists: shareBins(playlistValues),
+      targets: shareBins(targetValues),
+    };
+  });
+  const farthest = [...axes].sort((left, right) => Math.abs(right.songMean - right.targetMean) - Math.abs(left.songMean - left.targetMean))[0];
+  const tightest = [...axes].sort((left, right) => right.songPeak - left.songPeak)[0];
+  return {
+    bins: VACRS_BINS,
+    scoredPlaylists: playlists.length,
+    unscoredPlaylists,
+    reading: `Songs average ${farthest.songMean} on ${farthest.name}; the 15 vibe targets average ${farthest.targetMean} there. The tightest song pile is ${tightest.name}, where ${tightest.songPeak}% of songs sit in a single tenth.`,
+    axes,
+  };
 }
 
 function score(corpus: Corpus, label: string) {
@@ -296,6 +348,7 @@ function score(corpus: Corpus, label: string) {
   }
 
   const songVibes = new Map<string, number>();
+  const songScores: VACRSScore[] = [];
   const seen = new Set<string>();
   let classifiedSongs = 0;
   for (const playlist of genrePlaylists) {
@@ -305,7 +358,8 @@ function score(corpus: Corpus, label: string) {
       const vibe = trackVibe(track, corpus);
       if (!vibe) continue;
       classifiedSongs++;
-      songVibes.set(vibe, (songVibes.get(vibe) ?? 0) + 1);
+      songScores.push(vibe.score);
+      songVibes.set(vibe.name, (songVibes.get(vibe.name) ?? 0) + 1);
     }
   }
 
@@ -353,6 +407,11 @@ function score(corpus: Corpus, label: string) {
   const personasHit = personas.filter(persona => persona.count > 0).length;
   const piled = gaps.filter(row => row.gap > 0).slice(0, 3).map(row => row.name);
   const empty = [...gaps].sort((left, right) => left.gap - right.gap).slice(0, 3).map(row => row.name);
+  const vacrs = vacrsSpace(
+    songScores,
+    genreScored.filter(row => row.result.coverage > 0).map(row => row.result.score),
+    genreScored.filter(row => row.result.coverage <= 0).length,
+  );
 
   const at = new Date().toISOString();
   const id = at.replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
@@ -376,6 +435,7 @@ function score(corpus: Corpus, label: string) {
     },
     switches,
     gaps,
+    vacrs,
     reading: `${piled.join(', ')} draw more songs than their share of the vibe space. ${empty.join(', ')} have room in the model that these tags barely reach.`,
     personas,
     stations: genreScored.map(row => ({
@@ -420,6 +480,14 @@ function compare(current: ReturnType<typeof score>, previous: ReturnType<typeof 
     const moved = (['valence', 'arousal', 'complexity', 'rawness', 'socialPresence'] as const)
       .filter(dim => vibe[dim] !== before[dim]);
     if (moved.length) lines.push(`${vibe.name} target moved on ${moved.join(', ')}`);
+  }
+  if ('vacrs' in previous && previous.vacrs) {
+    for (const axis of current.vacrs.axes) {
+      const before = previous.vacrs.axes.find(item => item.name === axis.name);
+      if (before && Math.abs(axis.songMean - before.songMean) >= 0.03) {
+        lines.push(`${axis.name} song mean ${before.songMean} → ${axis.songMean}`);
+      }
+    }
   }
   for (const row of current.switches) {
     const before = previous.switches.find(item => item.name === row.name);
@@ -522,6 +590,39 @@ export default function VibePersonaCoverage() {
             ]}
           />
         ))}
+      </Stack>
+
+      <Stack gap={8}>
+        <H2>VACRS scores behind the vibe names</H2>
+        <Text tone="secondary" size="small">
+          A vibe is the nearest of 15 target points in this five-axis space. Each chart runs from 0 to 1 in tenths. Bars are the share of classified songs, the share of genre playlists that produced a score, and the share of the 15 vibe targets in that tenth. {REPORT.vacrs.unscoredPlaylists} playlists had no classifiable tags and are left out, because an empty score is the neutral 0.5 point rather than a measured one.
+        </Text>
+        <Table
+          headers={["Axis", "Song mean", "Playlist mean", "Target mean"]}
+          columnAlign={["left", "right", "right", "right"]}
+          rows={REPORT.vacrs.axes.map(axis => [axis.name, String(axis.songMean), String(axis.playlistMean), String(axis.targetMean)])}
+        />
+        <Text>{REPORT.vacrs.reading}</Text>
+        <Grid columns={2} gap={16}>
+          {REPORT.vacrs.axes.map(axis => (
+            <Stack key={axis.name} gap={4}>
+              <H3>{axis.name}</H3>
+              <BarChart
+                height={200}
+                categories={REPORT.vacrs.bins}
+                valueSuffix="%"
+                series={[
+                  { name: "Songs", data: axis.songs },
+                  { name: "Playlists", data: axis.playlists },
+                  { name: "Vibe targets", data: axis.targets },
+                ]}
+              />
+            </Stack>
+          ))}
+        </Grid>
+        <Text tone="tertiary" size="small">
+          Axis units are the model's 0–1 score, and each category is one tenth of that range. Song and playlist shares use the genre-playlist sample. Target share is where MUSIC_VIBES places its 15 points, not a listening count.
+        </Text>
       </Stack>
 
       <Stack gap={8}>
