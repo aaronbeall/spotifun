@@ -7,6 +7,16 @@ export type Era = 'new' | 'old';
 export type Valence = 'positive' | 'negative';
 export type Arousal = 'energetic' | 'calm';
 
+/** Cutoffs computePersonaInput uses. The coverage report snapshots these on every run. */
+export const PERSONA_THRESHOLDS = {
+  genreDiversityHighAbove: 0.5,
+  popularityHighAbove: 50,
+  artistConsistencyWhenArtistDiversityBelow: 0.5,
+  newEraWithinYears: 5,
+  valencePositiveAbove: 0.5,
+  arousalEnergeticAbove: 0.5,
+} as const;
+
 export interface PersonaDimensions {
   genreDiversity: Level;
   trackPopularity: Level;
@@ -137,13 +147,13 @@ export function computePersonaInput(stats: Stats): PersonaInput {
     : currentYear;
 
   return {
-    genreDiversity: genreDiversity > 0.5 ? 'high' : 'low',
-    trackPopularity: averagePopularity > 50 ? 'high' : 'low',
+    genreDiversity: genreDiversity > PERSONA_THRESHOLDS.genreDiversityHighAbove ? 'high' : 'low',
+    trackPopularity: averagePopularity > PERSONA_THRESHOLDS.popularityHighAbove ? 'high' : 'low',
     // Low artist diversity means the listener returns to the same artists often (high consistency)
-    artistConsistency: artistDiversity < 0.5 ? 'high' : 'low',
-    era: (currentYear - avgYear) <= 5 ? 'new' : 'old',
-    valence: weighted.valence > 0.5 ? 'positive' : 'negative',
-    arousal: weighted.arousal > 0.5 ? 'energetic' : 'calm',
+    artistConsistency: artistDiversity < PERSONA_THRESHOLDS.artistConsistencyWhenArtistDiversityBelow ? 'high' : 'low',
+    era: (currentYear - avgYear) <= PERSONA_THRESHOLDS.newEraWithinYears ? 'new' : 'old',
+    valence: weighted.valence > PERSONA_THRESHOLDS.valencePositiveAbove ? 'positive' : 'negative',
+    arousal: weighted.arousal > PERSONA_THRESHOLDS.arousalEnergeticAbove ? 'energetic' : 'calm',
   };
 }
 
