@@ -10,7 +10,9 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "validate:genres": "tsx scripts/validate-genres.ts"
+    "validate:genres": "tsx scripts/validate-genres.ts",
+    "coverage": "tsx scripts/vibe-coverage.ts",
+    "coverage:refresh": "tsx scripts/vibe-coverage.ts --refresh"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",

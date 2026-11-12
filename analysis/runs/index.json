@@ -1,0 +1,13 @@
+{
+  "runs": [
+    {
+      "id": "20261112T140531Z",
+      "at": "2026-11-12T14:05:31.098Z",
+      "label": "baseline",
+      "personasHit": 13,
+      "vibesHit": 12,
+      "topVibe": "Pure Euphoria",
+      "file": "analysis/runs/20261112T140531Z.json"
+    }
+  ]
+}

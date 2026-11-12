@@ -1,0 +1,1484 @@
+{
+  "fetchedAt": "2026-11-12T06:49:21.719Z",
+  "topN": 40,
+  "note": "Spotify-owned editorial stations return 404 to this app token. These are chart playlists the token can still read, first 40 tracks in playlist order, 12 Nov 2026.",
+  "stationCount": 6,
+  "stations": [
+    {
+      "id": "6UeSakyzhiEt4NB3UAd6NQ",
+      "owner": "Billboard",
+      "name": "Billboard Hot 100",
+      "tracks": 40,
+      "vibe": "Playful Whimsy",
+      "vibeMatch": 87.3,
+      "runnerUp": "Pure Euphoria",
+      "margin": 0.056,
+      "score": {
+        "valence": 0.691,
+        "arousal": 0.615,
+        "complexity": 0.422,
+        "rawness": 0.419,
+        "socialPresence": 0.722
+      },
+      "coverage": 0.931,
+      "genreDiversity": 0.517,
+      "artistDiversity": 0.9,
+      "averagePopularity": 88,
+      "avgYear": 2023,
+      "persona": "The Playlist Hopper",
+      "dimensions": {
+        "genreDiversity": "high",
+        "trackPopularity": "high",
+        "artistConsistency": "low",
+        "era": "new",
+        "valence": "positive",
+        "arousal": "energetic"
+      },
+      "topGenres": [
+        "country",
+        "neo-psychedelic",
+        "indie",
+        "k-pop",
+        "pop"
+      ]
+    },
+    {
+      "id": "5VFjprCLCaXC6sTTUbrIj5",
+      "owner": "Top Lists",
+      "name": "Billboard Global 200",
+      "tracks": 40,
+      "vibe": "Pure Euphoria",
+      "vibeMatch": 88.2,
+      "runnerUp": "Playful Whimsy",
+      "margin": 0.015,
+      "score": {
+        "valence": 0.722,
+        "arousal": 0.698,
+        "complexity": 0.455,
+        "rawness": 0.355,
+        "socialPresence": 0.743
+      },
+      "coverage": 0.879,
+      "genreDiversity": 0.636,
+      "artistDiversity": 1.175,
+      "averagePopularity": 90,
+      "avgYear": 2020,
+      "persona": "The Retro Nomad",
+      "dimensions": {
+        "genreDiversity": "high",
+        "trackPopularity": "high",
+        "artistConsistency": "low",
+        "era": "old",
+        "valence": "positive",
+        "arousal": "energetic"
+      },
+      "topGenres": [
+        "k-pop",
+        "pop",
+        "country",
+        "neo-psychedelic",
+        "indie"
+      ]
+    },
+    {
+      "id": "4LZtDy62wDvQ4o8JB4UrcR",
+      "owner": "Billboard",
+      "name": "Billboard 200 Albums",
+      "tracks": 40,
+      "vibe": "Playful Whimsy",
+      "vibeMatch": 83.7,
+      "runnerUp": "Pure Euphoria",
+      "margin": 0.039,
+      "score": {
+        "valence": 0.634,
+        "arousal": 0.657,
+        "complexity": 0.529,
+        "rawness": 0.459,
+        "socialPresence": 0.668
+      },
+      "coverage": 0.583,
+      "genreDiversity": 0.417,
+      "artistDiversity": 1.2,
+      "averagePopularity": 56,
+      "avgYear": 2009,
+      "persona": "The Retro Socialite",
+      "dimensions": {
+        "genreDiversity": "low",
+        "trackPopularity": "high",
+        "artistConsistency": "low",
+        "era": "old",
+        "valence": "positive",
+        "arousal": "energetic"
+      },
+      "topGenres": [
+        "christmas",
+        "r&b",
+        "k-pop",
+        "adult standards",
+        "soft pop"
+      ]
+    },
+    {
+      "id": "3qVzuSvpTZZ7EVlmn1gQ5r",
+      "owner": "Billboards",
+      "name": "Billboards R&B/Hip-Hop Top 100",
+      "tracks": 40,
+      "vibe": "Rebellious Defiance",
+      "vibeMatch": 84.3,
+      "runnerUp": "Triumphant Resolve",
+      "margin": 0.013,
+      "score": {
+        "valence": 0.507,
+        "arousal": 0.719,
+        "complexity": 0.502,
+        "rawness": 0.686,
+        "socialPresence": 0.741
+      },
+      "coverage": 0.921,
+      "genreDiversity": 0.254,
+      "artistDiversity": 1.075,
+      "averagePopularity": 53,
+      "avgYear": 2020,
+      "persona": "The Retro Socialite",
+      "dimensions": {
+        "genreDiversity": "low",
+        "trackPopularity": "high",
+        "artistConsistency": "low",
+        "era": "old",
+        "valence": "positive",
+        "arousal": "energetic"
+      },
+      "topGenres": [
+        "rap",
+        "melodic rap",
+        "drill",
+        "brooklyn drill",
+        "new york drill"
+      ]
+    },
+    {
+      "id": "3OzwBC0Z89VvYv0HU0F4aJ",
+      "owner": "Billboard",
+      "name": "Billboard's 100 Best Dance Songs of All-Time (Staff Picks)",
+      "tracks": 40,
+      "vibe": "Pure Euphoria",
+      "vibeMatch": 88.9,
+      "runnerUp": "Playful Whimsy",
+      "margin": 0.041,
+      "score": {
+        "valence": 0.766,
+        "arousal": 0.779,
+        "complexity": 0.375,
+        "rawness": 0.396,
+        "socialPresence": 0.831
+      },
+      "coverage": 0.765,
+      "genreDiversity": 0.469,
+      "artistDiversity": 1.55,
+      "averagePopularity": 55,
+      "avgYear": 2001,
+      "persona": "The Retro Socialite",
+      "dimensions": {
+        "genreDiversity": "low",
+        "trackPopularity": "high",
+        "artistConsistency": "low",
+        "era": "old",
+        "valence": "positive",
+        "arousal": "energetic"
+      },
+      "topGenres": [
+        "disco house",
+        "edm",
+        "acid house",
+        "disco",
+        "chicago house"
+      ]
+    },
+    {
+      "id": "3QSmfNR2XtpoADu0QPGVJK",
+      "owner": "Official Charts",
+      "name": "Official Trending Chart",
+      "tracks": 40,
+      "vibe": "Pure Euphoria",
+      "vibeMatch": 89.2,
+      "runnerUp": "Playful Whimsy",
+      "margin": 0.054,
+      "score": {
+        "valence": 0.764,
+        "arousal": 0.772,
+        "complexity": 0.372,
+        "rawness": 0.357,
+        "socialPresence": 0.836
+      },
+      "coverage": 0.879,
+      "genreDiversity": 0.242,
+      "artistDiversity": 0.85,
+      "averagePopularity": 81,
+      "avgYear": 2026,
+      "persona": "The Mainstream Hopper",
+      "dimensions": {
+        "genreDiversity": "low",
+        "trackPopularity": "high",
+        "artistConsistency": "low",
+        "era": "new",
+        "valence": "positive",
+        "arousal": "energetic"
+      },
+      "topGenres": [
+        "house",
+        "k-pop",
+        "tech house",
+        "dark r&b",
+        "post-punk"
+      ]
+    }
+  ],
+  "chartSongs": [
+    {
+      "name": "Choosin' Texas",
+      "artists": "Ella Langley",
+      "popularity": 89,
+      "year": 2025,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Housewife",
+      "artists": "Tate McRae",
+      "popularity": 99,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Boston",
+      "artists": "STELLA LEFTY",
+      "popularity": 86,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Been By Now",
+      "artists": "Morgan Wallen",
+      "popularity": 87,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Dracula (with JENNIE)",
+      "artists": "Tame Impala, JENNIE",
+      "popularity": 92,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Nicole Kidman",
+      "artists": "ADÉLA",
+      "popularity": 98,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "expectations (feat. Chappell Roan)",
+      "artists": "Olivia Rodrigo, Chappell Roan",
+      "popularity": 91,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Patient Zero",
+      "artists": "Taylor Swift",
+      "popularity": 92,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "BbY WOW",
+      "artists": "KAROL G, Judeline, rusowsky",
+      "popularity": 100,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "hate that i made you love me",
+      "artists": "Ariana Grande",
+      "popularity": 90,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Lies (feat. Lana Del Rey)",
+      "artists": "Zach Bryan, Lana Del Rey",
+      "popularity": 88,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "stupid song",
+      "artists": "Olivia Rodrigo",
+      "popularity": 90,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Babydoll",
+      "artists": "Dominic Fike",
+      "popularity": 95,
+      "year": 2018,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "I Just Might",
+      "artists": "Bruno Mars",
+      "popularity": 83,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Jaded (feat. Ella Langley)",
+      "artists": "Koe Wetzel, Ella Langley",
+      "popularity": 75,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Loving Life Again",
+      "artists": "Ella Langley",
+      "popularity": 70,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Be Her",
+      "artists": "Ella Langley",
+      "popularity": 80,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Midnight Sun",
+      "artists": "Zara Larsson",
+      "popularity": 83,
+      "year": 2025,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Risk It All",
+      "artists": "Bruno Mars",
+      "popularity": 92,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Thriller",
+      "artists": "Michael Jackson",
+      "popularity": 87,
+      "year": 1982,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Earrings",
+      "artists": "Malcolm Todd",
+      "popularity": 96,
+      "year": 2024,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Last Thing You Need (from GTAVI: The Album)",
+      "artists": "Morgan Wallen, Grand Theft Auto VI",
+      "popularity": 85,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Stop The Wedding!",
+      "artists": "Ashe",
+      "popularity": 93,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Ain't In LA",
+      "artists": "ADÉLA",
+      "popularity": 91,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Janice STFU",
+      "artists": "Drake",
+      "popularity": 91,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Mr. Know It All",
+      "artists": "Teddy Swims",
+      "popularity": 88,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Animal",
+      "artists": "KATSEYE",
+      "popularity": 92,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "drop dead",
+      "artists": "Olivia Rodrigo",
+      "popularity": 84,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Rethink Some Things",
+      "artists": "Luke Combs",
+      "popularity": 72,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "the cure",
+      "artists": "Olivia Rodrigo",
+      "popularity": 88,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Loser",
+      "artists": "Tame Impala",
+      "popularity": 88,
+      "year": 2025,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Dead Fresh",
+      "artists": "Lil Baby",
+      "popularity": 84,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Orbiter",
+      "artists": "Noah Kahan",
+      "popularity": 82,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "My Body Isn't Ready",
+      "artists": "sombr",
+      "popularity": 90,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Solar Eclipse (feat. Don Toliver)",
+      "artists": "Drake, Don Toliver",
+      "popularity": 87,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Lush Life",
+      "artists": "Zara Larsson",
+      "popularity": 90,
+      "year": 2017,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "petal",
+      "artists": "Ariana Grande",
+      "popularity": 88,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "So Good (feat. Kendrick Lamar)",
+      "artists": "Jhené Aiko, Kendrick Lamar",
+      "popularity": 82,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Somebody's Watching Me",
+      "artists": "Rockwell",
+      "popularity": 79,
+      "year": 1984,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Great Expectation",
+      "artists": "SIENNA SPIRO",
+      "popularity": 94,
+      "year": 2026,
+      "station": "Billboard Hot 100"
+    },
+    {
+      "name": "Housewife",
+      "artists": "Tate McRae",
+      "popularity": 99,
+      "year": 2026,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "BbY WOW",
+      "artists": "KAROL G, Judeline, rusowsky",
+      "popularity": 100,
+      "year": 2026,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Nicole Kidman",
+      "artists": "ADÉLA",
+      "popularity": 98,
+      "year": 2026,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Thriller",
+      "artists": "Michael Jackson",
+      "popularity": 87,
+      "year": 1982,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Stop The Wedding!",
+      "artists": "Ashe",
+      "popularity": 93,
+      "year": 2026,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "expectations (feat. Chappell Roan)",
+      "artists": "Olivia Rodrigo, Chappell Roan",
+      "popularity": 91,
+      "year": 2026,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Choosin' Texas",
+      "artists": "Ella Langley",
+      "popularity": 89,
+      "year": 2025,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Ain't In LA",
+      "artists": "ADÉLA",
+      "popularity": 91,
+      "year": 2026,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Dracula (with JENNIE)",
+      "artists": "Tame Impala, JENNIE",
+      "popularity": 92,
+      "year": 2026,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Babydoll",
+      "artists": "Jamie Miller",
+      "popularity": 91,
+      "year": 2026,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "the cure",
+      "artists": "Olivia Rodrigo",
+      "popularity": 88,
+      "year": 2026,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Man I Need",
+      "artists": "Olivia Dean",
+      "popularity": 94,
+      "year": 2025,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Ordinary",
+      "artists": "Alex Warren",
+      "popularity": 87,
+      "year": 2025,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "stupid song",
+      "artists": "Olivia Rodrigo",
+      "popularity": 90,
+      "year": 2026,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Die With A Smile",
+      "artists": "Lady Gaga, Bruno Mars",
+      "popularity": 90,
+      "year": 2024,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Beauty And A Beat",
+      "artists": "Justin Bieber, Nicki Minaj",
+      "popularity": 88,
+      "year": 2012,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Training Season",
+      "artists": "Dua Lipa",
+      "popularity": 83,
+      "year": 2024,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Somebody's Watching Me - Single Version",
+      "artists": "Rockwell",
+      "popularity": 84,
+      "year": 2023,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Billie Jean",
+      "artists": "Michael Jackson",
+      "popularity": 93,
+      "year": 1982,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Ghostbusters",
+      "artists": "Ray Parker Jr.",
+      "popularity": 82,
+      "year": 2016,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Iris",
+      "artists": "The Goo Goo Dolls",
+      "popularity": 95,
+      "year": 1998,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Great Expectation",
+      "artists": "SIENNA SPIRO",
+      "popularity": 94,
+      "year": 2026,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "back to friends",
+      "artists": "sombr",
+      "popularity": 88,
+      "year": 2024,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "You’re Under Arrest",
+      "artists": "ILLIT",
+      "popularity": 86,
+      "year": 2026,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Mr. Brightside",
+      "artists": "The Killers",
+      "popularity": 94,
+      "year": 2004,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "NEON",
+      "artists": "A2O LITE, A2O",
+      "popularity": 87,
+      "year": 2026,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Lies (feat. Lana Del Rey)",
+      "artists": "Zach Bryan, Lana Del Rey",
+      "popularity": 88,
+      "year": 2026,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "SWIM",
+      "artists": "BTS",
+      "popularity": 92,
+      "year": 2026,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Patient Zero",
+      "artists": "Taylor Swift",
+      "popularity": 92,
+      "year": 2026,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "The Fate of Ophelia",
+      "artists": "Taylor Swift",
+      "popularity": 92,
+      "year": 2025,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Just Give Me a Reason (feat. Nate Ruess)",
+      "artists": "P!nk, Nate Ruess",
+      "popularity": 94,
+      "year": 2012,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Golden",
+      "artists": "HUNTR/X, EJAE, AUDREY NUNA, REI AMI, KPop Demon Hunters Cast",
+      "popularity": 90,
+      "year": 2025,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Love Me Not",
+      "artists": "Ravyn Lenae",
+      "popularity": 88,
+      "year": 2024,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "hate that i made you love me",
+      "artists": "Ariana Grande",
+      "popularity": 89,
+      "year": 2026,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Sweater Weather",
+      "artists": "The Neighbourhood",
+      "popularity": 94,
+      "year": 2013,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Earrings",
+      "artists": "Malcolm Todd",
+      "popularity": 96,
+      "year": 2024,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Dai Dai",
+      "artists": "Shakira, Burna Boy",
+      "popularity": 94,
+      "year": 2026,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Loser",
+      "artists": "Tame Impala",
+      "popularity": 88,
+      "year": 2025,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Spooky, Scary Skeletons - Undead Tombstone Remix",
+      "artists": "Andrew Gold",
+      "popularity": 83,
+      "year": 2019,
+      "station": "Billboard Global 200"
+    },
+    {
+      "name": "Bloody Mary",
+      "artists": "Lady Gaga",
+      "popularity": 80,
+      "year": 2011,
+      "station": "Billboard Global 200"
+    }
+  ],
+  "explorers": [
+    {
+      "target": "Tranquil Serenity",
+      "reached": true,
+      "name": "Tranquil Serenity mix",
+      "trackNames": [
+        "Still Space — Satoshi Ashikawa",
+        "Bananatron — INOYAMALAND",
+        "Seiko 3 — Yasuaki Shimizu",
+        "Future Green — Masahiro Sugaya",
+        "Ishiura (Abridged) — Toshi Tsuchitori",
+        "#NOTES OF FORESTRY — Motohiko Hamase",
+        "Slow Sky — Yutaka Hirose",
+        "Variation・III — Masashi Kitamura + Phonogenix",
+        "How Do You Do — Daisuke Hinata",
+        "Praying For Mother / Earth, Pt. 1 — Akira Ito",
+        "Candy Floss — INOYAMALAND",
+        "See The Light (Abridged) — Fumio Miyashita"
+      ],
+      "tracks": 12,
+      "vibe": "Tranquil Serenity",
+      "vibeMatch": 92.3,
+      "runnerUp": "Peaceful Solitude",
+      "margin": 0.072,
+      "score": {
+        "valence": 0.7,
+        "arousal": 0.1,
+        "complexity": 0.3,
+        "rawness": 0.3,
+        "socialPresence": 0.1
+      },
+      "coverage": 0.591,
+      "genreDiversity": 0.182,
+      "artistDiversity": 0.917,
+      "averagePopularity": 7,
+      "avgYear": 2014,
+      "persona": "The Soft Traditionalist",
+      "dimensions": {
+        "genreDiversity": "low",
+        "trackPopularity": "low",
+        "artistConsistency": "low",
+        "era": "old",
+        "valence": "positive",
+        "arousal": "calm"
+      },
+      "topGenres": [
+        "ambient",
+        "minimalism",
+        "new age",
+        "ambient jazz"
+      ]
+    },
+    {
+      "target": "Pure Euphoria",
+      "reached": true,
+      "name": "Pure Euphoria mix",
+      "trackNames": [
+        "Let It Snow! Let It Snow! Let It Snow! — Dean Martin",
+        "Silver Bells — Dean Martin",
+        "Mele Kalikimaka (Merry Christmas) — Bing Crosby, The Andrews Sisters",
+        "Little Saint Nick - 1991 Remix — The Beach Boys",
+        "Golden — HUNTR/X, EJAE, AUDREY NUNA, REI AMI, KPop Demon Hunters Cast",
+        "What It Sounds Like — HUNTR/X, EJAE, AUDREY NUNA, REI AMI, KPop Demon Hunters Cast",
+        "How It’s Done — HUNTR/X, EJAE, AUDREY NUNA, REI AMI, KPop Demon Hunters Cast",
+        "Takedown — HUNTR/X, EJAE, AUDREY NUNA, REI AMI, KPop Demon Hunters Cast",
+        "Soda Pop — Saja Boys, Andrew Choi, Neckwav, Danny Chung, KEVIN WOO, samUIL Lee, KPop Demon Hunters Cast",
+        "Free — Rumi, Jinu, KPop Demon Hunters Cast, EJAE, Andrew Choi",
+        "Your Idol — Saja Boys, Andrew Choi, Neckwav, Danny Chung, KEVIN WOO, samUIL Lee, KPop Demon Hunters Cast",
+        "Strategy — TWICE"
+      ],
+      "tracks": 12,
+      "vibe": "Pure Euphoria",
+      "vibeMatch": 88.5,
+      "runnerUp": "Playful Whimsy",
+      "margin": 0.137,
+      "score": {
+        "valence": 0.833,
+        "arousal": 0.742,
+        "complexity": 0.442,
+        "rawness": 0.158,
+        "socialPresence": 0.867
+      },
+      "coverage": 0.571,
+      "genreDiversity": 0.286,
+      "artistDiversity": 1.5,
+      "averagePopularity": 79,
+      "avgYear": 2003,
+      "persona": "The Retro Socialite",
+      "dimensions": {
+        "genreDiversity": "low",
+        "trackPopularity": "high",
+        "artistConsistency": "low",
+        "era": "old",
+        "valence": "positive",
+        "arousal": "energetic"
+      },
+      "topGenres": [
+        "k-pop",
+        "christmas",
+        "big band",
+        "swing music",
+        "adult standards"
+      ]
+    },
+    {
+      "target": "Melancholic Reflection",
+      "reached": true,
+      "name": "Melancholic Reflection mix",
+      "trackNames": [
+        "SAD! — XXXTENTACION",
+        "Jocelyn Flores — XXXTENTACION",
+        "In The End — Black Veil Brides",
+        "Public Image - Remastered 2011 — Public Image Ltd.",
+        "Everybody Needs Somebody to Love — The Blues Brothers",
+        "I 'll Play the Blues for You — Melvin Taylor, Lucky Peterson, Titus Williams, Ray \"Killer\" Allison",
+        "Boom Boom — John Lee Hooker",
+        "The Sky Is Crying — Gary B.B. Coleman",
+        "Smokestack Lightnin' — Howlin' Wolf",
+        "Mannish Boy — Muddy Waters",
+        "Dust My Broom — Elmore James",
+        "Born Under A Bad Sign - Mono Mix — Albert King"
+      ],
+      "tracks": 12,
+      "vibe": "Melancholic Reflection",
+      "vibeMatch": 83.7,
+      "runnerUp": "Fierce Determination",
+      "margin": 0.088,
+      "score": {
+        "valence": 0.433,
+        "arousal": 0.538,
+        "complexity": 0.498,
+        "rawness": 0.669,
+        "socialPresence": 0.539
+      },
+      "coverage": 0.938,
+      "genreDiversity": 0.271,
+      "artistDiversity": 1.167,
+      "averagePopularity": 58,
+      "avgYear": 1992,
+      "persona": "The Torchbearer",
+      "dimensions": {
+        "genreDiversity": "low",
+        "trackPopularity": "high",
+        "artistConsistency": "low",
+        "era": "old",
+        "valence": "negative",
+        "arousal": "energetic"
+      },
+      "topGenres": [
+        "blues",
+        "blues rock",
+        "classic blues",
+        "soul blues",
+        "modern blues"
+      ]
+    },
+    {
+      "target": "Raw Intensity",
+      "reached": true,
+      "name": "Raw Intensity mix",
+      "trackNames": [
+        "This Is How We Do It — Montell Jordan, Wino",
+        "Livin' On A Prayer — Bon Jovi",
+        "Pour Some Sugar On Me - Remastered 2017 — Def Leppard",
+        "Enter Sandman — Metallica",
+        "Crazy Train — Ozzy Osbourne",
+        "Paranoid - 2012 - Remaster — Black Sabbath",
+        "Tears Don't Fall — Bullet For My Valentine",
+        "My Curse — Killswitch Engage",
+        "We're Not Gonna Take It — Twisted Sister",
+        "You've Got Another Thing Comin' — Judas Priest",
+        "Duality — Slipknot",
+        "Chop Suey! — System Of A Down"
+      ],
+      "tracks": 12,
+      "vibe": "Raw Intensity",
+      "vibeMatch": 90.7,
+      "runnerUp": "Rebellious Defiance",
+      "margin": 0.069,
+      "score": {
+        "valence": 0.391,
+        "arousal": 0.847,
+        "complexity": 0.624,
+        "rawness": 0.802,
+        "socialPresence": 0.624
+      },
+      "coverage": 1,
+      "genreDiversity": 0.413,
+      "artistDiversity": 1.083,
+      "averagePopularity": 54,
+      "avgYear": 1991,
+      "persona": "The Torchbearer",
+      "dimensions": {
+        "genreDiversity": "low",
+        "trackPopularity": "high",
+        "artistConsistency": "low",
+        "era": "old",
+        "valence": "negative",
+        "arousal": "energetic"
+      },
+      "topGenres": [
+        "metal",
+        "glam metal",
+        "heavy metal",
+        "hard rock",
+        "rock"
+      ]
+    },
+    {
+      "target": "Childlike Wonder",
+      "reached": true,
+      "name": "Childlike Wonder mix",
+      "trackNames": [
+        "Carry on Wayward Son — Kansas",
+        "Renegade — Styx",
+        "The Christmas Song (Merry Christmas To You) — Nat King Cole",
+        "Have Yourself A Merry Little Christmas - Remastered 1999 — Frank Sinatra",
+        "Mistletoe And Holly - Remastered 1999 — Frank Sinatra",
+        "If I Ain't Got You — Alicia Keys",
+        "At Last — Etta James",
+        "Early Autumn — Stan Getz",
+        "Autumn in New York — Chet Baker Quartet",
+        "I Don't Stand a Ghost of a Chance With You — Stan Getz, Gunnar Johnson, Dave Brubeck, Anders Burman",
+        "Autumn Nocturne — Lou Donaldson",
+        "Misty — Stan Getz"
+      ],
+      "tracks": 12,
+      "vibe": "Childlike Wonder",
+      "vibeMatch": 89.6,
+      "runnerUp": "Solemn Majesty",
+      "margin": 0.085,
+      "score": {
+        "valence": 0.702,
+        "arousal": 0.531,
+        "complexity": 0.716,
+        "rawness": 0.332,
+        "socialPresence": 0.488
+      },
+      "coverage": 0.786,
+      "genreDiversity": 0.393,
+      "artistDiversity": 1,
+      "averagePopularity": 61,
+      "avgYear": 1987,
+      "persona": "The Retro Socialite",
+      "dimensions": {
+        "genreDiversity": "low",
+        "trackPopularity": "high",
+        "artistConsistency": "low",
+        "era": "old",
+        "valence": "positive",
+        "arousal": "energetic"
+      },
+      "topGenres": [
+        "jazz",
+        "cool jazz",
+        "vocal jazz",
+        "jazz ballads",
+        "christmas"
+      ]
+    },
+    {
+      "target": "Naked Vulnerability",
+      "reached": false,
+      "available": 1,
+      "trackNames": [
+        "Boys Will Be Bugs — Cavetown"
+      ]
+    },
+    {
+      "target": "Wistful Nostalgia",
+      "reached": true,
+      "name": "Wistful Nostalgia mix",
+      "trackNames": [
+        "Phone, Keys, Wallet — Lainey Wilson, John Mayer",
+        "Blue Christmas — Elvis Presley",
+        "Le Renard Bleu — Midori Takada, Lafawndah",
+        "think you're someone new — Ian Asher, Arden Jones",
+        "Sunsetz — Cigarettes After Sex",
+        "K. — Cigarettes After Sex",
+        "Soldier, Poet, King — The Oh Hellos",
+        "Rhymes and Reasons - \"Greatest Hits\" Version — John Denver",
+        "Rocky Mountain High — John Denver",
+        "Back Home Again — John Denver",
+        "I Came Running — Ancient Astronauts",
+        "Dusk to Dawn — Emancipator"
+      ],
+      "tracks": 12,
+      "vibe": "Wistful Nostalgia",
+      "vibeMatch": 87.4,
+      "runnerUp": "Melancholic Reflection",
+      "margin": 0.077,
+      "score": {
+        "valence": 0.616,
+        "arousal": 0.337,
+        "complexity": 0.476,
+        "rawness": 0.458,
+        "socialPresence": 0.392
+      },
+      "coverage": 0.841,
+      "genreDiversity": 0.773,
+      "artistDiversity": 1,
+      "averagePopularity": 43,
+      "avgYear": 2002,
+      "persona": "The Vinyl Drifter",
+      "dimensions": {
+        "genreDiversity": "high",
+        "trackPopularity": "low",
+        "artistConsistency": "low",
+        "era": "old",
+        "valence": "positive",
+        "arousal": "calm"
+      },
+      "topGenres": [
+        "folk",
+        "dream pop",
+        "trip hop",
+        "downtempo",
+        "country"
+      ]
+    },
+    {
+      "target": "Triumphant Resolve",
+      "reached": true,
+      "name": "Triumphant Resolve mix",
+      "trackNames": [
+        "His & Hers (feat. Don Toliver & Lil Uzi Vert) — Internet Money, Gunna, Don Toliver, Lil Uzi Vert",
+        "Walk Em Down (feat. Roddy Ricch) — NLE Choppa, Roddy Ricch",
+        "Lemonade (feat. NAV) — Internet Money, Gunna, Don Toliver, NAV",
+        "Me and My Guitar — A Boogie Wit da Hoodie",
+        "Mama Cry — YNW Melly",
+        "Murder on My Mind — YNW Melly",
+        "223's (feat. 9lokknine) — YNW Melly, 9lokknine",
+        "Love Me — Lil Tecca",
+        "The Box — Roddy Ricch",
+        "XO Tour Llif3 — Lil Uzi Vert",
+        "FE!N (feat. Playboi Carti) — Travis Scott, Playboi Carti",
+        "Costa Rica — Bankrol Hayden"
+      ],
+      "tracks": 12,
+      "vibe": "Triumphant Resolve",
+      "vibeMatch": 87.4,
+      "runnerUp": "Raw Intensity",
+      "margin": 0.12,
+      "score": {
+        "valence": 0.6,
+        "arousal": 0.7,
+        "complexity": 0.6,
+        "rawness": 0.7,
+        "socialPresence": 0.8
+      },
+      "coverage": 1,
+      "genreDiversity": 0.167,
+      "artistDiversity": 1.167,
+      "averagePopularity": 73,
+      "avgYear": 2020,
+      "persona": "The Retro Socialite",
+      "dimensions": {
+        "genreDiversity": "low",
+        "trackPopularity": "high",
+        "artistConsistency": "low",
+        "era": "old",
+        "valence": "positive",
+        "arousal": "energetic"
+      },
+      "topGenres": [
+        "melodic rap",
+        "rage rap",
+        "rap"
+      ]
+    },
+    {
+      "target": "Peaceful Solitude",
+      "reached": true,
+      "name": "Peaceful Solitude mix",
+      "trackNames": [
+        "Water Copy — Hiroshi Yoshimura",
+        "Glass Chattering — Yoshio Ojima",
+        "GREEN — Hiroshi Yoshimura",
+        "FEET — Hiroshi Yoshimura",
+        "CREEK — Hiroshi Yoshimura",
+        "Atelier — Visible Cloaks, Yoshio Ojima, Satsuki Shibano",
+        "SLEEP — Hiroshi Yoshimura",
+        "DOLPHINS — Ryuichi Sakamoto",
+        "Blink — Hiroshi Yoshimura",
+        "TEEVEE — Hiroshi Yoshimura",
+        "FEEL — Hiroshi Yoshimura",
+        "View from My Window — Hiroshi Yoshimura"
+      ],
+      "tracks": 12,
+      "vibe": "Peaceful Solitude",
+      "vibeMatch": 92.5,
+      "runnerUp": "Tranquil Serenity",
+      "margin": 0.099,
+      "score": {
+        "valence": 0.597,
+        "arousal": 0.124,
+        "complexity": 0.386,
+        "rawness": 0.397,
+        "socialPresence": 0.107
+      },
+      "coverage": 0.69,
+      "genreDiversity": 0.119,
+      "artistDiversity": 0.417,
+      "averagePopularity": 2,
+      "avgYear": 2019,
+      "persona": "The Vintage Collector",
+      "dimensions": {
+        "genreDiversity": "low",
+        "trackPopularity": "low",
+        "artistConsistency": "high",
+        "era": "old",
+        "valence": "positive",
+        "arousal": "calm"
+      },
+      "topGenres": [
+        "ambient",
+        "minimalism",
+        "drone",
+        "experimental",
+        "japanese classical"
+      ]
+    },
+    {
+      "target": "Ecstatic Release",
+      "reached": true,
+      "name": "Ecstatic Release mix",
+      "trackNames": [
+        "Antics — WHOKILLEDXIX",
+        "TEETH! — ElyOtto",
+        "I <3 Harajuku — Alice Longyu Gao, Fraxiom",
+        "spy? — WHOKILLEDXIX",
+        "8 now — food house, Gupi, Fraxiom",
+        "stalker — ElyOtto",
+        "MONSTER ENERGY GUN! — KevinKempt",
+        "dancing on your grave — food house, Gupi, Fraxiom",
+        "mememe — 100 gecs",
+        "Kismet — WHOKILLEDXIX",
+        "Bubblegum Sky (yeahyeahyeahyeahyeahyeahyehyehyeah) — Pink Limb",
+        "SugarCrash! — ElyOtto"
+      ],
+      "tracks": 12,
+      "vibe": "Ecstatic Release",
+      "vibeMatch": 87.2,
+      "runnerUp": "Triumphant Resolve",
+      "margin": 0.029,
+      "score": {
+        "valence": 0.7,
+        "arousal": 0.9,
+        "complexity": 0.6,
+        "rawness": 0.4,
+        "socialPresence": 0.8
+      },
+      "coverage": 0.739,
+      "genreDiversity": 0.087,
+      "artistDiversity": 0.75,
+      "averagePopularity": 32,
+      "avgYear": 2021,
+      "persona": "The Retro Casual",
+      "dimensions": {
+        "genreDiversity": "low",
+        "trackPopularity": "low",
+        "artistConsistency": "low",
+        "era": "old",
+        "valence": "positive",
+        "arousal": "energetic"
+      },
+      "topGenres": [
+        "hyperpop",
+        "glitch"
+      ]
+    },
+    {
+      "target": "Mystical Reverie",
+      "reached": true,
+      "name": "Mystical Reverie mix",
+      "trackNames": [
+        "The Prayer — Céline Dion, Andrea Bocelli",
+        "Swan Lake (Suite), Op. 20a, TH.219: I. Scene - Swan Theme — Pyotr Ilyich Tchaikovsky, Czech Symphony Orchestra, Michaela Rózsa Růžičková",
+        "Shostakovich: Jazz Suite No. 2: VI. Waltz II — Dmitri Shostakovich, Czech Symphony Orchestra, Michaela Rózsa Růžičková",
+        "Requiem: K. 626: Lacrimosa — Wolfgang Amadeus Mozart, Czech Symphony Orchestra, Michaela Rózsa Růžičková, Czech Symphony Choir",
+        "Nocturne Op. 9, No. 2 in E-Flat Major — Joshua Bell",
+        "The Nutcracker, Op. 71, Act I, Scene II: March — The City of Prague Philharmonic Orchestra, Friedmann Riehle",
+        "Gymnopédie No.1 — Erik Satie, Czech Symphony Orchestra, Michaela Rózsa Růžičková",
+        "Romeo and Juliet Suite No. 2 Montague and Capulets (Excerpt) Op. 64ter — Sergei Prokofiev, Czech Symphony Orchestra, Michaela Rózsa Růžičková",
+        "The Nutcracker Op. 71 XVa. Pas de deux - Intrada — Pyotr Ilyich Tchaikovsky, Czech Symphony Orchestra, Michaela Rózsa Růžičková",
+        "2 Arabesques, L. 66: Arabesque No. 1 — Claude Debussy, Sonia Bize",
+        "Beethoven: Für Elise, Bagatelle No. 25 in A minor, Wo0 59 — Ludwig van Beethoven, Mimosa",
+        "Clair de Lune — Claude Debussy, Czech Symphony Orchestra, Michaela Rózsa Růžičková"
+      ],
+      "tracks": 12,
+      "vibe": "Mystical Reverie",
+      "vibeMatch": 92.3,
+      "runnerUp": "Solemn Majesty",
+      "margin": 0.09,
+      "score": {
+        "valence": 0.598,
+        "arousal": 0.4,
+        "complexity": 0.9,
+        "rawness": 0.102,
+        "socialPresence": 0.2
+      },
+      "coverage": 0.761,
+      "genreDiversity": 0.155,
+      "artistDiversity": 1.417,
+      "averagePopularity": 59,
+      "avgYear": 2021,
+      "persona": "The Easy Listener",
+      "dimensions": {
+        "genreDiversity": "low",
+        "trackPopularity": "high",
+        "artistConsistency": "low",
+        "era": "new",
+        "valence": "positive",
+        "arousal": "calm"
+      },
+      "topGenres": [
+        "classical",
+        "orchestral",
+        "concerto",
+        "classical piano",
+        "ballet"
+      ]
+    },
+    {
+      "target": "Fierce Determination",
+      "reached": true,
+      "name": "Fierce Determination mix",
+      "trackNames": [
+        "Highway to Hell — AC/DC",
+        "All Along the Watchtower — Jimi Hendrix",
+        "Blue On Black (feat. Kenny Wayne Shepherd, Brantley Gilbert & Brian May) — Five Finger Death Punch, Kenny Wayne Shepherd, Brantley Gilbert, Brian May",
+        "Hear My Train a Comin' — Jimi Hendrix",
+        "That's All Right — Arthur \"Big Boy\" Crudup",
+        "I Wanna Be Yours — Arctic Monkeys",
+        "505 — Arctic Monkeys",
+        "Why'd You Only Call Me When You're High? — Arctic Monkeys",
+        "R U Mine? — Arctic Monkeys"
+      ],
+      "tracks": 9,
+      "vibe": "Fierce Determination",
+      "vibeMatch": 83.9,
+      "runnerUp": "Triumphant Resolve",
+      "margin": 0.044,
+      "score": {
+        "valence": 0.534,
+        "arousal": 0.688,
+        "complexity": 0.499,
+        "rawness": 0.632,
+        "socialPresence": 0.619
+      },
+      "coverage": 0.986,
+      "genreDiversity": 0.595,
+      "artistDiversity": 0.889,
+      "averagePopularity": 73,
+      "avgYear": 2003,
+      "persona": "The Retro Nomad",
+      "dimensions": {
+        "genreDiversity": "high",
+        "trackPopularity": "high",
+        "artistConsistency": "low",
+        "era": "old",
+        "valence": "positive",
+        "arousal": "energetic"
+      },
+      "topGenres": [
+        "indie",
+        "garage rock",
+        "classic rock",
+        "blues rock",
+        "rock"
+      ]
+    },
+    {
+      "target": "Playful Whimsy",
+      "reached": true,
+      "name": "Playful Whimsy mix",
+      "trackNames": [
+        "Last Thing You Need (from GTAVI: The Album) — Morgan Wallen, Grand Theft Auto VI",
+        "Choosin' Texas — Ella Langley",
+        "Sunburn — Tucker Wetmore",
+        "I Can't Love You Anymore — Ella Langley, Morgan Wallen",
+        "Hate How You Look — Josh Ross",
+        "Sleepless in a Hotel Room — Luke Combs",
+        "Take Me Back (Leave Me There) — Cody Johnson",
+        "Jaded (feat. Ella Langley) — Koe Wetzel, Ella Langley",
+        "I Got Better — Morgan Wallen",
+        "Bet On That — Blake Whiten",
+        "America Works — Diamond Rio",
+        "Empty Words — Corey Kent"
+      ],
+      "tracks": 12,
+      "vibe": "Playful Whimsy",
+      "vibeMatch": 86.6,
+      "runnerUp": "Pure Euphoria",
+      "margin": 0.115,
+      "score": {
+        "valence": 0.7,
+        "arousal": 0.5,
+        "complexity": 0.3,
+        "rawness": 0.4,
+        "socialPresence": 0.7
+      },
+      "coverage": 0.905,
+      "genreDiversity": 0.238,
+      "artistDiversity": 0.917,
+      "averagePopularity": 76,
+      "avgYear": 2026,
+      "persona": "The Easy Listener",
+      "dimensions": {
+        "genreDiversity": "low",
+        "trackPopularity": "high",
+        "artistConsistency": "low",
+        "era": "new",
+        "valence": "positive",
+        "arousal": "calm"
+      },
+      "topGenres": [
+        "country",
+        "texas country",
+        "red dirt",
+        "country rock",
+        "classic country"
+      ]
+    },
+    {
+      "target": "Solemn Majesty",
+      "reached": false,
+      "available": 2,
+      "trackNames": [
+        "Heat Of The Moment — Asia",
+        "Small but Mighty — Lily Honigberg, yeemz"
+      ]
+    },
+    {
+      "target": "Rebellious Defiance",
+      "reached": true,
+      "name": "Rebellious Defiance mix",
+      "trackNames": [
+        "2055 — Sleepy Hallow",
+        "Calling My Phone — Lil Tjay, 6LACK",
+        "Conversations — Juice WRLD",
+        "Wishing Well — Juice WRLD",
+        "Robbery — Juice WRLD",
+        "Armed And Dangerous — Juice WRLD",
+        "Took Her To The O — King Von",
+        "Armed & Dangerous — King Von",
+        "Bandit (with YoungBoy Never Broke Again) — Juice WRLD, YoungBoy Never Broke Again",
+        "All Girls Are The Same — Juice WRLD",
+        "Love Sosa — Chief Keef",
+        "Hide (feat. Seezyn) — Juice WRLD, Seezyn"
+      ],
+      "tracks": 12,
+      "vibe": "Rebellious Defiance",
+      "vibeMatch": 85.6,
+      "runnerUp": "Raw Intensity",
+      "margin": 0.089,
+      "score": {
+        "valence": 0.4,
+        "arousal": 0.679,
+        "complexity": 0.467,
+        "rawness": 0.738,
+        "socialPresence": 0.704
+      },
+      "coverage": 1,
+      "genreDiversity": 0.25,
+      "artistDiversity": 0.667,
+      "averagePopularity": 78,
+      "avgYear": 2019,
+      "persona": "The Torchbearer",
+      "dimensions": {
+        "genreDiversity": "low",
+        "trackPopularity": "high",
+        "artistConsistency": "low",
+        "era": "old",
+        "valence": "negative",
+        "arousal": "energetic"
+      },
+      "topGenres": [
+        "melodic rap",
+        "emo rap",
+        "chicago drill",
+        "drill",
+        "brooklyn drill"
+      ]
+    }
+  ]
+}
