@@ -44,6 +44,9 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastFetched, setLastFetched] = useState<Date | null>(null);
   const [timeRange, setTimeRange] = useState<TimeRange>('medium_term');
+  const [listTimeRange, setListTimeRange] = useState<TimeRange>('medium_term');
+  const [rankedLists, setRankedLists] = useState<Pick<Stats, 'topArtists' | 'topTracks' | 'topGenres'> | null>(null);
+  const [isLoadingLists, setIsLoadingLists] = useState(false);
   const [playLimit, setPlayLimit] = useState<number>(50);
   const [dataMode, setDataMode] = useState<DataMode>('recent');
   const [selectedPlaylist, setSelectedPlaylist] = useState<PlaylistSelection>({
@@ -77,6 +80,11 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
 
   const acceptStats = useCallback((statsData: Stats) => {
     setStats(statsData);
+    setRankedLists(current => current ?? {
+      topArtists: statsData.topArtists,
+      topTracks: statsData.topTracks,
+      topGenres: statsData.topGenres,
+    });
     setLastFetched(new Date());
     if (demo) return;
     void observeStatsResult(statsData)
@@ -169,6 +177,31 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     }
   };
 
+  const handleListTimeRangeChange = async (newTimeRange: TimeRange) => {
+    if (listTimeRange === newTimeRange) return;
+
+    setListTimeRange(newTimeRange);
+    setIsLoadingLists(true);
+
+    try {
+      const response = await fetch(buildStatsUrl(newTimeRange, playLimit, 'topArtists'));
+      if (response.ok) {
+        const data: Stats = await response.json();
+        setRankedLists({
+          topArtists: data.topArtists,
+          topTracks: data.topTracks,
+          topGenres: data.topGenres,
+        });
+      } else if (!demo) {
+        noteApiCall('stats', false);
+      }
+    } catch (error) {
+      console.error('Error fetching ranked lists:', error);
+    } finally {
+      setIsLoadingLists(false);
+    }
+  };
+
   const handlePlaylistSelect = async (playlist: PlaylistSelection) => {
     if (playlist.id === LIKED_SONGS_ID && likedSongsNeedsReconnect) {
       window.location.href = '/api/auth/spotify';
@@ -249,7 +282,8 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
   // Representative image per genre, pulled from a top artist tagged with that genre
   const genreImages = useMemo(() => {
     const map = new Map<string, string>();
-    stats?.artists.forEach(({ artist }) => {
+    const artists = rankedLists?.topArtists ?? stats?.topArtists ?? [];
+    artists.forEach(artist => {
       const imageUrl = artist.images?.[0]?.url;
       if (!imageUrl) return;
       artist.genres?.forEach(genre => {
@@ -257,7 +291,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
       });
     });
     return map;
-  }, [stats]);
+  }, [rankedLists, stats]);
 
   // Ticks periodically just to force a re-render, so the "last fetched"
   // relative-time label (e.g. "5m ago") stays fresh without user interaction.
@@ -329,6 +363,9 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
       </div>
     );
   }
+
+  const lists = rankedLists ?? stats;
+  const listShareStats: Stats = { ...stats, ...lists, timeRange: listTimeRange, mode: 'topArtists' };
 
   const sections = [
     { id: 'profile', label: 'Profile', icon: Award, iconClass: 'text-pink-400' },
@@ -530,19 +567,19 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               Top Artists
             </h2>
             <div className="flex items-center gap-2">
-              {stats.topArtists.length > 0 && (
-                <SectionShareButton onClick={() => setListShare(topArtistsShare(stats))} />
+              {lists.topArtists.length > 0 && (
+                <SectionShareButton onClick={() => setListShare(topArtistsShare(listShareStats))} />
               )}
               <TimeRangeToggle
-                value={timeRange}
-                onChange={handleTimeRangeChange}
-                disabled={isLoadingTimeRange}
-                isLoading={isLoadingTimeRange}
+                value={listTimeRange}
+                onChange={handleListTimeRangeChange}
+                disabled={isLoadingLists}
+                isLoading={isLoadingLists}
               />
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-4">
-            {stats.topArtists.slice(0, showAllArtists ? stats.topArtists.length : ARTISTS_TO_SHOW).map((artist, index) => {
+            {lists.topArtists.slice(0, showAllArtists ? lists.topArtists.length : ARTISTS_TO_SHOW).map((artist, index) => {
               const recentPlays = artist.recentPlays;
               const imageUrl = artist.images?.[0]?.url;
 
@@ -589,7 +626,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               onClick={() => setShowAllArtists(!showAllArtists)}
               className="text-sm text-gray-300 hover:text-white px-4 py-2 rounded-full border border-gray-600 hover:border-gray-400 transition-colors bg-gray-800/50 hover:bg-gray-700/50"
             >
-              {showAllArtists ? 'Show Less' : `Show All ${stats.topArtists.length} Artists`}
+              {showAllArtists ? 'Show Less' : `Show All ${lists.topArtists.length} Artists`}
             </button>
           </div>
         </div>
@@ -602,19 +639,19 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               Top Tracks
             </h2>
             <div className="flex items-center gap-2">
-              {stats.topTracks.length > 0 && (
-                <SectionShareButton onClick={() => setListShare(topTracksShare(stats))} />
+              {lists.topTracks.length > 0 && (
+                <SectionShareButton onClick={() => setListShare(topTracksShare(listShareStats))} />
               )}
               <TimeRangeToggle
-                value={timeRange}
-                onChange={handleTimeRangeChange}
-                disabled={isLoadingTimeRange}
-                isLoading={isLoadingTimeRange}
+                value={listTimeRange}
+                onChange={handleListTimeRangeChange}
+                disabled={isLoadingLists}
+                isLoading={isLoadingLists}
               />
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
-            {stats.topTracks.slice(0, showAllTracks ? stats.topTracks.length : TRACKS_TO_SHOW).map((track, index) => {
+            {lists.topTracks.slice(0, showAllTracks ? lists.topTracks.length : TRACKS_TO_SHOW).map((track, index) => {
               const recentPlays = track.recentPlays;
               const lastPlayed = track.lastPlayed ? new Date(track.lastPlayed) : null;
               const daysAgo = lastPlayed ? Math.floor((Date.now() - lastPlayed.getTime()) / (1000 * 60 * 60 * 24)) : null;
@@ -675,7 +712,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               onClick={() => setShowAllTracks(!showAllTracks)}
               className="text-sm text-gray-300 hover:text-white px-4 py-2 rounded-full border border-gray-600 hover:border-gray-400 transition-colors bg-gray-800/50 hover:bg-gray-700/50"
             >
-              {showAllTracks ? 'Show Less' : `Show All ${stats.topTracks.length} Tracks`}
+              {showAllTracks ? 'Show Less' : `Show All ${lists.topTracks.length} Tracks`}
             </button>
           </div>
         </div>
@@ -688,23 +725,23 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               Top Genres
             </h2>
             <div className="flex items-center gap-2">
-              {stats.topGenres.length > 0 && (
-                <SectionShareButton onClick={() => setListShare(topGenresShare(stats, genreImages))} />
+              {lists.topGenres.length > 0 && (
+                <SectionShareButton onClick={() => setListShare(topGenresShare(listShareStats, genreImages))} />
               )}
               <TimeRangeToggle
-                value={timeRange}
-                onChange={handleTimeRangeChange}
-                disabled={isLoadingTimeRange}
-                isLoading={isLoadingTimeRange}
+                value={listTimeRange}
+                onChange={handleListTimeRangeChange}
+                disabled={isLoadingLists}
+                isLoading={isLoadingLists}
               />
             </div>
           </div>
 
           {/* Genre Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
-            {stats.topGenres.slice(0, showAllGenres ? stats.topGenres.length : GENRES_TO_SHOW).map(({ genre, count }, index) => {
+            {lists.topGenres.slice(0, showAllGenres ? lists.topGenres.length : GENRES_TO_SHOW).map(({ genre, count }, index) => {
               const colorClass = getGenreColorClass(genre, 'bg');
-              const percentage = Math.round((count / stats.topGenres[0]?.count) * 100);
+              const percentage = Math.round((count / lists.topGenres[0]?.count) * 100);
               const imageUrl = genreImages.get(genre);
 
               return (
@@ -756,13 +793,13 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
           </div>
 
           {/* Show More/Less Button */}
-          {stats.topGenres.length > GENRES_TO_SHOW && (
+          {lists.topGenres.length > GENRES_TO_SHOW && (
             <div className="mt-6 flex justify-center">
               <button
                 onClick={() => setShowAllGenres(!showAllGenres)}
                 className="text-sm text-gray-300 hover:text-white px-4 py-2 rounded-full border border-gray-600 hover:border-gray-400 transition-colors bg-gray-800/50 hover:bg-gray-700/50"
               >
-                {showAllGenres ? 'Show Less' : `Show All ${stats.topGenres.length} Genres`}
+                {showAllGenres ? 'Show Less' : `Show All ${lists.topGenres.length} Genres`}
               </button>
             </div>
           )}
