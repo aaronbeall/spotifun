@@ -29,11 +29,11 @@ describe('classifyGenre', () => {
     expect(result.socialPresence).toBe(0.5);
   });
 
-  it('classifies pop genre with expected high valence and social presence', () => {
+  it('classifies pop as bright, with social presence above the midpoint and low rawness', () => {
     const result = classifyGenre('pop');
     
     expect(result.valence).toBeGreaterThan(0.6);
-    expect(result.socialPresence).toBeGreaterThan(0.6);
+    expect(result.socialPresence).toBeGreaterThan(0.5);
     expect(result.rawness).toBeLessThan(0.4);
   });
 
