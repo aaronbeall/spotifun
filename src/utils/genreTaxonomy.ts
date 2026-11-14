@@ -34,13 +34,13 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
   // ========== TOP LEVEL GENRES (with full VACRS scores) ==========
   
   pop: {
-    scores: { valence: 0.8, arousal: 0.7, complexity: 0.3, rawness: 0.2, socialPresence: 0.8 },
+    scores: { valence: 0.65, arousal: 0.58, complexity: 0.48, rawness: 0.35, socialPresence: 0.55 },
     aliases: ['pop', 'pop music'],
     description: 'Catchy, mainstream music with broad appeal'
   },
   
   rock: {
-    scores: { valence: 0.6, arousal: 0.8, complexity: 0.5, rawness: 0.6, socialPresence: 0.7 },
+    scores: { valence: 0.5, arousal: 0.72, complexity: 0.5, rawness: 0.65, socialPresence: 0.5 },
     aliases: ['rock', 'rock music', 'rock and roll', 'rock n roll'],
     description: 'Guitar-driven music with a strong backbeat'
   },
@@ -52,19 +52,19 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
   },
   
   punk: {
-    scores: { valence: 0.4, arousal: 0.9, complexity: 0.2, rawness: 1.0, socialPresence: 0.8 },
+    scores: { valence: 0.4, arousal: 0.9, complexity: 0.2, rawness: 1.0, socialPresence: 0.65 },
     aliases: ['punk', 'punk rock'],
     description: 'Raw, energetic music with a rebellious attitude'
   },
   
   electronic: {
-    scores: { valence: 0.8, arousal: 0.9, complexity: 0.4, rawness: 0.5, socialPresence: 0.9 },
+    scores: { valence: 0.8, arousal: 0.9, complexity: 0.4, rawness: 0.5, socialPresence: 0.75 },
     aliases: ['electronic', 'electronic music', 'edm', 'electronic dance music'],
     description: 'Synthesized music designed for dancing'
   },
   
   hiphop: {
-    scores: { valence: 0.6, arousal: 0.7, complexity: 0.6, rawness: 0.7, socialPresence: 0.8 },
+    scores: { valence: 0.48, arousal: 0.7, complexity: 0.6, rawness: 0.7, socialPresence: 0.65 },
     aliases: ['hip hop', 'hip-hop', 'hiphop'],
     description: 'Rhythmic vocal style over beats'
   },
@@ -76,7 +76,7 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
   },
   
   classical: {
-    scores: { valence: 0.6, arousal: 0.4, complexity: 0.9, rawness: 0.1, socialPresence: 0.2 },
+    scores: { valence: 0.48, arousal: 0.4, complexity: 0.9, rawness: 0.1, socialPresence: 0.2 },
     aliases: ['classical', 'classical music'],
     description: 'Complex, orchestral compositions'
   },
@@ -100,25 +100,25 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
   },
   
   country: {
-    scores: { valence: 0.7, arousal: 0.5, complexity: 0.3, rawness: 0.4, socialPresence: 0.7 },
+    scores: { valence: 0.46, arousal: 0.42, complexity: 0.38, rawness: 0.55, socialPresence: 0.5 },
     aliases: ['country', 'country music'],
     description: 'Music rooted in rural American traditions'
   },
   
   rnb: {
-    scores: { valence: 0.7, arousal: 0.6, complexity: 0.5, rawness: 0.3, socialPresence: 0.6 },
+    scores: { valence: 0.48, arousal: 0.42, complexity: 0.52, rawness: 0.32, socialPresence: 0.38 },
     aliases: ['r&b', 'r and b', 'rnb', 'rhythm and blues'],
     description: 'Rhythmic music with soulful vocals'
   },
   
   soul: {
-    scores: { valence: 0.7, arousal: 0.6, complexity: 0.5, rawness: 0.4, socialPresence: 0.7 },
+    scores: { valence: 0.4, arousal: 0.48, complexity: 0.5, rawness: 0.5, socialPresence: 0.48 },
     aliases: ['soul', 'soul music'],
     description: 'Emotional, gospel-influenced vocal music'
   },
   
   reggae: {
-    scores: { valence: 0.8, arousal: 0.6, complexity: 0.4, rawness: 0.5, socialPresence: 0.8 },
+    scores: { valence: 0.68, arousal: 0.42, complexity: 0.42, rawness: 0.55, socialPresence: 0.55 },
     aliases: ['reggae'],
     description: 'Jamaican music with a distinctive rhythm'
   },
@@ -130,7 +130,7 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
   },
   
   indie: {
-    scores: { valence: 0.6, arousal: 0.6, complexity: 0.6, rawness: 0.6, socialPresence: 0.5 },
+    scores: { valence: 0.48, arousal: 0.6, complexity: 0.6, rawness: 0.6, socialPresence: 0.5 },
     aliases: ['indie', 'independent'],
     description: 'Independent music outside the mainstream'
   },
@@ -138,21 +138,21 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
   // ========== ELECTRONIC SUB-GENRES ==========
   
   house: {
-    scores: { valence: 0.8, arousal: 0.8, complexity: 0.3, rawness: 0.4, socialPresence: 0.9 },
+    scores: { valence: 0.72, arousal: 0.85, complexity: 0.38, rawness: 0.4, socialPresence: 0.7 },
     aliases: ['house', 'house music'],
     parent: 'electronic',
     description: '4/4 beat electronic dance music'
   },
   
   techno: {
-    scores: { valence: 0.6, arousal: 0.9, complexity: 0.4, rawness: 0.5, socialPresence: 0.8 },
+    scores: { valence: 0.6, arousal: 0.9, complexity: 0.4, rawness: 0.5, socialPresence: 0.65 },
     aliases: ['techno'],
     parent: 'electronic',
     description: 'Repetitive, driving electronic music'
   },
   
   trance: {
-    scores: { valence: 0.8, arousal: 0.85, complexity: 0.5, rawness: 0.3, socialPresence: 0.9 },
+    scores: { valence: 0.8, arousal: 0.85, complexity: 0.5, rawness: 0.3, socialPresence: 0.75 },
     aliases: ['trance'],
     parent: 'electronic',
     description: 'Euphoric, melodic electronic dance music'
@@ -185,21 +185,21 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
   },
   
   'tropical house': {
-    scores: { valence: 0.9, arousal: 0.7, complexity: 0.3, rawness: 0.2, socialPresence: 0.85 },
+    scores: { valence: 0.9, arousal: 0.7, complexity: 0.3, rawness: 0.2, socialPresence: 0.7 },
     aliases: ['tropical house'],
     parent: 'house',
     description: 'Relaxed, Caribbean-influenced house'
   },
   
   'future bass': {
-    scores: { valence: 0.85, arousal: 0.8, complexity: 0.5, rawness: 0.4, socialPresence: 0.8 },
+    scores: { valence: 0.85, arousal: 0.8, complexity: 0.5, rawness: 0.4, socialPresence: 0.65 },
     aliases: ['future bass'],
     parent: 'electronic',
     description: 'Melodic bass-heavy electronic music'
   },
   
   disco: {
-    scores: { valence: 0.9, arousal: 0.8, complexity: 0.3, rawness: 0.2, socialPresence: 0.95 },
+    scores: { valence: 0.9, arousal: 0.8, complexity: 0.3, rawness: 0.2, socialPresence: 0.8 },
     aliases: ['disco'],
     parent: 'electronic',
     description: 'Upbeat 70s dance music'
@@ -212,7 +212,7 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
   },
   
   'progressive house': {
-    scores: { valence: 0.75, arousal: 0.8, complexity: 0.5, rawness: 0.3, socialPresence: 0.85 },
+    scores: { valence: 0.75, arousal: 0.8, complexity: 0.5, rawness: 0.3, socialPresence: 0.7 },
     aliases: ['progressive house', 'prog house'],
     parent: 'house',
     description: 'Melodic, building house music'
@@ -247,7 +247,7 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
   },
   
   synthwave: {
-    scores: { valence: 0.7, arousal: 0.7, complexity: 0.4, rawness: 0.3, socialPresence: 0.6 },
+    scores: { valence: 0.62, arousal: 0.55, complexity: 0.5, rawness: 0.4, socialPresence: 0.5 },
     aliases: ['synthwave', 'synth wave', 'retrowave'],
     parent: 'electronic',
     description: '80s-inspired synthesizer music'
@@ -263,13 +263,14 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
   // ========== HIP-HOP SUB-GENRES ==========
   
   rap: {
+    scores: { valence: 0.42, arousal: 0.7, complexity: 0.55, rawness: 0.75, socialPresence: 0.6 },
     aliases: ['rap', 'rapping'],
     parent: 'hiphop',
     description: 'Rhythmic spoken or chanted vocals'
   },
   
   trap: {
-    scores: { valence: 0.5, arousal: 0.8, complexity: 0.4, rawness: 0.7, socialPresence: 0.8 },
+    scores: { valence: 0.4, arousal: 0.8, complexity: 0.4, rawness: 0.7, socialPresence: 0.65 },
     aliases: ['trap'],
     parent: 'hiphop',
     description: 'Hard-hitting hip-hop with 808s'
@@ -319,7 +320,7 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
   },
   
   'indie pop': {
-    scores: { valence: 0.7, arousal: 0.6, complexity: 0.4, rawness: 0.5, socialPresence: 0.6 },
+    scores: { valence: 0.5, arousal: 0.48, complexity: 0.52, rawness: 0.48, socialPresence: 0.45 },
     aliases: ['indie pop', 'indiepop', 'indie-pop'],
     parent: 'indie',
     description: 'Melodic independent pop music'
@@ -389,21 +390,21 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
   },
   
   'soft rock': {
-    scores: { valence: 0.75, arousal: 0.4, complexity: 0.3, rawness: 0.3, socialPresence: 0.6 },
+    scores: { valence: 0.62, arousal: 0.32, complexity: 0.35, rawness: 0.32, socialPresence: 0.45 },
     aliases: ['soft rock', 'softrock'],
     parent: 'rock',
     description: 'Mellow, radio-friendly rock'
   },
   
   'pop rock': {
-    scores: { valence: 0.75, arousal: 0.7, complexity: 0.3, rawness: 0.4, socialPresence: 0.75 },
+    scores: { valence: 0.68, arousal: 0.68, complexity: 0.4, rawness: 0.45, socialPresence: 0.6 },
     aliases: ['pop rock', 'pop-rock'],
     parent: 'rock',
     description: 'Accessible rock with pop sensibilities'
   },
   
   britpop: {
-    scores: { valence: 0.7, arousal: 0.7, complexity: 0.4, rawness: 0.5, socialPresence: 0.7 },
+    scores: { valence: 0.62, arousal: 0.62, complexity: 0.48, rawness: 0.5, socialPresence: 0.58 },
     aliases: ['britpop', 'brit pop'],
     parent: 'alternative rock',
     description: '90s British guitar pop'
@@ -527,14 +528,14 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
   },
   
   electropop: {
-    scores: { valence: 0.85, arousal: 0.75, complexity: 0.3, rawness: 0.2, socialPresence: 0.8 },
+    scores: { valence: 0.85, arousal: 0.75, complexity: 0.3, rawness: 0.2, socialPresence: 0.65 },
     aliases: ['electropop', 'electro-pop', 'electro pop'],
     parent: 'pop',
     description: 'Electronic pop music'
   },
   
   'dance-pop': {
-    scores: { valence: 0.85, arousal: 0.8, complexity: 0.3, rawness: 0.2, socialPresence: 0.9 },
+    scores: { valence: 0.85, arousal: 0.8, complexity: 0.3, rawness: 0.2, socialPresence: 0.75 },
     aliases: ['dance-pop', 'dance pop', 'dancepop'],
     parent: 'pop',
     description: 'Upbeat pop designed for dancing'
@@ -555,14 +556,14 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
   },
   
   'k-pop': {
-    scores: { valence: 0.85, arousal: 0.8, complexity: 0.4, rawness: 0.1, socialPresence: 0.9 },
+    scores: { valence: 0.85, arousal: 0.8, complexity: 0.4, rawness: 0.1, socialPresence: 0.75 },
     aliases: ['k-pop', 'kpop', 'korean pop'],
     parent: 'pop',
     description: 'Korean pop music'
   },
   
   'j-pop': {
-    scores: { valence: 0.85, arousal: 0.75, complexity: 0.4, rawness: 0.2, socialPresence: 0.85 },
+    scores: { valence: 0.85, arousal: 0.75, complexity: 0.4, rawness: 0.2, socialPresence: 0.7 },
     aliases: ['j-pop', 'jpop', 'japanese pop'],
     parent: 'pop',
     description: 'Japanese pop music'
@@ -578,14 +579,14 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
   },
   
   dancehall: {
-    scores: { valence: 0.8, arousal: 0.8, complexity: 0.3, rawness: 0.6, socialPresence: 0.9 },
+    scores: { valence: 0.72, arousal: 0.82, complexity: 0.35, rawness: 0.58, socialPresence: 0.7 },
     aliases: ['dancehall'],
     parent: 'reggae',
     description: 'Uptempo Jamaican dance music'
   },
   
   reggaeton: {
-    scores: { valence: 0.75, arousal: 0.8, complexity: 0.3, rawness: 0.5, socialPresence: 0.9 },
+    scores: { valence: 0.68, arousal: 0.82, complexity: 0.35, rawness: 0.55, socialPresence: 0.7 },
     aliases: ['reggaeton', 'reggaetón'],
     parent: 'reggae',
     description: 'Latin urban music with reggae influence'
@@ -607,7 +608,7 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
   },
   
   funk: {
-    scores: { valence: 0.8, arousal: 0.75, complexity: 0.5, rawness: 0.4, socialPresence: 0.85 },
+    scores: { valence: 0.8, arousal: 0.75, complexity: 0.5, rawness: 0.4, socialPresence: 0.7 },
     aliases: ['funk'],
     parent: 'soul',
     description: 'Groovy, syncopated dance music'
@@ -616,7 +617,7 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
   // ========== FOLK / ACOUSTIC ==========
   
   'singer-songwriter': {
-    scores: { valence: 0.6, arousal: 0.3, complexity: 0.5, rawness: 0.5, socialPresence: 0.3 },
+    scores: { valence: 0.45, arousal: 0.28, complexity: 0.38, rawness: 0.75, socialPresence: 0.18 },
     aliases: ['singer-songwriter', 'singer songwriter'],
     parent: 'folk',
     description: 'Confessional, acoustic songwriting'
@@ -743,21 +744,21 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
   },
   
   afrobeats: {
-    scores: { valence: 0.8, arousal: 0.8, complexity: 0.4, rawness: 0.5, socialPresence: 0.9 },
+    scores: { valence: 0.72, arousal: 0.8, complexity: 0.42, rawness: 0.48, socialPresence: 0.68 },
     aliases: ['afrobeats', 'afrobeat', 'afro beats'],
     parent: 'electronic',
     description: 'African pop with electronic production'
   },
   
   'latin pop': {
-    scores: { valence: 0.8, arousal: 0.75, complexity: 0.4, rawness: 0.3, socialPresence: 0.85 },
-    aliases: ['latin pop', 'latin', 'latino'],
+    scores: { valence: 0.8, arousal: 0.75, complexity: 0.4, rawness: 0.3, socialPresence: 0.7 },
+    aliases: ['latin pop', 'urbano latino'],
     parent: 'pop',
     description: 'Latin American pop music'
   },
   
   salsa: {
-    scores: { valence: 0.85, arousal: 0.8, complexity: 0.5, rawness: 0.4, socialPresence: 0.9 },
+    scores: { valence: 0.85, arousal: 0.8, complexity: 0.5, rawness: 0.4, socialPresence: 0.75 },
     aliases: ['salsa'],
     parent: 'latin pop',
     description: 'Energetic Latin dance music'
@@ -805,5 +806,103 @@ export const GENRE_TAXONOMY: GenreTaxonomy = {
     aliases: ['seapunk', 'sea punk'],
     parent: 'electronic',
     description: 'Internet-born electronic subculture music'
+  },
+
+  phonk: {
+    scores: { valence: 0.35, arousal: 0.8, complexity: 0.35, rawness: 0.85, socialPresence: 0.5 },
+    aliases: ['phonk', 'brazilian phonk'],
+    parent: 'hiphop',
+    description: 'Dark, sample-heavy hip hop built on cowbells and Memphis rap'
+  },
+
+  gospel: {
+    scores: { valence: 0.68, arousal: 0.52, complexity: 0.45, rawness: 0.5, socialPresence: 0.62 },
+    aliases: ['gospel', 'traditional gospel', 'southern gospel'],
+    parent: 'soul',
+    description: 'Christian vocal music rooted in spirituals'
+  },
+
+  worship: {
+    scores: { valence: 0.58, arousal: 0.32, complexity: 0.4, rawness: 0.35, socialPresence: 0.48 },
+    aliases: ['worship'],
+    parent: 'gospel',
+    description: 'Congregational praise music'
+  },
+
+  opera: {
+    scores: { valence: 0.42, arousal: 0.55, complexity: 0.9, rawness: 0.15, socialPresence: 0.4 },
+    aliases: ['opera'],
+    parent: 'classical',
+    description: 'Sung dramatic classical works'
+  },
+
+  soundtrack: {
+    scores: { valence: 0.46, arousal: 0.45, complexity: 0.7, rawness: 0.2, socialPresence: 0.25 },
+    aliases: ['soundtrack', 'score', 'film score'],
+    parent: 'classical',
+    description: 'Music written to accompany a picture'
+  },
+
+  afropop: {
+    scores: { valence: 0.7, arousal: 0.68, complexity: 0.42, rawness: 0.45, socialPresence: 0.62 },
+    aliases: ['afropop', 'afro pop'],
+    parent: 'pop',
+    description: 'African popular music'
+  },
+
+  amapiano: {
+    scores: { valence: 0.68, arousal: 0.58, complexity: 0.5, rawness: 0.4, socialPresence: 0.58 },
+    aliases: ['amapiano', 'afropiano'],
+    parent: 'afrobeats',
+    description: 'South African house built on a log drum'
+  },
+
+  "children's music": {
+    scores: { valence: 0.92, arousal: 0.65, complexity: 0.12, rawness: 0.18, socialPresence: 0.55 },
+    aliases: ["children's music", 'lullaby'],
+    parent: 'pop',
+    description: 'Songs made for children'
+  },
+
+  'lovers rock': {
+    scores: { valence: 0.62, arousal: 0.32, complexity: 0.42, rawness: 0.42, socialPresence: 0.4 },
+    aliases: ['lovers rock'],
+    parent: 'reggae',
+    description: 'Romantic, slower reggae'
+  },
+
+  'g-funk': {
+    scores: { valence: 0.6, arousal: 0.7, complexity: 0.5, rawness: 0.6, socialPresence: 0.65 },
+    aliases: ['g-funk', 'g funk'],
+    parent: 'hiphop',
+    description: 'West Coast hip hop with funk basslines'
+  },
+
+  'country blues': {
+    scores: { valence: 0.4, arousal: 0.45, complexity: 0.5, rawness: 0.8, socialPresence: 0.4 },
+    aliases: ['country blues'],
+    parent: 'blues',
+    description: 'Early acoustic blues from the rural South'
+  },
+
+  'hard bop': {
+    scores: { valence: 0.5, arousal: 0.68, complexity: 0.85, rawness: 0.5, socialPresence: 0.4 },
+    aliases: ['hard bop', 'hardbop'],
+    parent: 'jazz',
+    description: 'Driving, blues-based small-group jazz'
+  },
+
+  lounge: {
+    scores: { valence: 0.55, arousal: 0.22, complexity: 0.35, rawness: 0.22, socialPresence: 0.35 },
+    aliases: ['lounge', 'lounge music'],
+    parent: 'jazz',
+    description: 'Soft, low-key background music'
+  },
+
+  'quiet storm': {
+    scores: { valence: 0.48, arousal: 0.28, complexity: 0.45, rawness: 0.3, socialPresence: 0.32 },
+    aliases: ['quiet storm'],
+    parent: 'rnb',
+    description: 'Slow, late-night R&B'
   },
 };
