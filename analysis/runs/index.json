@@ -1,6 +1,123 @@
 {
   "runs": [
     {
+      "id": "20261112T183657Z",
+      "at": "2026-11-12T18:36:57.963Z",
+      "label": "calm devoted playlists",
+      "personasHit": 35,
+      "vibesHit": 14,
+      "topVibe": "Pure Euphoria",
+      "file": "analysis/runs/20261112T183657Z.json"
+    },
+    {
+      "id": "20261112T183456Z",
+      "at": "2026-11-12T18:34:56.395Z",
+      "label": "replace mismatched genre playlists",
+      "personasHit": 34,
+      "vibesHit": 14,
+      "topVibe": "Pure Euphoria",
+      "file": "analysis/runs/20261112T183456Z.json"
+    },
+    {
+      "id": "20261112T183101Z",
+      "at": "2026-11-12T18:31:01.470Z",
+      "label": "rap and trap valence",
+      "personasHit": 34,
+      "vibesHit": 14,
+      "topVibe": "Pure Euphoria",
+      "file": "analysis/runs/20261112T183101Z.json"
+    },
+    {
+      "id": "20261112T183004Z",
+      "at": "2026-11-12T18:30:04.112Z",
+      "label": "dominant family share",
+      "personasHit": 34,
+      "vibesHit": 14,
+      "topVibe": "Pure Euphoria",
+      "file": "analysis/runs/20261112T183004Z.json"
+    },
+    {
+      "id": "20261112T180501Z",
+      "at": "2026-11-12T18:05:01.950Z",
+      "label": "add devoted-artist playlists",
+      "personasHit": 34,
+      "vibesHit": 14,
+      "topVibe": "Pure Euphoria",
+      "file": "analysis/runs/20261112T180501Z.json"
+    },
+    {
+      "id": "20261112T172826Z",
+      "at": "2026-11-12T17:28:26.147Z",
+      "label": "8 soul under the line",
+      "personasHit": 24,
+      "vibesHit": 14,
+      "topVibe": "Pure Euphoria",
+      "file": "analysis/runs/20261112T172826Z.json"
+    },
+    {
+      "id": "20261112T172509Z",
+      "at": "2026-11-12T17:25:09.778Z",
+      "label": "7 cross the valence line",
+      "personasHit": 24,
+      "vibesHit": 14,
+      "topVibe": "Pure Euphoria",
+      "file": "analysis/runs/20261112T172509Z.json"
+    },
+    {
+      "id": "20261112T172222Z",
+      "at": "2026-11-12T17:22:22.132Z",
+      "label": "6 split the bright pile",
+      "personasHit": 23,
+      "vibesHit": 14,
+      "topVibe": "Pure Euphoria",
+      "file": "analysis/runs/20261112T172222Z.json"
+    },
+    {
+      "id": "20261112T145142Z",
+      "at": "2026-11-12T14:51:42.837Z",
+      "label": "5 missing genres",
+      "personasHit": 21,
+      "vibesHit": 13,
+      "topVibe": "Playful Whimsy",
+      "file": "analysis/runs/20261112T145142Z.json"
+    },
+    {
+      "id": "20261112T145025Z",
+      "at": "2026-11-12T14:50:25.995Z",
+      "label": "4 lower social presence",
+      "personasHit": 22,
+      "vibesHit": 12,
+      "topVibe": "Playful Whimsy",
+      "file": "analysis/runs/20261112T145025Z.json"
+    },
+    {
+      "id": "20261112T144922Z",
+      "at": "2026-11-12T14:49:22.689Z",
+      "label": "3 median era",
+      "personasHit": 22,
+      "vibesHit": 12,
+      "topVibe": "Pure Euphoria",
+      "file": "analysis/runs/20261112T144922Z.json"
+    },
+    {
+      "id": "20261112T144833Z",
+      "at": "2026-11-12T14:48:33.545Z",
+      "label": "2 artist share",
+      "personasHit": 19,
+      "vibesHit": 12,
+      "topVibe": "Pure Euphoria",
+      "file": "analysis/runs/20261112T144833Z.json"
+    },
+    {
+      "id": "20261112T144731Z",
+      "at": "2026-11-12T14:47:31.169Z",
+      "label": "1 genre families",
+      "personasHit": 18,
+      "vibesHit": 12,
+      "topVibe": "Pure Euphoria",
+      "file": "analysis/runs/20261112T144731Z.json"
+    },
+    {
       "id": "20261112T141520Z",
       "at": "2026-11-12T14:15:20.735Z",
       "label": "add VACRS distributions",
