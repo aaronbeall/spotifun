@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { Award, BarChart3, BookOpen, ChevronDown, History, LayoutGrid, Library, Medal, MoreHorizontal, Music, Star, TrendingUp, Users, Clock, Headphones, LogOut, Settings, User, Info, Sparkles } from 'lucide-react';
+import { Award, BarChart3, BookOpen, ChevronDown, History, LayoutGrid, Library, Medal, Music, Star, TrendingUp, Users, Clock, Headphones, LogOut, Settings, User, Info, Sparkles } from 'lucide-react';
 import { formatDuration, formatNumber, getGenreColorMap, getGenreColorClass } from '@/utils';
 import Image from 'next/image';
 import FunStats from '@/components/features/FunStats';
@@ -21,6 +21,7 @@ import { RankMark } from '@/components/RankMark';
 import { SectionShareButton } from '@/components/SectionShareButton';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import { SamplePlaylistDialog } from '@/components/SamplePlaylistDialog';
+import { SectionJumpMenu, type SectionLink } from '@/components/SectionJumpMenu';
 import { ShareModal } from '@/components/ShareModal';
 import { topArtistsShare, topGenresShare, topTracksShare } from '@/components/shareLists';
 import type { ShareContent } from '@/components/ShareCardTemplate';
@@ -35,6 +36,17 @@ interface DashboardContentProps {
   /** Render a made-up listener from the /api/demo endpoints instead of the signed-in Spotify account */
   demo?: boolean;
 }
+
+const DASHBOARD_SECTIONS: SectionLink[] = [
+  { id: 'profile', label: 'Profile', icon: Award, iconClass: 'text-pink-400' },
+  { id: 'artists', label: 'Artists', icon: Star, iconClass: 'text-yellow-400' },
+  { id: 'tracks', label: 'Tracks', icon: TrendingUp, iconClass: 'text-green-400' },
+  { id: 'genres', label: 'Genres', icon: BarChart3, iconClass: 'text-purple-400' },
+  { id: 'story', label: 'Story', icon: BookOpen, iconClass: 'text-sky-300' },
+  { id: 'collection', label: 'Collection', icon: LayoutGrid, iconClass: 'text-fuchsia-300' },
+  { id: 'badges', label: 'Badges', icon: Medal, iconClass: 'text-amber-300' },
+  { id: 'time', label: 'Over time', icon: History, iconClass: 'text-cyan-300' },
+];
 
 export default function DashboardContent({ demo = false }: DashboardContentProps) {
   const apiBase = demo ? '/api/demo' : '/api';
@@ -348,6 +360,11 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     return () => clearInterval(interval);
   }, []);
 
+  const sections = useMemo(
+    () => demo ? DASHBOARD_SECTIONS.filter(section => section.id !== 'collection' && section.id !== 'badges') : DASHBOARD_SECTIONS,
+    [demo],
+  );
+
   if (isInitialLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white p-6">
@@ -414,19 +431,6 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
   const lists = rankedLists ?? stats;
   const listShareStats: Stats = { ...stats, ...lists, timeRange: listTimeRange, mode: 'topArtists' };
 
-  const sections = [
-    { id: 'profile', label: 'Profile', icon: Award, iconClass: 'text-pink-400' },
-    { id: 'artists', label: 'Artists', icon: Star, iconClass: 'text-yellow-400' },
-    { id: 'tracks', label: 'Tracks', icon: TrendingUp, iconClass: 'text-green-400' },
-    { id: 'genres', label: 'Genres', icon: BarChart3, iconClass: 'text-purple-400' },
-    { id: 'story', label: 'Story', icon: BookOpen, iconClass: 'text-sky-300' },
-    ...(!demo ? [
-      { id: 'collection', label: 'Collection', icon: LayoutGrid, iconClass: 'text-fuchsia-300' },
-      { id: 'badges', label: 'Badges', icon: Medal, iconClass: 'text-amber-300' },
-    ] : []),
-    { id: 'time', label: 'Over time', icon: History, iconClass: 'text-cyan-300' },
-  ];
-
   return (
     <div className="min-h-screen bg-gray-900">
       {/* Header - Always visible */}
@@ -452,36 +456,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               <NowPlayingWidget endpoint={`${apiBase}/player/current`} />
             </div>
 
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger asChild>
-                <button
-                  type="button"
-                  aria-label="Jump to a section"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-400 hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                >
-                  <MoreHorizontal className="h-5 w-5" />
-                </button>
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Portal>
-                <DropdownMenu.Content
-                  align="end"
-                  sideOffset={8}
-                  className="min-w-[160px] bg-gray-800 border border-gray-700 rounded-lg shadow-xl py-1 z-50"
-                >
-                  {sections.map(section => (
-                    <DropdownMenu.Item key={section.id} asChild>
-                      <a
-                        href={`#${section.id}`}
-                        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white outline-none"
-                      >
-                        <section.icon className={`h-4 w-4 shrink-0 ${section.iconClass}`} />
-                        {section.label}
-                      </a>
-                    </DropdownMenu.Item>
-                  ))}
-                </DropdownMenu.Content>
-              </DropdownMenu.Portal>
-            </DropdownMenu.Root>
+            <SectionJumpMenu sections={sections} />
 
             <div className="flex items-center bg-gray-900/60 border border-gray-700/50 rounded-full p-1.5 shrink-0">
               <DropdownMenu.Root>
