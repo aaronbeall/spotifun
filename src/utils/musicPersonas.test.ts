@@ -49,7 +49,7 @@ describe('computePersonaInput', () => {
   it('classifies low genre diversity correctly', () => {
     const stats: Stats = {
       overview: {
-        genreDiversity: 0.3,
+        genreDiversity: 0.05,
         averagePopularity: 60,
         artistDiversity: 0.3,
         totalPlays: 100,
@@ -165,7 +165,7 @@ describe('computePersonaInput', () => {
       overview: {
         genreDiversity: 0.5,
         averagePopularity: 50,
-        artistDiversity: 0.3, // Low artist diversity = high consistency
+        artistDiversity: 0.3, // The persona uses play share, not this overview ratio
         totalPlays: 100,
         uniqueArtists: 20,
         uniqueTracks: 50,
@@ -186,7 +186,13 @@ describe('computePersonaInput', () => {
       ],
       recentlyPlayed: [],
       tracks: [],
-      artists: [],
+      artists: Array.from({ length: 5 }, (_, index) => ({
+        artist: { id: `a${index}` },
+        playCount: 20,
+        uniqueTracks: 20,
+        totalDuration: 0,
+        genres: [],
+      })) as unknown as Stats['artists'],
       topArtists: [],
       topGenres: [],
       timeRange: 'medium_term',
@@ -203,7 +209,7 @@ describe('computePersonaInput', () => {
       overview: {
         genreDiversity: 0.5,
         averagePopularity: 50,
-        artistDiversity: 0.7, // High artist diversity = low consistency
+        artistDiversity: 0.7, // The persona uses play share, not this overview ratio
         totalPlays: 100,
         uniqueArtists: 20,
         uniqueTracks: 50,
@@ -224,7 +230,13 @@ describe('computePersonaInput', () => {
       ],
       recentlyPlayed: [],
       tracks: [],
-      artists: [],
+      artists: Array.from({ length: 20 }, (_, index) => ({
+        artist: { id: `a${index}` },
+        playCount: 5,
+        uniqueTracks: 5,
+        totalDuration: 0,
+        genres: [],
+      })) as unknown as Stats['artists'],
       topArtists: [],
       topGenres: [],
       timeRange: 'medium_term',
@@ -296,7 +308,7 @@ describe('computePersonaInput', () => {
         {
           id: 'track1',
           name: 'Old Song',
-          album: { release_date: `${currentYear - 10}-01-01` }, // 10 years ago
+          album: { release_date: `${currentYear - 12}-01-01` }, // 12 years ago
           recentPlays: 1,
         } as TopTrackItem,
       ],

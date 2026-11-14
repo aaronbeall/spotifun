@@ -20,7 +20,7 @@ export const METRIC_DESCRIPTIONS: Record<string, string> = {
   'unique-tracks': 'Number of different songs in this view. Higher means varied listening rather than repeating the same tracks.',
   'unique-genres': 'Number of different genres represented. Higher means eclectic taste across musical styles.',
   'total-duration': 'Combined length of the tracks in this view. This is the songs added together, not time spent listening.',
-  'genre-diversity': 'Ratio of unique genres to total genre tags across all your artists. Higher means less repetition in genre tags.',
+  'genre-diversity': 'Share of your artists who sit outside the genre family most of them belong to. Higher means the listening is split across families.',
   'artist-diversity': 'Ratio of unique artists to total plays. Higher means you sample widely rather than focusing on a few favorites.',
   'average-popularity': 'Average Spotify popularity rating (0-100) of your tracks. Higher means mainstream hits; lower means niche, underground music.',
   'genre-coverage': 'Percentage of your listened genres successfully mapped to personality traits. Unmapped genres are excluded from trait calculations; higher coverage means more complete personality profiling.',

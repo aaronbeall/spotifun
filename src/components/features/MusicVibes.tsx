@@ -10,6 +10,7 @@ import { ImageBadge } from '../ImageBadge';
 import { ThemedCardBackground } from '../ThemedCardBackground';
 import { darkenHex } from '@/utils/color';
 import { generateVibeCaption } from '@/utils/visualizationCaptions';
+import { RarityBadge } from '../RarityBadge';
 
 // Lets the center badges (vibe + flanking top artist/genre) finish their own
 // reveal sequence before the Other Vibe Matches section starts fading in.
@@ -216,6 +217,11 @@ const VibeBadge = ({
           <p className="mt-0.5 text-xs text-gray-400/80 max-w-[220px] mx-auto leading-snug">
             {vibe.description}
           </p>
+        )}
+        {isCurrent && typeof vibe.rarity === 'number' && (
+          <div className="mt-2">
+            <RarityBadge score={vibe.rarity} />
+          </div>
         )}
         {isCurrent && (
           <div className="mt-2 px-2 py-0.5 bg-white/5 rounded-full text-xs text-white/80 inline-block">

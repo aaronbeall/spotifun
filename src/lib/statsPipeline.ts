@@ -4,6 +4,7 @@ import {
 } from '@/lib/spotify';
 import type { LastFmEnhancedArtist, PlaylistCollection } from '@/lib/spotify';
 import { Stats, TimeRange, DataMode, ArtistGenreDebugInfo, GenreTagDebugInfo, TopArtistItem, TopTrackItem, PlaylistAnalysis } from '@/types';
+import { genreFamilySpread } from '@/utils/improvedClassification';
 
 /**
  * Where the stats pipeline gets its raw listening data. The live implementation calls
@@ -73,7 +74,7 @@ export async function computeStats(source: ListeningDataSource, options: Compute
   // Calculate top genres from top artists
   const topGenres = calculateTopGenres(topArtists);
 
-  let trackStats, artistStats, genreStats, totalPlays, totalDuration, totalGenres, averagePopularity;
+  let trackStats, artistStats, genreStats, totalPlays, totalDuration, averagePopularity;
   let playlistAnalysis: PlaylistAnalysis | undefined;
 
   switch (mode) {
@@ -90,21 +91,19 @@ export async function computeStats(source: ListeningDataSource, options: Compute
       genreStats = statsResult.genreStats;
       totalPlays = statsResult.totalWeight;
       totalDuration = statsResult.totalDuration;
-      totalGenres = Object.values(topTracksArtistsById).reduce((sum, artist) => sum + (artist.genres?.length || 0), 0);
 
       const totalPopularityTracks = topTracks.reduce((sum, track) => sum + (track.popularity || 0), 0);
       averagePopularity = topTracks.length > 0 ? Math.round(totalPopularityTracks / topTracks.length) : 0;
       break;
     }
     case 'topArtists': {
-      // Top Artists mode: Spotify's ranked list, each artist counted once
+      // Top Artists mode: Spotify's ranked artists, weighted by how many top tracks they are on
       const statsResult = calculateTopArtistsStats(topArtists, topTracks);
       trackStats = statsResult.trackStats;
       artistStats = statsResult.artistStats;
       genreStats = statsResult.genreStats;
       totalPlays = statsResult.totalWeight;
       totalDuration = statsResult.totalDuration;
-      totalGenres = topArtists.reduce((sum, artist) => sum + (artist.genres?.length || 0), 0);
 
       const totalPopularityArtists = trackStats.reduce((sum, track) => sum + (track.track.popularity || 0), 0);
       averagePopularity = trackStats.length > 0 ? Math.round(totalPopularityArtists / trackStats.length) : 0;
@@ -129,7 +128,6 @@ export async function computeStats(source: ListeningDataSource, options: Compute
       genreStats = statsResult.genreStats;
       totalPlays = statsResult.totalWeight;
       totalDuration = statsResult.totalDuration;
-      totalGenres = Object.values(playlistArtistsById).reduce((sum, artist) => sum + (artist.genres?.length || 0), 0);
       const totalPopularity = collection.tracks.reduce((sum, item) => sum + (item.track.popularity || 0), 0);
       averagePopularity = collection.tracks.length > 0 ? Math.round(totalPopularity / collection.tracks.length) : 0;
       playlistAnalysis = {
@@ -154,7 +152,6 @@ export async function computeStats(source: ListeningDataSource, options: Compute
       genreStats = calculateGenreStats(recentlyPlayed, recentlyPlayedArtistsById);
       totalPlays = recentlyPlayed.length;
       totalDuration = recentlyPlayed.reduce((sum, item) => sum + item.track.duration_ms, 0);
-      totalGenres = Object.values(recentlyPlayedArtistsById).reduce((sum, artist) => sum + (artist.genres?.length || 0), 0);
 
       const totalPopularityRecent = recentlyPlayed.reduce((sum, item) => sum + (item.track.popularity || 0), 0);
       averagePopularity = totalPlays > 0 ? Math.round(totalPopularityRecent / totalPlays) : 0;
@@ -170,7 +167,7 @@ export async function computeStats(source: ListeningDataSource, options: Compute
       uniqueGenres: genreStats.length,
       totalDuration,
       averageSessionLength: totalDuration / Math.max(totalPlays, 1) / 60000, // in minutes
-      genreDiversity: genreStats.length / Math.max(totalGenres, 1),
+      genreDiversity: genreFamilySpread(artistStats.map(artist => artist.genres)),
       artistDiversity: artistStats.length / Math.max(totalPlays, 1),
       averagePopularity,
       genreCoverage: 0 // Will be computed below

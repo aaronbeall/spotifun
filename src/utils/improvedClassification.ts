@@ -119,6 +119,62 @@ function findScoresSource(genreKey: string): string | null {
   return entry.parent ? findScoresSource(entry.parent) : null;
 }
 
+/** Walk parent links to the top-level family, or null when the tag does not match. */
+export function topLevelGenre(tag: string): string | null {
+  const match = findGenreInTaxonomy(normalizeGenre(tag));
+  if (!match) return null;
+  let key = match.key;
+  const seen = new Set<string>();
+  while (GENRE_TAXONOMY[key]?.parent && !seen.has(key)) {
+    seen.add(key);
+    key = GENRE_TAXONOMY[key].parent as string;
+  }
+  return key;
+}
+
+/** The family this artist belongs to: whichever top-level family their tags name most often. */
+function primaryFamily(genres: string[]): string | null {
+  const counts = new Map<string, number>();
+  const firstSeen = new Map<string, number>();
+  for (const genre of genres) {
+    const family = topLevelGenre(genre);
+    if (!family) continue;
+    counts.set(family, (counts.get(family) ?? 0) + 1);
+    if (!firstSeen.has(family)) firstSeen.set(family, firstSeen.size);
+  }
+  let best: string | null = null;
+  let bestCount = -1;
+  let bestOrder = Infinity;
+  for (const [family, count] of counts) {
+    const seen = firstSeen.get(family) ?? 0;
+    if (count > bestCount || (count === bestCount && seen < bestOrder)) {
+      best = family;
+      bestCount = count;
+      bestOrder = seen;
+    }
+  }
+  return best;
+}
+
+/**
+ * Share of tagged artists who sit outside the biggest family.
+ * Each artist counts once. One family scores 0, whether that is one artist or twenty.
+ */
+export function genreFamilySpread(artistGenreLists: string[][]): number {
+  const counts = new Map<string, number>();
+  let counted = 0;
+  for (const genres of artistGenreLists) {
+    const family = primaryFamily(genres);
+    if (!family) continue;
+    counts.set(family, (counts.get(family) ?? 0) + 1);
+    counted += 1;
+  }
+  if (counted === 0) return 0;
+  let largest = 0;
+  for (const count of counts.values()) largest = Math.max(largest, count);
+  return (counted - largest) / counted;
+}
+
 /**
  * Explain how a single tag resolves, for debugging. Mirrors classifySingleGenre's
  * matching order, then falls back to the descriptor (mood) vocabulary.

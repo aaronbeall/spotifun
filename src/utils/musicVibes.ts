@@ -9,6 +9,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
     image: '/vibes/tranquility.jpg',
     name: 'Tranquil Serenity',
     description: 'A peaceful state of calm and inner stillness',
+    rarity: 0.74,
     icon: Moon,
     color: {
       light: '#93c5fd',
@@ -27,6 +28,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
     image: '/vibes/euphoria.jpg',
     name: 'Pure Euphoria',
     description: 'Overflowing with joy and elation',
+    rarity: 0.00,
     icon: Sun,
     color: {
       light: '#fde68a',
@@ -45,6 +47,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
     image: '/vibes/melancholy.jpg',
     name: 'Melancholic Reflection',
     description: 'A bittersweet embrace of deep emotions',
+    rarity: 0.27,
     icon: Droplets,
     color: {
       light: '#a5b4fc',
@@ -63,6 +66,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
     image: '/vibes/intensity.jpg',
     name: 'Raw Intensity',
     description: 'Unfiltered emotional power and passion',
+    rarity: 0.45,
     icon: Flame,
     color: {
       light: '#fca5a5',
@@ -81,6 +85,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
     image: '/vibes/wonder.jpg',
     name: 'Childlike Wonder',
     description: 'A sense of awe and innocent curiosity',
+    rarity: 0.18,
     icon: Sparkles,
     color: {
       light: '#86efac', // green-300
@@ -99,6 +104,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
     image: '/vibes/vulnerability.jpg',
     name: 'Naked Vulnerability',
     description: 'Stripped-down emotional honesty and exposure',
+    rarity: 0.99,
     icon: Heart,
     color: {
       light: '#fecdd3',
@@ -117,6 +123,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
     image: '/vibes/nostalgia.jpg',
     name: 'Wistful Nostalgia',
     description: 'Bittersweet longing for the past',
+    rarity: 0.46,
     icon: Star,
     color: {
       light: '#d8b4fe',
@@ -135,6 +142,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
     image: '/vibes/triumph.jpg',
     name: 'Triumphant Resolve',
     description: 'Empowered determination and victory',
+    rarity: 0.54,
     icon: Flame,
     color: {
       light: '#fdba74',
@@ -153,6 +161,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
     image: '/vibes/solitude.jpg',
     name: 'Peaceful Solitude',
     description: 'Comfortable aloneness and self-reflection',
+    rarity: 0.47,
     icon: Moon,
     color: {
       light: '#bbf7d0', // green-200
@@ -171,6 +180,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
     image: '/vibes/ecstasy.jpg',
     name: 'Ecstatic Release',
     description: 'Overwhelming joy and liberation',
+    rarity: 0.77,
     icon: Sparkles,
     color: {
       light: '#f0abfc',
@@ -189,6 +199,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
     image: '/vibes/mystical-reverie.jpg',
     name: 'Mystical Reverie',
     description: 'Dreamy, otherworldly, and ethereal atmosphere',
+    rarity: 0.64,
     icon: Sparkles,
     color: {
       light: '#c084fc',
@@ -207,6 +218,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
     image: '/vibes/fierce-determination.jpg',
     name: 'Fierce Determination',
     description: 'Focused intensity and relentless drive',
+    rarity: 0.69,
     icon: Flame,
     color: {
       light: '#f97316',
@@ -225,17 +237,18 @@ export const MUSIC_VIBES: MusicVibe[] = [
     image: '/vibes/playful-whimsy.jpg',
     name: 'Playful Whimsy',
     description: 'Lighthearted, fun, and carefree spirit',
+    rarity: 0.79,
     icon: Sparkles,
     color: {
       light: '#f0abfc',
       dark: '#a855f7',
     },
     targetScore: {
-      valence: 0.9,
-      arousal: 0.7,
-      complexity: 0.3,
-      rawness: 0.4,
-      socialPresence: 0.6,
+      valence: 0.95,
+      arousal: 0.75,
+      complexity: 0.15,
+      rawness: 0.2,
+      socialPresence: 0.7,
     },
   },
   {
@@ -243,6 +256,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
     image: '/vibes/solemn-majesty.jpg',
     name: 'Solemn Majesty',
     description: 'Grand, awe-inspiring, and reverent',
+    rarity: 0.65,
     icon: Star,
     color: {
       light: '#a5b4fc',
@@ -261,6 +275,7 @@ export const MUSIC_VIBES: MusicVibe[] = [
     image: '/vibes/rebellious-defiance.jpg',
     name: 'Rebellious Defiance',
     description: 'Defiant energy and anti-establishment spirit',
+    rarity: 0.06,
     icon: Flame,
     color: {
       light: '#f87171',

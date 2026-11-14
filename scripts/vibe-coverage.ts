@@ -14,6 +14,7 @@ import { findBestMatchingVibe } from '../src/utils/musicVibesAnalyzer';
 import { MUSIC_VIBES } from '../src/utils/musicVibes';
 import { calculateVACRSScoreDistance, calculateWeightedVACRSScoreWithCoverage } from '../src/utils/musicClassification';
 import { MUSIC_PERSONAS, PERSONA_THRESHOLDS, getUserPersona } from '../src/utils/musicPersonas';
+import { genreFamilySpread } from '../src/utils/improvedClassification';
 import type { GenreStats, Stats, VACRSScore } from '../src/types';
 
 const ROOT = process.cwd();
@@ -28,7 +29,7 @@ const TOP_N = 40;
 
 type CorpusArtist = { name: string; genres: string[] };
 type CorpusTrack = { id: string; name: string; popularity: number; durationMs: number; release: string; artistIds: string[] };
-type CorpusPlaylist = { id: string; role: 'genre' | 'chart'; query: string; name: string; owner: string; tracks: CorpusTrack[] };
+type CorpusPlaylist = { id: string; role: 'genre' | 'chart' | 'devoted'; query: string; name: string; owner: string; tracks: CorpusTrack[] };
 type Corpus = { fetchedAt: string; asOfYear: number; note: string; artists: Record<string, CorpusArtist>; playlists: CorpusPlaylist[] };
 
 type SwitchRow = {
@@ -106,6 +107,7 @@ async function spotify<T>(access: string, apiPath: string): Promise<T | null> {
 async function refreshCorpus(): Promise<Corpus> {
   const survey = readJson<{ stations: { id: string; query: string; name: string; owner: string }[] }>(path.join(ROOT, 'scripts', 'vibe-space-survey.json'));
   const charts = readJson<{ stations: { id: string; name: string; owner: string }[] }>(path.join(ROOT, 'scripts', 'vibe-space-charts.json'));
+  const previous = fs.existsSync(CORPUS_PATH) ? readJson<Corpus>(CORPUS_PATH) : null;
   const wanted: { id: string; role: 'genre' | 'chart'; query: string; name: string; owner: string }[] = [
     ...survey.stations.map(station => ({ id: station.id, role: 'genre' as const, query: station.query, name: station.name, owner: station.owner })),
     ...charts.stations.map(station => ({ id: station.id, role: 'chart' as const, query: station.name, name: station.name, owner: station.owner })),
@@ -150,10 +152,19 @@ async function refreshCorpus(): Promise<Corpus> {
     console.error(`saved ${entry.role} ${playlist.name} (${raw.length})`);
   }
 
+  for (const kept of previous?.playlists.filter(playlist => playlist.role === 'devoted') ?? []) {
+    playlists.push(kept);
+    for (const track of kept.tracks) {
+      for (const artistId of track.artistIds) {
+        if (!artists[artistId] && previous?.artists[artistId]) artists[artistId] = previous.artists[artistId];
+      }
+    }
+  }
+
   const corpus: Corpus = {
     fetchedAt: new Date().toISOString(),
     asOfYear: new Date().getFullYear(),
-    note: 'Frozen playlist sample. Genre rows are the first search hit per genre word. Chart rows are name-matched Billboard and Official Charts playlists. Spotify-owned 37i9 stations are not in this file; this app token receives 404 for them. First 40 tracks in Spotify order.',
+    note: 'Frozen playlist sample. Genre rows are the first search hit per genre word. Chart rows are name-matched Billboard and Official Charts playlists. Devoted rows are playlists chosen for repeated artists, balanced by scene, era, and fame before scoring. Spotify-owned 37i9 stations are not in this file; this app token receives 404 for them. First 40 tracks in Spotify order. A refresh keeps the devoted rows.',
     artists,
     playlists,
   };
@@ -222,12 +233,10 @@ function classifyPlaylist(playlist: CorpusPlaylist, corpus: Corpus) {
     .map(item => ({ name: item.name, distance: calculateVACRSScoreDistance(vibe.score, item.targetScore) }))
     .sort((left, right) => left.distance - right.distance);
   const coverage = calculateWeightedVACRSScoreWithCoverage(genreStats);
-  let tagInstances = 0;
-  const artistIds = new Set<string>();
+  const playsByArtist = new Map<string, number>();
   for (const track of playlist.tracks) {
-    for (const id of track.artistIds) {
-      artistIds.add(id);
-      tagInstances += corpus.artists[id]?.genres.length ?? 0;
+    for (const id of new Set(track.artistIds)) {
+      playsByArtist.set(id, (playsByArtist.get(id) ?? 0) + 1);
     }
   }
   const years = playlist.tracks.map(track => parseInt(track.release.slice(0, 4), 10)).filter(year => !Number.isNaN(year));
@@ -235,13 +244,17 @@ function classifyPlaylist(playlist: CorpusPlaylist, corpus: Corpus) {
   const averagePopularity = playlist.tracks.reduce((sum, track) => sum + track.popularity, 0) / Math.max(playlist.tracks.length, 1);
   const stats = {
     overview: {
-      genreDiversity: genreStats.length / Math.max(tagInstances, 1),
+      genreDiversity: genreFamilySpread([...playsByArtist.keys()].map(id => corpus.artists[id]?.genres ?? [])),
       averagePopularity,
-      artistDiversity: artistIds.size / Math.max(playlist.tracks.length, 1),
+      artistDiversity: playsByArtist.size / Math.max(playlist.tracks.length, 1),
     },
     genres: genreStats,
     mode: 'playlist',
     tracks: playlist.tracks.map(track => ({ track: { album: { release_date: track.release } } })),
+    artists: [...playsByArtist.entries()].map(([id, playCount]) => ({
+      playCount,
+      genres: corpus.artists[id]?.genres ?? [],
+    })),
     topTracks: [],
   } as unknown as Stats;
   const persona = getUserPersona(stats);
@@ -327,8 +340,11 @@ function vacrsSpace(songs: VACRSScore[], playlists: VACRSScore[], unscoredPlayli
 function score(corpus: Corpus, label: string) {
   const genrePlaylists = corpus.playlists.filter(playlist => playlist.role === 'genre');
   const chartPlaylists = corpus.playlists.filter(playlist => playlist.role === 'chart');
+  const devotedPlaylists = corpus.playlists.filter(playlist => playlist.role === 'devoted');
   const genreScored = genrePlaylists.map(playlist => ({ playlist, result: classifyPlaylist(playlist, corpus) }));
   const chartScored = chartPlaylists.map(playlist => ({ playlist, result: classifyPlaylist(playlist, corpus) }));
+  const devotedScored = devotedPlaylists.map(playlist => ({ playlist, result: classifyPlaylist(playlist, corpus) }));
+  const personaRows = [...genreScored, ...devotedScored];
 
   const stationVibes = new Map<string, number>();
   const personaCounts = new Map<string, number>(MUSIC_PERSONAS.map(persona => [persona.name, 0]));
@@ -337,6 +353,8 @@ function score(corpus: Corpus, label: string) {
   };
   for (const row of genreScored) {
     stationVibes.set(row.result.vibe, (stationVibes.get(row.result.vibe) ?? 0) + 1);
+  }
+  for (const row of personaRows) {
     personaCounts.set(row.result.persona, (personaCounts.get(row.result.persona) ?? 0) + 1);
     const dimensions = row.result.dimensions;
     if (dimensions.genreDiversity === 'high') bits.genreHigh++;
@@ -377,7 +395,7 @@ function score(corpus: Corpus, label: string) {
     };
   }).sort((left, right) => right.gap - left.gap);
 
-  const total = playlistTotal;
+  const total = personaRows.length;
   const switchOf = (name: string, highName: string, lowName: string, high: number): SwitchRow => {
     const low = total - high;
     const majorityIsHigh = high >= low;
@@ -430,7 +448,9 @@ function score(corpus: Corpus, label: string) {
       vibeTotal: MUSIC_VIBES.length,
       top3SongShare: round(top3 / Math.max(classifiedSongs, 1) * 100),
       top3Names: songRanking.slice(0, 3).map(entry => entry[0]),
-      playlists: playlistTotal,
+      playlists: personaRows.length,
+      genrePlaylists: playlistTotal,
+      devotedPlaylists: devotedScored.length,
       songs: classifiedSongs,
     },
     switches,
@@ -439,6 +459,16 @@ function score(corpus: Corpus, label: string) {
     reading: `${piled.join(', ')} draw more songs than their share of the vibe space. ${empty.join(', ')} have room in the model that these tags barely reach.`,
     personas,
     stations: genreScored.map(row => ({
+      id: row.playlist.id,
+      query: row.playlist.query,
+      name: plain(row.playlist.name),
+      owner: row.playlist.owner,
+      tracks: row.playlist.tracks.length,
+      vibe: row.result.vibe,
+      persona: row.result.persona,
+    })),
+    devoted: devotedScored.map(row => ({
+      id: row.playlist.id,
       query: row.playlist.query,
       name: plain(row.playlist.name),
       owner: row.playlist.owner,
@@ -574,9 +604,9 @@ export default function VibePersonaCoverage() {
       </Grid>
 
       <Stack gap={10}>
-        <H2>Persona switches on the genre playlists</H2>
+        <H2>Persona switches</H2>
         <Text tone="secondary" size="small">
-          Each bar is all {REPORT.headline.playlists} genre playlists. A switch is stuck when one side holds at least 75%. High genre diversity means unique tags exceed half of all tag occurrences. High artist consistency means unique artists are under half the songs. New means average release year is within {REPORT.thresholds.newEraWithinYears} years of {REPORT.eraYear}.
+          Each bar is the {REPORT.headline.playlists} playlists in the persona sample: {REPORT.headline.genrePlaylists} genre searches plus {REPORT.headline.devotedPlaylists} devoted-artist playlists. Song and vibe charts stay on the genre searches. A switch is stuck when one side holds at least 75%. High genre diversity means more than {REPORT.thresholds.genreDiversityHighAbove} of tagged artists sit outside the biggest family. Each artist counts once. High artist consistency means the five most-played artists hold more than {REPORT.thresholds.artistConsistencyWhenTopShareAbove} of the tracks. New means the median release year is within {REPORT.thresholds.newEraWithinYears} years of {REPORT.eraYear}.
         </Text>
         {REPORT.switches.map(row => (
           <UsageBar
@@ -646,7 +676,7 @@ export default function VibePersonaCoverage() {
         <Stack gap={8}>
           <H2>The 64 persona cells</H2>
           <Text tone="secondary" size="small">
-            One square per persona, in model order. Filled squares got at least one of the {REPORT.headline.playlists} genre playlists. Hover a square for its name.
+            One square per persona, in model order. Filled squares got at least one playlist from the persona sample. Hover a square for its name.
           </Text>
           <PersonaMap />
           <Text tone="tertiary" size="small">{REPORT.headline.personaTotal - REPORT.headline.personasHit} cells are empty on this sample.</Text>
@@ -657,7 +687,7 @@ export default function VibePersonaCoverage() {
             horizontal
             height={Math.max(220, leaders.length * 28)}
             categories={leaders.map(persona => persona.name)}
-            series={[{ name: "Genre playlists", data: leaders.map(persona => persona.count) }]}
+            series={[{ name: "Playlists", data: leaders.map(persona => persona.count) }]}
           />
         </Stack>
       </Grid>
@@ -689,9 +719,15 @@ export default function VibePersonaCoverage() {
         )}
       </Stack>
 
-      <CollapsibleSection title="Sample behind the bars" count={REPORT.stations.length + REPORT.charts.length}>
+      <CollapsibleSection title="Sample behind the bars" count={REPORT.stations.length + REPORT.charts.length + REPORT.devoted.length}>
         <Stack gap={12}>
           <Text tone="secondary" size="small">{REPORT.corpusNote}</Text>
+          <H3>Devoted-artist playlists</H3>
+          <Text tone="secondary" size="small">Chosen for repeated artists, then kept only when the measured share, family spread, popularity, and median year matched the slot. Persona names were not used to pick them.</Text>
+          <Table
+            headers={["Slot", "Playlist", "Owner", "Tracks", "Vibe", "Persona"]}
+            rows={REPORT.devoted.map(row => [row.query, row.name, row.owner, String(row.tracks), row.vibe, row.persona])}
+          />
           <H3>Chart playlists, scored on their own</H3>
           <Table
             headers={["Playlist", "Owner", "Vibe", "Persona", "Coverage", "Popularity", "Year"]}

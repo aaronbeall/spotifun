@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getTopArtists, getTopTracks } from '@/lib/spotify';
 import { setAuthCookies, UnauthenticatedError, withSpotifyAccessToken } from '@/lib/auth';
 import { calculateWeightedVACRSScore } from '@/utils/musicClassification';
+import { genreFamilySpread } from '@/utils/improvedClassification';
 import { EraSnapshot, ErasResponse, GenreStats, TimeRange } from '@/types';
 
 const RANGES: { timeRange: TimeRange; label: string }[] = [
@@ -17,10 +18,8 @@ function snapshot(
   tracks: SpotifyApi.TrackObjectFull[],
 ): EraSnapshot {
   const genreMap = new Map<string, GenreStats>();
-  let tagCount = 0;
   for (const artist of artists) {
     for (const genre of artist.genres ?? []) {
-      tagCount += 1;
       const existing = genreMap.get(genre);
       if (existing) {
         existing.playCount += 1;
@@ -50,7 +49,7 @@ function snapshot(
     timeRange,
     label,
     popularity,
-    genreDiversity: genreStats.length / Math.max(tagCount, 1),
+    genreDiversity: genreFamilySpread(artists.map(artist => artist.genres ?? [])),
     valence: vacrs.valence,
     arousal: vacrs.arousal,
     artists: artists.length,
