@@ -100,7 +100,7 @@ export interface EraSnapshot {
   label: string;
   /** Average popularity, 0–100. Top tracks when Spotify returns them, otherwise top artists. */
   popularity: number;
-  /** Unique genres divided by genre tags, same ratio as the profile overview. */
+  /** Share of artists outside the biggest genre family, same ratio as the profile overview. */
   genreDiversity: number;
   valence: number;
   arousal: number;

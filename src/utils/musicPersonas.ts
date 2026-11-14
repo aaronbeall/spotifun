@@ -9,10 +9,11 @@ export type Arousal = 'energetic' | 'calm';
 
 /** Cutoffs computePersonaInput uses. The coverage report snapshots these on every run. */
 export const PERSONA_THRESHOLDS = {
-  genreDiversityHighAbove: 0.5,
+  /** High when more than this share of tagged artists sit outside the biggest family. */
+  genreDiversityHighAbove: 0.25,
   popularityHighAbove: 50,
-  artistConsistencyWhenArtistDiversityBelow: 0.5,
-  newEraWithinYears: 5,
+  artistConsistencyWhenTopShareAbove: 0.5,
+  newEraWithinYears: 10,
   valencePositiveAbove: 0.5,
   arousalEnergeticAbove: 0.5,
 } as const;
@@ -43,7 +44,7 @@ function persona(
   artistConsistency: Level,
   era: Era,
   valence: Valence,
-  arousal: Arousal
+  arousal: Arousal,
 ): Persona {
   return {
     id: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
@@ -134,7 +135,7 @@ export interface PersonaInput {
 
 // Derive the 6 classification dimensions from real listening stats.
 export function computePersonaInput(stats: Stats): PersonaInput {
-  const { genreDiversity, averagePopularity, artistDiversity } = stats.overview;
+  const { genreDiversity, averagePopularity } = stats.overview;
   const weighted = calculateWeightedVACRSScore(stats.genres);
 
   const eraTracks = stats.mode === 'playlist' ? stats.tracks.map(t => t.track) : stats.topTracks;
@@ -142,16 +143,13 @@ export function computePersonaInput(stats: Stats): PersonaInput {
     .map(t => t.album?.release_date ? parseInt(t.album.release_date.slice(0, 4), 10) : NaN)
     .filter(year => !isNaN(year));
   const currentYear = new Date().getFullYear();
-  const avgYear = releaseYears.length
-    ? releaseYears.reduce((sum, y) => sum + y, 0) / releaseYears.length
-    : currentYear;
+  const centerYear = releaseYears.length ? medianOf(releaseYears) : currentYear;
 
   return {
     genreDiversity: genreDiversity > PERSONA_THRESHOLDS.genreDiversityHighAbove ? 'high' : 'low',
     trackPopularity: averagePopularity > PERSONA_THRESHOLDS.popularityHighAbove ? 'high' : 'low',
-    // Low artist diversity means the listener returns to the same artists often (high consistency)
-    artistConsistency: artistDiversity < PERSONA_THRESHOLDS.artistConsistencyWhenArtistDiversityBelow ? 'high' : 'low',
-    era: (currentYear - avgYear) <= PERSONA_THRESHOLDS.newEraWithinYears ? 'new' : 'old',
+    artistConsistency: topArtistShare(stats.artists) > PERSONA_THRESHOLDS.artistConsistencyWhenTopShareAbove ? 'high' : 'low',
+    era: (currentYear - centerYear) <= PERSONA_THRESHOLDS.newEraWithinYears ? 'new' : 'old',
     valence: weighted.valence > PERSONA_THRESHOLDS.valencePositiveAbove ? 'positive' : 'negative',
     arousal: weighted.arousal > PERSONA_THRESHOLDS.arousalEnergeticAbove ? 'energetic' : 'calm',
   };
@@ -173,6 +171,21 @@ export function classifyPersona(input: PersonaInput): Persona {
 
 export function getUserPersona(stats: Stats): Persona {
   return classifyPersona(computePersonaInput(stats));
+}
+
+function medianOf(values: number[]): number {
+  const sorted = [...values].sort((left, right) => left - right);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+/** Share of plays held by the most-played artists. One play each stays low. A few artists holding the list goes high. */
+function topArtistShare(artists: { playCount: number }[], topCount = 5): number {
+  const total = artists.reduce((sum, artist) => sum + artist.playCount, 0);
+  if (total <= 0) return 0;
+  const ranked = [...artists].sort((left, right) => right.playCount - left.playCount);
+  const top = ranked.slice(0, topCount).reduce((sum, artist) => sum + artist.playCount, 0);
+  return top / total;
 }
 
 /** Portrait set the app shows. The other tries sit beside it in `public/personas`. */

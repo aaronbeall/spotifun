@@ -514,8 +514,8 @@ export const calculateTopTracksStats = (
   };
 };
 
-// Top Artists mode: each of Spotify's top artists counts once, in Spotify's order.
-// Tracks are the ones from the user's top tracks that those artists appear on.
+// Top Artists mode: Spotify's ranked artists. An artist's play count is how many
+// of the listener's top tracks they appear on. Genre weight still counts each artist once.
 export const calculateTopArtistsStats = (
   topArtists: SpotifyApi.ArtistObjectFull[],
   topTracks: SpotifyApi.TrackObjectFull[]
@@ -545,10 +545,12 @@ export const calculateTopArtistsStats = (
       totalDuration += track.duration_ms;
     });
 
-    // Initialize artist stats
+    // Play count is how many of the listener's top tracks this artist is on.
+    // A flat 1 makes the top five of fifty artists a 10% share, so Top Artists
+    // mode can never score as devoted.
     artistMap.set(artist.id, {
       artist,
-      playCount: 1,
+      playCount: artistTracks.length,
       uniqueTracks: artistTracks.length,
       totalDuration: artistTracks.reduce((sum, t) => sum + t.duration_ms, 0),
       genres: artist.genres || [],
