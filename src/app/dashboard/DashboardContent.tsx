@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { Award, BarChart3, BookOpen, ChevronDown, History, LayoutGrid, Medal, MoreHorizontal, Music, Star, TrendingUp, Users, Clock, Headphones, LogOut, Settings, User, Info, Sparkles } from 'lucide-react';
+import { Award, BarChart3, BookOpen, ChevronDown, History, LayoutGrid, Library, Medal, MoreHorizontal, Music, Star, TrendingUp, Users, Clock, Headphones, LogOut, Settings, User, Info, Sparkles } from 'lucide-react';
 import { formatDuration, formatNumber, getGenreColorMap, getGenreColorClass } from '@/utils';
 import Image from 'next/image';
 import FunStats from '@/components/features/FunStats';
@@ -20,6 +20,7 @@ import { AchievementPopup } from '@/components/AchievementPopup';
 import { RankMark } from '@/components/RankMark';
 import { SectionShareButton } from '@/components/SectionShareButton';
 import { SettingsDialog } from '@/components/SettingsDialog';
+import { SamplePlaylistDialog } from '@/components/SamplePlaylistDialog';
 import { ShareModal } from '@/components/ShareModal';
 import { topArtistsShare, topGenresShare, topTracksShare } from '@/components/shareLists';
 import type { ShareContent } from '@/components/ShareCardTemplate';
@@ -77,16 +78,22 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
   }, []);
   const [journalTick, setJournalTick] = useState(0);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [sampleDialogOpen, setSampleDialogOpen] = useState(false);
+  const [sampleId, setSampleId] = useState<string | null>(null);
+  const [sampleName, setSampleName] = useState<string | null>(null);
+  const sampleIdRef = useRef<string | null>(null);
+  const sampleRequest = useRef(0);
+  const profileBeforeSample = useRef<{ mode: DataMode } | null>(null);
 
-  const acceptStats = useCallback((statsData: Stats) => {
+  const acceptStats = useCallback((statsData: Stats, options?: { replaceLists?: boolean; record?: boolean }) => {
     setStats(statsData);
-    setRankedLists(current => current ?? {
+    setRankedLists(current => options?.replaceLists || current == null ? {
       topArtists: statsData.topArtists,
       topTracks: statsData.topTracks,
       topGenres: statsData.topGenres,
-    });
+    } : current);
     setLastFetched(new Date());
-    if (demo) return;
+    if (demo || options?.record === false) return;
     void observeStatsResult(statsData)
       .then(next => {
         for (const unlock of next.unlocks) trackUnlock(unlock.kind, unlock.key, unlock.name);
@@ -110,7 +117,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     return `${apiBase}/stats?${params}`;
   }, [apiBase, lastFmEnabled, selectedPlaylist.id]);
 
-  const fetchAll = useCallback(async (range: TimeRange, limit: number, mode: DataMode) => {
+  const fetchAll = useCallback(async (range: TimeRange, limit: number, mode: DataMode, replaceLists = false) => {
     const [userResponse, statsResponse] = await Promise.all([
       fetch(`${apiBase}/user`),
       fetch(buildStatsUrl(range, limit, mode))
@@ -128,12 +135,38 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     }
 
     if (statsResponse.ok) {
-      acceptStats(await statsResponse.json());
+      acceptStats(await statsResponse.json(), replaceLists ? { replaceLists: true } : undefined);
     } else if (!demo) {
       noteApiCall('stats', false);
       setLastFetched(new Date());
     }
   }, [apiBase, acceptStats, buildStatsUrl, demo]);
+
+  const clearSample = useCallback(() => {
+    const wasActive = sampleIdRef.current !== null;
+    sampleRequest.current += 1;
+    sampleIdRef.current = null;
+    setSampleId(null);
+    setSampleName(null);
+    if (wasActive) setSelectedPlaylist({ id: LIKED_SONGS_ID, name: 'Liked Songs' });
+    return wasActive;
+  }, []);
+
+  const loadSample = useCallback(async (id: string) => {
+    const request = ++sampleRequest.current;
+    if (!sampleIdRef.current) profileBeforeSample.current = { mode: dataMode };
+    const response = await fetch(`/api/dev/sample-playlists?id=${encodeURIComponent(id)}`);
+    if (!response.ok) throw new Error('sample');
+    const statsData: Stats = await response.json();
+    if (request !== sampleRequest.current) return;
+    sampleIdRef.current = id;
+    const name = statsData.playlist?.name ?? 'Sample playlist';
+    setSampleId(id);
+    setSampleName(name);
+    setSelectedPlaylist({ id: statsData.playlist?.id ?? id, name });
+    setDataMode('playlist');
+    acceptStats(statsData, { replaceLists: true, record: false });
+  }, [acceptStats, dataMode]);
 
   useEffect(() => {
     fetchAll(timeRange, playLimit, dataMode)
@@ -149,7 +182,8 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await fetchAll(timeRange, playLimit, dataMode);
+      if (sampleIdRef.current) await loadSample(sampleIdRef.current);
+      else await fetchAll(timeRange, playLimit, dataMode);
     } catch (error) {
       console.error('Error refreshing data:', error);
     } finally {
@@ -157,16 +191,25 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     }
   };
 
-  const handleTimeRangeChange = async (newTimeRange: TimeRange) => {
-    if (timeRange === newTimeRange) return;
+  const modeBeforeSample = () => {
+    const mode = profileBeforeSample.current?.mode;
+    return !mode || mode === 'playlist' ? 'recent' : mode;
+  };
 
+  const handleTimeRangeChange = async (newTimeRange: TimeRange) => {
+    if (timeRange === newTimeRange && !sampleIdRef.current) return;
+
+    const leavingSample = sampleIdRef.current !== null;
+    const mode = leavingSample ? modeBeforeSample() : dataMode;
+    clearSample();
+    if (leavingSample) setDataMode(mode);
     setTimeRange(newTimeRange);
     setIsLoadingTimeRange(true);
 
     try {
-      const response = await fetch(buildStatsUrl(newTimeRange, playLimit, dataMode));
+      const response = await fetch(buildStatsUrl(newTimeRange, playLimit, mode));
       if (response.ok) {
-        acceptStats(await response.json());
+        acceptStats(await response.json(), leavingSample ? { replaceLists: true } : undefined);
       } else if (!demo) {
         noteApiCall('stats', false);
       }
@@ -178,7 +221,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
   };
 
   const handleListTimeRangeChange = async (newTimeRange: TimeRange) => {
-    if (listTimeRange === newTimeRange) return;
+    if (sampleIdRef.current || listTimeRange === newTimeRange) return;
 
     setListTimeRange(newTimeRange);
     setIsLoadingLists(true);
@@ -203,14 +246,16 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
   };
 
   const handlePlaylistSelect = async (playlist: PlaylistSelection) => {
+    const leavingSample = sampleIdRef.current !== null;
     if (playlist.id === LIKED_SONGS_ID && likedSongsNeedsReconnect) {
       window.location.href = '/api/auth/spotify';
       return;
     }
-    if (dataMode === 'playlist' && selectedPlaylist.id === playlist.id) return;
+    if (!leavingSample && dataMode === 'playlist' && selectedPlaylist.id === playlist.id) return;
 
     const previousMode = dataMode;
     const previousPlaylist = selectedPlaylist;
+    clearSample();
     setSelectedPlaylist(playlist);
     setDataMode('playlist');
     setIsLoadingTimeRange(true);
@@ -230,7 +275,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
         setDataMode(previousMode);
         return;
       }
-      acceptStats(await response.json());
+      acceptStats(await response.json(), leavingSample ? { replaceLists: true } : undefined);
     } catch (error) {
       console.error('Error fetching playlist stats:', error);
       setSelectedPlaylist(previousPlaylist);
@@ -241,15 +286,16 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
   };
 
   const handleDataModeChange = async (newMode: DataMode) => {
-    if (newMode === 'playlist' || dataMode === newMode) return;
+    if (newMode === 'playlist' || (dataMode === newMode && !sampleIdRef.current)) return;
 
+    const leavingSample = clearSample();
     setDataMode(newMode);
     setIsLoadingTimeRange(true);
 
     try {
       const response = await fetch(buildStatsUrl(timeRange, playLimit, newMode));
       if (response.ok) {
-        acceptStats(await response.json());
+        acceptStats(await response.json(), leavingSample ? { replaceLists: true } : undefined);
       } else if (!demo) {
         noteApiCall('stats', false);
       }
@@ -262,6 +308,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
 
   const handleLastFmToggle = async (enabled: boolean) => {
     setLastFmEnabled(enabled);
+    if (sampleIdRef.current) return;
     setIsLoadingTimeRange(true);
     try {
       const response = await fetch(buildStatsUrl(timeRange, playLimit, dataMode, enabled));
@@ -489,6 +536,15 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                       <Settings className="w-4 h-4" />
                       Settings
                     </DropdownMenu.Item>
+                    {isDev && (
+                      <DropdownMenu.Item
+                        onSelect={() => setSampleDialogOpen(true)}
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer outline-none"
+                      >
+                        <Library className="w-4 h-4" />
+                        Sample playlists
+                      </DropdownMenu.Item>
+                    )}
                     <DropdownMenu.Item
                       onSelect={handleLogout}
                       className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer outline-none"
@@ -503,6 +559,29 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
           </div>
         </div>
       </div>
+
+      {sampleName && (
+        <div className="border-b border-amber-500/30 bg-amber-950/80 text-amber-100">
+          <div className="container mx-auto px-4 py-2 flex flex-col sm:flex-row items-center justify-center gap-x-4 gap-y-1.5 text-sm text-center">
+            <span>Dev sample: {sampleName}. Frozen coverage tracks, scored with the current model.</span>
+            <button
+              type="button"
+              onClick={() => {
+                const returnMode = modeBeforeSample();
+                clearSample();
+                setDataMode(returnMode);
+                setIsLoadingTimeRange(true);
+                fetchAll(timeRange, playLimit, returnMode, true)
+                  .catch(error => console.error('Error leaving sample playlist:', error))
+                  .finally(() => setIsLoadingTimeRange(false));
+              }}
+              className="shrink-0 rounded-full bg-amber-100 px-3 py-1 font-semibold text-amber-950 hover:bg-white transition-colors"
+            >
+              Back to this profile
+            </button>
+          </div>
+        </div>
+      )}
 
       {demo && (
         <div className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-green-500 text-white">
@@ -541,12 +620,16 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
             likedSongsNeedsReconnect={likedSongsNeedsReconnect}
             onLikedSongsNeedsReconnect={setLikedSongsNeedsReconnect}
             onPlayLimitChange={async (newLimit) => {
+              const leavingSample = sampleIdRef.current !== null;
+              const mode = leavingSample ? modeBeforeSample() : dataMode;
+              clearSample();
+              if (leavingSample) setDataMode(mode);
               setPlayLimit(newLimit);
               setIsLoadingTimeRange(true);
               try {
-                const response = await fetch(buildStatsUrl(timeRange, newLimit, dataMode));
+                const response = await fetch(buildStatsUrl(timeRange, newLimit, mode));
                 if (response.ok) {
-                  acceptStats(await response.json());
+                  acceptStats(await response.json(), leavingSample ? { replaceLists: true } : undefined);
                 } else if (!demo) {
                   noteApiCall('stats', false);
                 }
@@ -573,7 +656,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               <TimeRangeToggle
                 value={listTimeRange}
                 onChange={handleListTimeRangeChange}
-                disabled={isLoadingLists}
+                disabled={isLoadingLists || sampleName !== null}
                 isLoading={isLoadingLists}
               />
             </div>
@@ -645,7 +728,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               <TimeRangeToggle
                 value={listTimeRange}
                 onChange={handleListTimeRangeChange}
-                disabled={isLoadingLists}
+                disabled={isLoadingLists || sampleName !== null}
                 isLoading={isLoadingLists}
               />
             </div>
@@ -731,7 +814,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               <TimeRangeToggle
                 value={listTimeRange}
                 onChange={handleListTimeRangeChange}
-                disabled={isLoadingLists}
+                disabled={isLoadingLists || sampleName !== null}
                 isLoading={isLoadingLists}
               />
             </div>
@@ -857,6 +940,14 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
         {news && <AchievementPopup key="unlock-toast" news={news} onClose={() => setNews(null)} />}
       </AnimatePresence>
       <ShareModal content={listShare} onClose={() => setListShare(null)} />
+      {isDev && (
+        <SamplePlaylistDialog
+          open={sampleDialogOpen}
+          activeId={sampleId}
+          onLoad={loadSample}
+          onClose={() => setSampleDialogOpen(false)}
+        />
+      )}
       {user && (
         <SettingsDialog
           open={settingsOpen}
