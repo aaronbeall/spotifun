@@ -250,4 +250,9 @@ export interface MusicVibe {
     dark: string;
   };
   targetScore: VACRSScore;
+  /**
+   * 0–1 rarity from the 12 Nov 2026 coverage sample.
+   * 0 is the largest song share. 1 would be a vibe with no classified songs.
+   */
+  rarity?: number;
 }

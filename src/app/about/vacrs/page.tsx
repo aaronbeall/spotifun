@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { MUSIC_VIBES } from '@/utils/musicVibes';
+import { MUSIC_PERSONAS } from '@/utils/musicPersonas';
+import { RarityBadge } from '@/components/RarityBadge';
 
 export const metadata: Metadata = {
   title: 'VACRS and personas — Spotifun',
@@ -30,6 +32,8 @@ const FACTS = [
   { name: 'Artist loyalty', low: 'Wanderer', high: 'Loyal', line: 'Returning to the same artists is loyal. A diversity of 0.5 counts as wandering.' },
   { name: 'Era', low: 'Classic', high: 'Current', line: 'Average release year. Five years ago, or newer, counts as current.' },
 ];
+
+const HOPPER_PERSONA = MUSIC_PERSONAS.find(persona => persona.name === 'The Playlist Hopper');
 
 const HOPPER = [
   ['Mood', 'Brighter'],
@@ -192,6 +196,11 @@ function VibeExample({ vibe }: { vibe: (typeof MUSIC_VIBES)[number] }) {
         )}
         <h4 className="mt-3 font-semibold text-white">{vibe.name}</h4>
         <p className="mt-1 text-xs leading-snug text-gray-400">{vibe.description}</p>
+        {typeof vibe.rarity === 'number' && (
+          <div className="mt-2">
+            <RarityBadge score={vibe.rarity} />
+          </div>
+        )}
       </div>
       <div className="mt-4 space-y-2">
         {AXES.map((axis, index) => (
@@ -463,6 +472,11 @@ export default function VacrsPage() {
         <div className="rounded-2xl border border-pink-400/30 bg-pink-500/[0.07] p-6">
           <p className="text-xs font-semibold uppercase tracking-widest text-pink-300">Example</p>
           <h3 className="mt-2 text-3xl font-black italic tracking-tight text-white">The Playlist Hopper</h3>
+          {HOPPER_PERSONA && (
+            <div className="mt-3">
+              <RarityBadge score={HOPPER_PERSONA.rarity} />
+            </div>
+          )}
           <ul className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
             {HOPPER.map(([question, answer]) => (
               <li key={question} className="rounded-xl bg-black/30 px-3 py-3">

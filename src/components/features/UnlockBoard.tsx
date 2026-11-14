@@ -7,6 +7,7 @@ import { getRecordStore } from '@/lib/records/indexedDbStore';
 import type { UnlockRecord } from '@/lib/records/types';
 import type { MusicVibe, VACRSScore } from '@/types';
 import { MUSIC_PERSONAS, personaPortraitSrc, type Persona } from '@/utils/musicPersonas';
+import { RarityBadge } from '../RarityBadge';
 import { MUSIC_VIBES } from '@/utils/musicVibes';
 import { darkenHex } from '@/utils/color';
 import { VACRS_COLORS, VACRS_RANGE_LABELS } from '@/utils/vacrs';
@@ -148,6 +149,11 @@ export function UnlockBoard({ userId, refreshKey = 0 }: { userId: string; refres
                 <p className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
                   {date}
                 </p>
+                {typeof vibe.rarity === 'number' && (
+                  <span className="mt-2">
+                    <RarityBadge score={vibe.rarity} />
+                  </span>
+                )}
               </>
             );
             const frame = 'flex w-full flex-col items-center rounded-2xl border px-3 py-4 text-center';
@@ -390,6 +396,11 @@ function VibePresentation({
           {vibe.name}
         </h2>
         <p className="mt-3 max-w-md text-base leading-relaxed text-white/85">{vibe.description}</p>
+        {typeof vibe.rarity === 'number' && (
+          <div className="mt-3">
+            <RarityBadge score={vibe.rarity} />
+          </div>
+        )}
         {unlockedOn && <UnlockBadge label={`Unlocked ${unlockedOn}`} color={colors.light} />}
         <div className="mt-8 w-full max-w-lg space-y-3 text-left">
           {VIBE_TRAITS.map(trait => {

@@ -6,6 +6,7 @@ import { getAllMusicVibes } from '@/utils/musicVibesAnalyzer';
 import { GenreFilter } from './GenreFilter';
 import { useState, useMemo } from "react";
 import { VACRS_COLORS, getDominantTrait } from '@/utils/vacrs';
+import { RarityBadge } from '../RarityBadge';
 
 export interface VibeMatchItemProps {
   vibe: MusicVibe;
@@ -134,6 +135,11 @@ export const VibeMatchItem = ({
               )}
             </div>
             <p className="text-xs text-gray-300">{vibe.description}</p>
+            {typeof vibe.rarity === 'number' && (
+              <div className="pt-1">
+                <RarityBadge score={vibe.rarity} />
+              </div>
+            )}
           </div>
         </div>
       </div>

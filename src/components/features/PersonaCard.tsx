@@ -22,6 +22,7 @@ import { darkenHex } from "@/utils/color";
 import { ThemedCardBackground } from "../ThemedCardBackground";
 import { generatePersonaCaption } from "@/utils/visualizationCaptions";
 import type { Persona, PersonaDimensions } from "@/utils/musicPersonas";
+import { RarityBadge } from "../RarityBadge";
 
 interface PersonaCardProps {
   stats: Stats;
@@ -126,7 +127,10 @@ export function PersonaPresentation({
           />
         </div>
         <div className="min-w-0 text-center md:text-left">
-          <p className="text-xs font-medium uppercase tracking-[0.22em] text-white/45">Listener persona</p>
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 md:justify-start">
+            <p className="text-xs font-medium uppercase tracking-[0.22em] text-white/45">Listener persona</p>
+            <RarityBadge score={persona.rarity} />
+          </div>
           <h2 id={titleId} className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl" style={{ color: colors.light }}>
             {persona.name}
           </h2>
