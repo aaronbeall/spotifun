@@ -135,6 +135,7 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
           title: vibe.name,
           value: `${Math.round(matchPercentage)}% Match`,
           description: vibe.description,
+          rarity: vibe.rarity,
           color: vibe.color,
           visual: (
             <div className="flex items-center justify-center gap-3">
@@ -261,6 +262,7 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
           eyebrow: 'Your Listener Persona',
           title: persona.name,
           description: persona.description,
+          rarity: persona.rarity,
           color: colors,
           visual: (
             <CircularVisual glow={colors.light}>

@@ -906,7 +906,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
 
         {/* Rankings */}
         <div id="time" className="mb-8 scroll-mt-24">
-          <Rankings stats={stats} />
+          <Rankings stats={stats} apiBase={apiBase} onShare={setListShare} />
         </div>
 
       </div>

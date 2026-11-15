@@ -1,10 +1,13 @@
 import { ReactNode } from 'react';
+import { RarityBadge } from './RarityBadge';
 
 export interface ShareContent {
   eyebrow: string;
   title: string;
   value?: string;
   description: string;
+  /** 0–1 rarity for a vibe or persona card. Omitted on lists and charts. */
+  rarity?: number;
   color: { light: string; dark: string };
   /** The key visualization for this card (emblem image, chart, generative art, etc.), reused from the live component rather than re-created. */
   visual?: ReactNode;
@@ -25,7 +28,7 @@ interface ShareCardTemplateProps {
 // Purpose-built graphic for exporting/sharing — not part of the live interactive UI.
 // Deliberately simple and self-contained so html-to-image can snapshot it cleanly.
 export function ShareCardTemplate({ content }: ShareCardTemplateProps) {
-  const { eyebrow, title, value, description, color, visual, showTitle = true, width = 640, texture, banner } = content;
+  const { eyebrow, title, value, description, rarity, color, visual, showTitle = true, width = 640, texture, banner } = content;
 
   return (
     <div
@@ -92,6 +95,11 @@ export function ShareCardTemplate({ content }: ShareCardTemplateProps) {
             <p className="text-base text-white/70 leading-relaxed max-w-[460px]">
               {description}
             </p>
+            {typeof rarity === 'number' && (
+              <div className="mt-4">
+                <RarityBadge score={rarity} />
+              </div>
+            )}
             {banner}
           </>
         )}

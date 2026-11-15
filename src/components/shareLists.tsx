@@ -1,4 +1,6 @@
-import type { Stats } from '@/types';
+import type { EraSnapshot, Stats } from '@/types';
+import type { ShiftRead, ViewSnapshot } from '@/utils/listeningFacts';
+import { TimeCompare } from './features/TimeCompare';
 import type { AchievementView } from '@/lib/records/achievements';
 import { darkenHex } from '@/utils/color';
 import { BadgeMark, badgeArt } from './features/BadgeMedal';
@@ -149,6 +151,32 @@ export function topTracksShare(stats: Stats): ShareContent {
         }))}
       />
     ) : undefined,
+  };
+}
+
+const SHIFT_TITLE: Record<ShiftRead['standout'] & string, (delta: number) => string> = {
+  popularity: delta => delta < 0 ? 'More niche' : 'More mainstream',
+  genreDiversity: delta => delta < 0 ? 'Tighter spread' : 'Wider spread',
+  valence: delta => delta < 0 ? 'Darker' : 'Brighter',
+  arousal: delta => delta < 0 ? 'Calmer' : 'More energetic',
+};
+
+export function overTimeShare({
+  shift,
+  current,
+  eras,
+}: {
+  shift: ShiftRead;
+  current: ViewSnapshot;
+  eras: EraSnapshot[];
+}): ShareContent {
+  const title = shift.standout ? SHIFT_TITLE[shift.standout](shift.deltas[shift.standout]) : 'Sitting close';
+  return {
+    eyebrow: 'You, over time',
+    title,
+    description: shift.sentence,
+    color: { light: '#67e8f9', dark: '#164e63' },
+    visual: <TimeCompare current={current} eras={eras} standout={shift.standout} />,
   };
 }
 

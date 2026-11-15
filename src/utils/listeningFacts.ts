@@ -13,7 +13,7 @@ export type StoryKind =
   | 'built'
   | 'drift'
   | 'length'
-  | 'concentration'
+  | 'lead'
   | 'empty';
 
 export interface StorySlide {
@@ -23,9 +23,13 @@ export interface StorySlide {
   headline: string;
   detail: string;
   accent?: string;
+  /** 0–1 rarity when the slide is a vibe or persona. */
+  rarity?: number;
   hour?: number;
   hourCount?: number;
   hourTotal?: number;
+  /** Minute of the day for each recent play, midnight = 0. One entry per song. */
+  plays?: number[];
   runCount?: number;
   replayCount?: number;
   yearFrom?: number;
@@ -232,6 +236,7 @@ function personaSlide(stats: Stats): StorySlide {
     headline: persona.name,
     detail: persona.description,
     accent: persona.color,
+    rarity: persona.rarity,
     image: personaPortraitSrc(persona.id),
   };
 }
@@ -296,12 +301,10 @@ function hourSlide(stats: Stats): StorySlide | null {
     hour,
     hourCount: count,
     hourTotal: stamps.length,
-    images: [...new Set(
-      stats.recentlyPlayed
-        .filter(item => new Date(item.played_at).getHours() === hour)
-        .map(item => albumArt(item.track))
-        .filter((url): url is string => Boolean(url)),
-    )].slice(0, 4),
+    plays: stamps.map(stamp => {
+      const date = new Date(stamp);
+      return date.getHours() * 60 + date.getMinutes();
+    }),
   };
 }
 
@@ -414,26 +417,29 @@ function driftSlide(stats: Stats): StorySlide | null {
   };
 }
 
-function concentrationSlide(stats: Stats): StorySlide | null {
-  if (stats.mode !== 'topTracks' || stats.tracks.length < 5) return null;
-  const counts = new Map<string, { id: string; name: string; count: number }>();
-  for (const item of stats.tracks) {
-    const artist = item.track.artists[0];
-    if (!artist) continue;
-    const current = counts.get(artist.id) ?? { id: artist.id, name: artist.name, count: 0 };
-    current.count += 1;
-    counts.set(artist.id, current);
-  }
-  const top = [...counts.values()].sort((a, b) => b.count - a.count)[0];
-  if (!top || top.count < 3) return null;
+/** The artist who leads a track-based view. Absent on an artist list, a tie, or a single appearance. */
+function leadArtistSlide(stats: Stats): StorySlide | null {
+  if (stats.mode === 'topArtists' || stats.artists.length === 0) return null;
+  const ranked = [...stats.artists].sort((a, b) => b.playCount - a.playCount);
+  const lead = ranked[0];
+  const next = ranked[1];
+  if (!lead || lead.playCount < 2) return null;
+  if (next && next.playCount === lead.playCount) return null;
+
+  const total = stats.mode === 'recent' ? stats.overview.totalPlays : stats.tracks.length;
+  if (total < 2) return null;
+  const noun = stats.mode === 'recent'
+    ? `${total} recent ${total === 1 ? 'play' : 'plays'}`
+    : `${total} ${total === 1 ? 'song' : 'songs'}`;
+  const image = lead.artist.images?.[0]?.url || artistArt(stats, lead.artist.id, lead.artist.name);
+
   return {
-    id: 'concentration',
-    kind: 'concentration',
-    kicker: 'Who takes the list',
-    headline: top.name,
-    detail: `${top.count} of these ${stats.tracks.length} songs.`,
-    runCount: top.count,
-    image: artistArt(stats, top.id, top.name),
+    id: 'lead',
+    kind: 'lead',
+    kicker: 'Top artist',
+    headline: lead.artist.name,
+    detail: lead.playCount === total ? `Every one of these ${noun}.` : `${lead.playCount} of these ${noun}.`,
+    image,
   };
 }
 
@@ -451,6 +457,8 @@ export function buildStorySlides(stats: Stats): StorySlide[] {
   }
 
   const slides: StorySlide[] = [personaSlide(stats)];
+  const lead = leadArtistSlide(stats);
+  if (lead) slides.push(lead);
   if (stats.mode === 'recent') {
     const replay = replaySlide(stats);
     const run = runSlide(stats);
@@ -467,10 +475,8 @@ export function buildStorySlides(stats: Stats): StorySlide[] {
     if (built) slides.push(built);
     if (drift) slides.push(drift);
   }
-  const concentration = concentrationSlide(stats);
   const years = yearsSlide(stats);
   const length = lengthSlide(stats);
-  if (concentration) slides.push(concentration);
   if (years) slides.push(years);
   if (length) slides.push(length);
   return slides;
@@ -544,10 +550,10 @@ export function buildFindings(stats: Stats): Finding[] {
       kind: 'deepcut',
       hit,
       title: 'Deep cut',
-      fact: `“${lowest.track.name}” at popularity ${popularity}`,
+      fact: `Popularity ${popularity} of 100`,
       detail: hit
-        ? `Under ${DEEP_CUT} on Spotify’s 0–100 scale.`
-        : `The lowest song here is ${popularity}. A deep cut is under ${DEEP_CUT}.`,
+        ? `Under ${DEEP_CUT} of 100. Spotify’s scale runs from niche to mainstream.`
+        : `The lowest song here. A deep cut is under ${DEEP_CUT} of 100.`,
       count: popularity,
       name: lowest.track.name,
       artist: lowest.track.artists[0]?.name,

@@ -5,4 +5,5 @@ export const CARD_THEMES = {
   spectrum: { light: '#60a5fa', dark: '#1e3a8a' },
   flow: { light: '#f472b6', dark: '#831843' },
   popularity: { light: '#facc15', dark: '#713f12' },
+  time: { light: '#67e8f9', dark: '#164e63' },
 };

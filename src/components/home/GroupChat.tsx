@@ -59,6 +59,7 @@ export function GroupChat({ stats }: { stats: Stats }) {
                     title: vibe.name,
                     value: `${Math.round(matchPercentage)}% Match`,
                     description: vibe.description,
+                    rarity: vibe.rarity,
                     color: vibe.color,
                     visual: vibe.image ? (
                       <div className="h-56 w-56 overflow-hidden rounded-full border-4 border-white/10" style={{ boxShadow: `0 0 60px ${vibe.color.light}80` }}>

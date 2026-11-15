@@ -1,71 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getTopArtists, getTopTracks } from '@/lib/spotify';
 import { setAuthCookies, UnauthenticatedError, withSpotifyAccessToken } from '@/lib/auth';
-import { calculateWeightedVACRSScore } from '@/utils/musicClassification';
-import { genreFamilySpread } from '@/utils/improvedClassification';
-import { EraSnapshot, ErasResponse, GenreStats, TimeRange } from '@/types';
-
-const RANGES: { timeRange: TimeRange; label: string }[] = [
-  { timeRange: 'short_term', label: 'About 4 weeks' },
-  { timeRange: 'medium_term', label: 'About 6 months' },
-  { timeRange: 'long_term', label: 'Several years' },
-];
-
-function snapshot(
-  timeRange: TimeRange,
-  label: string,
-  artists: SpotifyApi.ArtistObjectFull[],
-  tracks: SpotifyApi.TrackObjectFull[],
-): EraSnapshot {
-  const genreMap = new Map<string, GenreStats>();
-  for (const artist of artists) {
-    for (const genre of artist.genres ?? []) {
-      const existing = genreMap.get(genre);
-      if (existing) {
-        existing.playCount += 1;
-        existing.uniqueArtists += 1;
-      } else {
-        genreMap.set(genre, {
-          genre,
-          playCount: 1,
-          uniqueTracks: 0,
-          uniqueArtists: 1,
-          totalDuration: 0,
-        });
-      }
-    }
-  }
-
-  const genreStats = [...genreMap.values()];
-  const vacrs = calculateWeightedVACRSScore(genreStats);
-  const popularitySource = tracks.length > 0 ? tracks : null;
-  const popularity = popularitySource
-    ? Math.round(popularitySource.reduce((sum, track) => sum + (track.popularity || 0), 0) / popularitySource.length)
-    : artists.length > 0
-      ? Math.round(artists.reduce((sum, artist) => sum + (artist.popularity || 0), 0) / artists.length)
-      : 0;
-
-  return {
-    timeRange,
-    label,
-    popularity,
-    genreDiversity: genreFamilySpread(artists.map(artist => artist.genres ?? [])),
-    valence: vacrs.valence,
-    arousal: vacrs.arousal,
-    artists: artists.length,
-    tracks: tracks.length,
-  };
-}
+import { ERA_RANGES, eraSnapshot } from '@/lib/eraSnapshots';
+import { ErasResponse } from '@/types';
 
 export async function GET(request: NextRequest): Promise<NextResponse<ErasResponse | { error: string }>> {
   try {
     const { result, refreshedTokens } = await withSpotifyAccessToken(request, async () => {
       const [artists, tracks] = await Promise.all([
-        Promise.all(RANGES.map(range => getTopArtists(range.timeRange, 50))),
-        Promise.all(RANGES.map(range => getTopTracks(range.timeRange, 50))),
+        Promise.all(ERA_RANGES.map(range => getTopArtists(range.timeRange, 50))),
+        Promise.all(ERA_RANGES.map(range => getTopTracks(range.timeRange, 50))),
       ]);
       return {
-        eras: RANGES.map((range, index) => snapshot(range.timeRange, range.label, artists[index], tracks[index])),
+        eras: ERA_RANGES.map((range, index) => eraSnapshot(range.timeRange, range.label, artists[index], tracks[index])),
       };
     });
 

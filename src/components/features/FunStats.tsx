@@ -31,11 +31,13 @@ function fromSlide(slide: StorySlide, role: StoryNode['role']): StoryNode {
     role,
     replayCount: slide.replayCount,
     hour: slide.hour,
+    plays: slide.plays,
     yearFrom: slide.yearFrom,
     yearTo: slide.yearTo,
     yearFromTitle: slide.yearFromTitle,
     yearToTitle: slide.yearToTitle,
     accent: slide.accent,
+    rarity: slide.rarity,
   };
 }
 

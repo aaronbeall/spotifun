@@ -27,7 +27,8 @@ export function RarityBadge({
             className="h-1.5 w-2.5 rounded-sm"
             style={{
               backgroundColor: step.color,
-              opacity: step.id === active.id ? 1 : 0.28,
+              opacity: step.id === active.id ? 1 : 0.14,
+              boxShadow: step.id === active.id ? `0 0 6px ${step.color}` : undefined,
             }}
           />
         ))}
