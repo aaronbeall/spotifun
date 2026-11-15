@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-const SITE = 'https://abeall.com';
+const SITE = 'https://metamodernmonkey.com';
 
 const LINKS = [
   { href: '/about', label: 'About' },
