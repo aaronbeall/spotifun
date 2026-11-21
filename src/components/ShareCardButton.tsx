@@ -10,11 +10,13 @@ interface ShareCardButtonProps {
   title?: string;
   text?: string;
   className?: string;
+  /** Called once the card was handed to the share sheet, downloaded, or failed. */
+  onResult?: (result: 'shared' | 'saved' | 'failed') => void;
 }
 
 type Status = 'idle' | 'working' | 'done' | 'error';
 
-export function ShareCardButton({ targetRef, filename, title, text, className = '' }: ShareCardButtonProps) {
+export function ShareCardButton({ targetRef, filename, title, text, className = '', onResult }: ShareCardButtonProps) {
   const [status, setStatus] = useState<Status>('idle');
 
   const handleShare = async () => {
@@ -27,11 +29,13 @@ export function ShareCardButton({ targetRef, filename, title, text, className = 
 
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title, text });
+        onResult?.('shared');
       } else {
         const link = document.createElement('a');
         link.href = dataUrl;
         link.download = `${filename}.png`;
         link.click();
+        onResult?.('saved');
       }
       setStatus('done');
       setTimeout(() => setStatus('idle'), 1800);
@@ -42,6 +46,7 @@ export function ShareCardButton({ targetRef, filename, title, text, className = 
         return;
       }
       console.error('Failed to export card:', error);
+      onResult?.('failed');
       setStatus('error');
       setTimeout(() => setStatus('idle'), 1800);
     }

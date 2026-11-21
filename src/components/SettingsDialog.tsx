@@ -5,6 +5,7 @@ import { X } from 'lucide-react';
 import { evaluateAchievements } from '@/lib/records/achievements';
 import { getRecordStore } from '@/lib/records/indexedDbStore';
 import type { Journal } from '@/lib/records/types';
+import { likelyNeedsConsentPrompt, readAnalyticsChoice, saveAnalyticsChoice } from '@/lib/consent';
 
 function countPhrase(count: number, word: string): string {
   return `${count} ${word}${count === 1 ? '' : 's'}`;
@@ -84,6 +85,13 @@ export function SettingsDialog({
   const [confirming, setConfirming] = useState(false);
   const [forgetting, setForgetting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [analyticsOn, setAnalyticsOn] = useState(true);
+
+  useEffect(() => {
+    if (!open) return;
+    const choice = readAnalyticsChoice();
+    setAnalyticsOn(choice ? choice === 'granted' : !likelyNeedsConsentPrompt());
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -213,6 +221,18 @@ export function SettingsDialog({
             </div>
           </div>
         )}
+
+        <div className="mt-6 border-t border-white/10 pt-5">
+          <SettingSwitch
+            checked={analyticsOn}
+            label="Usage analytics"
+            detail="Count which views, cards and buttons get used, with Google Analytics. Song, artist, playlist and genre names are never sent."
+            onChange={next => {
+              saveAnalyticsChoice(next ? 'granted' : 'denied');
+              setAnalyticsOn(next);
+            }}
+          />
+        </div>
 
         {isDev && (
           <div className={demo ? 'mt-5 border-t border-white/10 pt-5' : 'mt-6 border-t border-white/10 pt-5'}>

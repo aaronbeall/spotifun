@@ -41,6 +41,7 @@ function LegendItem({
       type="button"
       onClick={() => onToggle(id)}
       aria-pressed={!hidden}
+      data-analytics-label="Flow legend toggle"
       className={`${classes} hover:bg-white/10`}
       style={style}
     >

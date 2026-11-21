@@ -19,6 +19,7 @@ import { analyzePopularity, getPopularityExtremes } from "@/utils/popularity";
 import { getUserPersona, personaPortraitSrc } from "@/utils/musicPersonas";
 import { darkenHex } from "@/utils/color";
 import { CARD_THEMES } from "@/utils/cardThemes";
+import { trackCardView } from "@/lib/analytics";
 
 interface WrappedMusicProfileProps {
   stats: Stats;
@@ -278,7 +279,10 @@ export function WrappedMusicProfile({ stats, isLoadingTimeRange, playLimit, onPl
     <div className="space-y-6">
       <SequenceNavigator
         current={currentCard}
-        setCurrent={setCurrentCard}
+        setCurrent={(index: number) => {
+          setCurrentCard(index);
+          trackCardView(CARD_ITEMS[index]?.label ?? String(index), { source: stats.mode });
+        }}
         items={CARD_ITEMS}
         className="mb-2"
       />

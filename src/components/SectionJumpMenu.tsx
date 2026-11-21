@@ -3,6 +3,7 @@
 import { useEffect, useState, type ComponentType } from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { ChevronDown } from 'lucide-react';
+import { trackSectionJump } from '@/lib/analytics';
 
 export type SectionLink = {
   id: string;
@@ -88,6 +89,7 @@ export function SectionJumpMenu({ sections }: { sections: SectionLink[] }) {
               <DropdownMenu.Item key={section.id} asChild>
                 <a
                   href={`#${section.id}`}
+                  onClick={() => trackSectionJump(section.id)}
                   aria-current={current ? 'location' : undefined}
                   className={`flex items-center gap-2 px-3 py-2 text-sm outline-none ${
                     current
