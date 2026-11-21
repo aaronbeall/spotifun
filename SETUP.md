@@ -15,20 +15,21 @@ cp .env.example .env.local
 Then set your key in `.env.local`:
 ```env
 LASTFM_API_KEY=your_lastfm_api_key_here
+LASTFM_SHARED_SECRET=your_lastfm_shared_secret_here
 ```
 
 **Notes:**
-- **No OAuth:** listeners just type their Last.fm username. Their public scrobbles are read with the app's API key.
+- **Sign in with Last.fm:** the main button uses Last.fm's web auth (`/api/auth/lastfm` redirects to Last.fm, which returns to `/api/auth/lastfm/callback`, where `auth.getSession` gives the username). Only the username is kept; the Last.fm session key is dropped. Needs `LASTFM_SHARED_SECRET`, and the callback URL set to `https://<your-domain>/api/auth/lastfm/callback` in your Last.fm API account. Anyone can also type a username to look up a public profile. Data is read with the app's API key either way.
 - **Artwork:** comes from Deezer's public API, which needs no key.
 - **Caching:** Last.fm and Deezer responses go through `src/lib/apiCache.ts` (Next's fetch cache, a cache-first probe, a per-service throttle, and a cooldown after rate limits). Artist tags and artwork are cached for 30 days, top lists for 15 minutes to a day, recent plays for a minute.
-- **Deployment:** When deploying to Vercel, set `LASTFM_API_KEY` in your Vercel project's environment variables (Settings → Environment Variables).
+- **Deployment:** When deploying to Vercel, set `LASTFM_API_KEY` and `LASTFM_SHARED_SECRET` in your Vercel project's environment variables (Settings → Environment Variables).
 
 ### 3. Run the Application
 ```bash
 npm run dev
 ```
 
-Visit `http://127.0.0.1:3000` and type a Last.fm username!
+Visit `http://127.0.0.1:3000` and sign in with Last.fm, or type a Last.fm username!
 
 ## 🏗️ Project Structure
 

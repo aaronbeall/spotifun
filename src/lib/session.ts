@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * Spotifun reads public Last.fm data, so a "session" is just the username the listener
- * typed, kept in a cookie. No password or token is ever involved.
+ * Spotifun reads public Last.fm data, so a "session" is just a username kept in a cookie:
+ * the listener's own after "Sign in with Last.fm", or one they typed in to look up.
+ * No password or Last.fm session key is ever stored.
  */
 const USERNAME_COOKIE = 'lastfm_user';
+
+/** Ties a Last.fm sign-in callback to the browser that started it */
+export const SIGN_IN_STATE_COOKIE = 'lastfm_signin_state';
 const ONE_YEAR = 365 * 24 * 60 * 60;
 
 export class UnauthenticatedError extends Error {}

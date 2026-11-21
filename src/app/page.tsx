@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { Eye, MessageCircle, Repeat, Sparkles, Trophy } from 'lucide-react';
 import { HeroWaves } from '@/components/home/HeroWaves';
 import { VibeGlobe } from '@/components/home/VibeGlobe';
-import { UsernameForm } from '@/components/home/UsernameForm';
+import { StartPanel } from '@/components/home/SignInButton';
 import { PoweredBy } from '@/components/PoweredBy';
 import type { Stats } from '@/types';
 import { cn } from '@/utils';
@@ -93,7 +93,7 @@ export default function Home() {
               Poke around, see what turns up, and send the weird bits to your friends.
             </p>
             <div id="start" className="mt-6 scroll-mt-24 sm:mt-8">
-              <UsernameForm />
+              <StartPanel />
             </div>
             <Link
               href="/example"
@@ -185,8 +185,8 @@ export default function Home() {
             <Image src="/logo.png" alt="" width={72} height={72} className="h-16 w-16" />
           </Link>
           <h2 className="mt-6 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">Curious what&apos;s in yours?</h2>
-          <p className="mt-4 text-lg text-gray-400">Just your public Last.fm scrobbles. No password, nothing to install.</p>
-          <UsernameForm className="mt-8" />
+          <p className="mt-4 text-lg text-gray-400">Sign in with Last.fm and see what your scrobbles say. Nothing to install.</p>
+          <StartPanel className="mt-8 text-left" />
           <PoweredBy className="mt-10" />
         </motion.div>
       </section>

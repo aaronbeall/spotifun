@@ -35,7 +35,7 @@ export default function AboutPage() {
           , which has been keeping track of what people play for about twenty years. Last.fm can scrobble from
           Spotify, Apple Music, YouTube Music and most other players, so it works whatever you listen with. It
           also turned out to be a better fit: real play counts instead of a ranked list, a much longer history,
-          six time periods instead of three, and no sign-in at all.
+          six time periods instead of three, and a sign-in that takes one click.
         </p>
         <p>
           The trade-off is that you need a Last.fm account that has been scrobbling for a while. If you are new to
@@ -50,7 +50,7 @@ export default function AboutPage() {
       <section className="space-y-3">
         <h2 className="text-xl font-semibold text-white">What you can look at</h2>
         <p>
-          Type your Last.fm username and the dashboard can describe your recent scrobbles (up to the last 200),
+          Sign in with Last.fm (or type any Last.fm username) and the dashboard can describe your recent scrobbles (up to the last 200),
           your top artists, your top tracks, or your Loved Tracks. Top lists come in six periods, from the last
           seven days to all time. The same cards follow that choice: artists, tracks, genres, popularity, a trait
           spectrum, a vibe, and a persona.
@@ -85,12 +85,14 @@ export default function AboutPage() {
         <h2 className="text-xl font-semibold text-white">Privacy</h2>
         <p className="text-sm text-gray-500">Last updated November 21, 2026.</p>
         <p>
-          Spotifun does not keep a user database and never asks for a password. It reads public Last.fm data
-          for the username you type: your profile, recent scrobbles, top artists and tracks, and Loved Tracks.
+          Spotifun does not keep a user database and never sees your password. When you sign in with Last.fm,
+          you do that on Last.fm&apos;s own page, and Spotifun only learns your username. It then reads public
+          Last.fm data for that username (or for one you type in): the profile, recent scrobbles, top artists and tracks, and Loved Tracks.
           If your Last.fm profile hides its recent listening, Spotifun can&apos;t see it either.
         </p>
         <p>
-          The username is kept in an httpOnly cookie for a year so the dashboard opens straight to your profile.
+          Spotifun doesn&apos;t keep the Last.fm session that sign-in creates, so it can&apos;t scrobble, love
+          tracks or change anything on your account. The username is kept in an httpOnly cookie for a year so the dashboard opens straight to your profile.
           Logging out deletes it.
         </p>
         <p>

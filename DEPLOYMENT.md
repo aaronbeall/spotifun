@@ -62,6 +62,7 @@ Before deploying, add these environment variables in Vercel dashboard:
 
 ```
 LASTFM_API_KEY = your_lastfm_api_key_here
+LASTFM_SHARED_SECRET = your_lastfm_shared_secret_here
 ```
 
 #### How to Add Environment Variables:
@@ -84,6 +85,7 @@ LASTFM_API_KEY = your_lastfm_api_key_here
 | Variable | Purpose |
 |----------|---------|
 | `LASTFM_API_KEY` | Reads public Last.fm listening data and artist tags |
+| `LASTFM_SHARED_SECRET` | Signs the "Sign in with Last.fm" session request. In your Last.fm API account, set the callback URL to `https://spotifun.app/api/auth/lastfm/callback` |
 
 Deezer (artwork, lengths, release dates, popularity) needs no key.
 
