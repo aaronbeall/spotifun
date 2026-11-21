@@ -20,6 +20,18 @@ function canonicalHostRedirects() {
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ['127.0.0.1'],
+  async headers() {
+    return [
+      {
+        // Browsers should always check for a new service worker.
+        source: '/sw.js',
+        headers: [
+          { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
+          { key: 'Content-Type', value: 'application/javascript; charset=utf-8' },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       // The example profile used to live at /demo

@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { AnalyticsClicks } from "@/components/AnalyticsClicks";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ConsentNotice } from "@/components/ConsentNotice";
+import { ServiceWorker } from "@/components/ServiceWorker";
 import { CONSENT_DEFAULTS_SCRIPT } from "@/lib/consent";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
@@ -44,11 +45,22 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
     locale: "en_US",
   },
+  appleWebApp: {
+    capable: true,
+    title: SITE_NAME,
+    statusBarStyle: "black",
+  },
+  formatDetection: { telephone: false },
   twitter: {
     card: "summary_large_image",
     title: "Spotifun - get nerdy about your listening",
     description: DESCRIPTION,
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#030712",
+  colorScheme: "dark",
 };
 
 const JSON_LD = {
@@ -89,6 +101,7 @@ export default function RootLayout({
           <div className="flex-1">{children}</div>
           <SiteFooter />
           <ConsentNotice />
+          <ServiceWorker />
         </Tooltip.Provider>
       </body>
     </html>
