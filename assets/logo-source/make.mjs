@@ -1,4 +1,4 @@
-const fs=require('fs');const {chromium}=require('playwright');
+import fs from 'fs';import {chromium} from 'playwright';
 const grad=`<linearGradient id="t" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbbf24"/><stop offset=".55" stop-color="#fb7185"/><stop offset="1" stop-color="#d946ef"/></linearGradient>`;
 const tape=`<g transform="rotate(-9 256 256)">
 <rect x="78" y="140" width="356" height="240" rx="36" fill="#fff7ed"/>
