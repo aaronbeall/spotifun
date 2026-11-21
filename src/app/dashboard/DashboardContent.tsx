@@ -367,7 +367,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
 
   if (isInitialLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white p-6">
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white p-4 sm:p-6">
         <div className="max-w-7xl mx-auto">
           <div className="animate-pulse">
             <div className="flex items-center justify-between mb-8">
@@ -435,10 +435,10 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     <div className="min-h-screen bg-gray-900">
       {/* Header - Always visible */}
       <div className="bg-gray-800 shadow-lg border-b border-gray-700 sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-3 shrink-0">
-              <div className="relative w-10 h-10">
+        <div className="container mx-auto px-3 py-2.5 sm:px-4 sm:py-4">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Link href="/" aria-label="Spotifun home" className="flex items-center gap-3 shrink-0">
+              <div className="relative w-9 h-9 sm:w-10 sm:h-10">
                 <Image
                   src="/logo.png"
                   alt=""
@@ -447,7 +447,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                   sizes="40px"
                 />
               </div>
-              <span className="text-2xl font-black italic lowercase tracking-tight text-violet-400">
+              <span className="hidden sm:inline text-2xl font-black italic lowercase tracking-tight text-violet-400">
                 Spotifun
               </span>
             </Link>
@@ -458,11 +458,11 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
 
             <SectionJumpMenu sections={sections} />
 
-            <div className="flex items-center bg-gray-900/60 border border-gray-700/50 rounded-full p-1.5 shrink-0">
+            <div className="flex items-center bg-gray-900/60 border border-gray-700/50 rounded-full p-1 sm:p-1.5 shrink-0">
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
                   <button
-                    className="flex items-center gap-2 rounded-full pr-2 py-0.5 hover:bg-gray-700/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+                    className="flex items-center gap-2 rounded-full sm:pr-2 py-0.5 hover:bg-gray-700/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
                     aria-label="Account menu"
                   >
                     {user.images?.[0]?.url ? (
@@ -575,9 +575,9 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
         </div>
       )}
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 py-5 sm:px-4 sm:py-8">
         {/* Recently Played Stats */}
-        <div id="profile" className="mb-8 scroll-mt-24">
+        <div id="profile" className="mb-6 sm:mb-8 scroll-mt-20 sm:scroll-mt-24">
           <MusicProfile
             stats={stats}
             isLoadingTimeRange={isLoadingTimeRange}
@@ -618,8 +618,8 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
         </div>
 
         {/* Top Artists */}
-        <div id="artists" className="scroll-mt-24 bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div id="artists" className="scroll-mt-20 sm:scroll-mt-24 bg-gray-800 rounded-xl p-4 sm:p-6 shadow-lg border border-gray-700 mb-6 sm:mb-8">
+          <div className="mb-4 sm:mb-6 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <Star className="w-5 h-5 text-yellow-400" />
               Top Artists
@@ -636,7 +636,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               />
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 mb-4">
             {lists.topArtists.slice(0, showAllArtists ? lists.topArtists.length : ARTISTS_TO_SHOW).map((artist, index) => {
               const recentPlays = artist.recentPlays;
               const imageUrl = artist.images?.[0]?.url;
@@ -648,7 +648,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Open ${artist.name} on Spotify`}
-                  className="group relative block h-48 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                  className="group relative block h-36 sm:h-48 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                 >
                   {imageUrl ? (
                     <img
@@ -663,14 +663,14 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                   )}
                   <SpotifyPlayOverlay />
                   {index < 3 && (
-                    <div className="absolute top-3 left-3 z-10">
+                    <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10">
                       <RankMark rank={(index + 1) as 1 | 2 | 3} />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-4">
-                      <h3 className="font-bold text-white text-lg">{artist.name}</h3>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-3 sm:p-4">
+                      <h3 className="font-bold text-white text-base leading-tight sm:text-lg line-clamp-2">{artist.name}</h3>
                       {recentPlays > 0 && (
-                        <p className="text-sm text-gray-300">
+                        <p className="text-xs sm:text-sm text-gray-300">
                           {recentPlays} recent {recentPlays === 1 ? 'play' : 'plays'}
                         </p>
                       )}
@@ -690,8 +690,8 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
         </div>
 
         {/* Top Tracks */}
-        <div id="tracks" className="scroll-mt-24 bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div id="tracks" className="scroll-mt-20 sm:scroll-mt-24 bg-gray-800 rounded-xl p-4 sm:p-6 shadow-lg border border-gray-700 mb-6 sm:mb-8">
+          <div className="mb-4 sm:mb-6 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-green-400" />
               Top Tracks
@@ -708,7 +708,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               />
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 mb-4">
             {lists.topTracks.slice(0, showAllTracks ? lists.topTracks.length : TRACKS_TO_SHOW).map((track, index) => {
               const recentPlays = track.recentPlays;
               const lastPlayed = track.lastPlayed ? new Date(track.lastPlayed) : null;
@@ -722,10 +722,10 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Open ${track.name} on Spotify`}
-                  className="group relative block h-32 rounded-xl overflow-hidden bg-gray-700/50 hover:bg-gray-700 transition-all duration-300"
+                  className="group relative block h-24 sm:h-32 rounded-xl overflow-hidden bg-gray-700/50 hover:bg-gray-700 transition-all duration-300"
                 >
-                  <div className="absolute inset-0 flex items-center p-4 gap-4">
-                    <div className="relative w-16 h-16 rounded-lg bg-gray-600 flex items-center justify-center overflow-hidden shrink-0">
+                  <div className="absolute inset-0 flex items-center p-3 gap-3 sm:p-4 sm:gap-4">
+                    <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-gray-600 flex items-center justify-center overflow-hidden shrink-0">
                       {albumImage ? (
                         <img
                           src={albumImage}
@@ -737,7 +737,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                       )}
                       <SpotifyPlayOverlay size="sm" />
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className={`flex-1 min-w-0 ${index < 3 ? 'pr-5' : ''}`}>
                       <h3 className="font-medium text-white truncate">{track.name}</h3>
                       <p className="text-sm text-gray-300 truncate">
                         {track.artists.map(a => a.name).join(', ')}
@@ -776,8 +776,8 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
         </div>
 
         {/* Top Genres */}
-        <div id="genres" className="scroll-mt-24 bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div id="genres" className="scroll-mt-20 sm:scroll-mt-24 bg-gray-800 rounded-xl p-4 sm:p-6 shadow-lg border border-gray-700 mb-6 sm:mb-8">
+          <div className="mb-4 sm:mb-6 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-purple-400" />
               Top Genres
@@ -796,7 +796,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
           </div>
 
           {/* Genre Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 mb-4">
             {lists.topGenres.slice(0, showAllGenres ? lists.topGenres.length : GENRES_TO_SHOW).map(({ genre, count }, index) => {
               const colorClass = getGenreColorClass(genre, 'bg');
               const percentage = Math.round((count / lists.topGenres[0]?.count) * 100);
@@ -809,15 +809,15 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Open ${genre} on Spotify`}
-                  className="relative bg-gray-800/40 hover:bg-gray-800/80 border border-gray-700/50 rounded-lg p-4 transition-colors group block"
+                  className="relative bg-gray-800/40 hover:bg-gray-800/80 border border-gray-700/50 rounded-lg p-3 sm:p-4 transition-colors group block"
                 >
                   {index < 3 && (
                     <div className="absolute top-2 right-2 z-10">
                       <RankMark rank={(index + 1) as 1 | 2 | 3} size="sm" />
                     </div>
                   )}
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="relative w-10 h-10 rounded-lg bg-gray-700 flex items-center justify-center overflow-hidden shrink-0">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                    <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gray-700 flex items-center justify-center overflow-hidden shrink-0">
                       {imageUrl ? (
                         <img
                           src={imageUrl}
@@ -830,7 +830,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                       <SpotifyPlayOverlay size="sm" />
                     </div>
                     <div className={`min-w-0 flex-1 ${index < 3 ? 'pr-6' : ''}`}>
-                      <h3 className="font-medium text-white capitalize truncate">
+                      <h3 className="text-sm sm:text-base font-medium text-white capitalize truncate">
                         {genre}
                       </h3>
                       <span className="text-xs text-gray-300">
@@ -863,13 +863,13 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
           )}
         </div>
 
-        <div id="story" className="mb-8 scroll-mt-24">
+        <div id="story" className="mb-6 sm:mb-8 scroll-mt-20 sm:scroll-mt-24">
           <FunStats stats={stats} onShare={setListShare} />
         </div>
 
         {!demo && (
-          <div className="mb-8 space-y-8">
-            <div id="collection" className="scroll-mt-24 rounded-2xl border border-gray-700 bg-gray-800 p-6 shadow-lg sm:p-8">
+          <div className="mb-6 space-y-6 sm:mb-8 sm:space-y-8">
+            <div id="collection" className="scroll-mt-20 sm:scroll-mt-24 rounded-2xl border border-gray-700 bg-gray-800 p-4 shadow-lg sm:p-8">
               <h2 className="flex items-center gap-2 text-2xl font-bold text-white">
                 <LayoutGrid className="h-6 w-6 text-fuchsia-300" />
                 Collection
@@ -879,7 +879,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               </p>
               <UnlockBoard userId={user.id} refreshKey={journalTick} />
             </div>
-            <div id="badges" className="scroll-mt-24 rounded-2xl border border-gray-700 bg-gray-800 p-6 shadow-lg sm:p-8">
+            <div id="badges" className="scroll-mt-20 sm:scroll-mt-24 rounded-2xl border border-gray-700 bg-gray-800 p-4 shadow-lg sm:p-8">
               <div className="mb-6 flex items-start justify-between gap-3">
                 <div>
                   <h2 className="flex items-center gap-2 text-2xl font-bold text-white">
@@ -905,7 +905,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
         )}
 
         {/* Rankings */}
-        <div id="time" className="mb-8 scroll-mt-24">
+        <div id="time" className="mb-6 sm:mb-8 scroll-mt-20 sm:scroll-mt-24">
           <Rankings stats={stats} />
         </div>
 

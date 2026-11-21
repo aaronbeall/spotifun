@@ -232,7 +232,7 @@ export function UnlockBoard({ userId, refreshKey = 0 }: { userId: string; refres
       </section>
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 p-6 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 p-3 sm:p-6 backdrop-blur-sm"
           onClick={() => setOpen(null)}
         >
           <div

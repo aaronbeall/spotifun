@@ -336,7 +336,7 @@ export function MusicVibes({
 
   return (
     <div className={cn('w-full', className)}>
-      <ThemedCardBackground color={cardBackgroundColor} className="backdrop-blur-sm rounded-3xl p-6 border border-white/5 shadow-2xl">
+      <ThemedCardBackground color={cardBackgroundColor} className="backdrop-blur-sm rounded-3xl p-4 sm:p-6 border border-white/5 shadow-2xl">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
           <div className="mb-4 md:mb-0">

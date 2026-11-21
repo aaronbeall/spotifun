@@ -115,7 +115,7 @@ export function PersonaPresentation({
           <Share2 className="w-4 h-4" />
         </button>
       )}
-      <div className="grid items-center gap-6 p-6 md:grid-cols-[minmax(0,17rem)_1fr] md:gap-10 md:p-8">
+      <div className="grid items-center gap-6 p-4 sm:p-6 md:grid-cols-[minmax(0,17rem)_1fr] md:gap-10 md:p-8">
         <div
           className="relative mx-auto aspect-square w-full max-w-[17rem] overflow-hidden rounded-[2rem] border"
           style={{ borderColor: `${colors.light}55`, boxShadow: `0 0 0 6px ${colors.light}14` }}

@@ -96,7 +96,7 @@ export default function Rankings({ stats }: RankingsProps) {
   const shift = eras ? readShift(current, eras, stats) : null;
 
   return (
-    <div className="rounded-2xl border border-gray-700 bg-gray-800 p-6 shadow-lg sm:p-8">
+    <div className="rounded-2xl border border-gray-700 bg-gray-800 p-4 shadow-lg sm:p-8">
       <div className="mb-6">
         <h2 className="flex items-center gap-2 text-2xl font-bold text-white">
           <History className="h-6 w-6 text-cyan-300" />

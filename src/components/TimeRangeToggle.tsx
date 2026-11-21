@@ -31,7 +31,7 @@ export default function TimeRangeToggle({ value, onChange, disabled, isLoading, 
             type="button"
             onClick={() => onChange(opt.value)}
             disabled={disabled || isLoading}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-green-400
+            className={`whitespace-nowrap px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-green-400
               ${value === opt.value
                 ? 'bg-green-600 text-white shadow'
                 : 'bg-transparent text-gray-200 hover:bg-gray-600'}

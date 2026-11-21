@@ -208,15 +208,15 @@ export default function MusicProfile({
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 shadow-2xl border border-gray-700/50 overflow-hidden">
+      <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-4 sm:p-6 shadow-2xl border border-gray-700/50 overflow-hidden">
         <div className="relative">
           {/* Decorative elements */}
           <div className="absolute -top-6 -right-6 w-32 h-32 bg-pink-500/10 rounded-full filter blur-3xl"></div>
           <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-blue-500/10 rounded-full filter blur-3xl"></div>
 
           {/* Data nav */}
-          <div className="relative z-10 -mx-6 -mt-6 mb-6 bg-black/20 rounded-t-2xl border-b border-white/5 p-4 flex flex-wrap items-center gap-3">
-            <div className="relative inline-flex items-center gap-1 bg-white/5 border border-white/10 rounded-full p-1">
+          <div className="relative z-10 -mx-4 -mt-4 mb-4 sm:-mx-6 sm:-mt-6 sm:mb-6 bg-black/20 rounded-t-2xl border-b border-white/5 p-3 sm:p-4 flex flex-wrap items-center gap-3">
+            <div className="relative inline-flex max-w-full items-center gap-1 overflow-x-auto no-scrollbar bg-white/5 border border-white/10 rounded-full p-1">
               {DATA_MODES.map(({ id, label, icon: Icon }) => {
                 const isActive = dataMode === id;
                 return (
@@ -224,7 +224,7 @@ export default function MusicProfile({
                     key={id}
                     onClick={() => onDataModeChange(id)}
                     disabled={isLoadingTimeRange}
-                    className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors focus:outline-none disabled:opacity-50 ${
+                    className={`relative flex shrink-0 items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-colors focus:outline-none disabled:opacity-50 ${
                       isActive ? 'text-white' : 'text-white/50 hover:text-white/80'
                     }`}
                   >
@@ -236,7 +236,7 @@ export default function MusicProfile({
                   </button>
                 );
               })}
-              <div className={`relative flex items-center rounded-full ${playlistSelected ? 'text-white' : 'text-white/50'}`}>
+              <div className={`relative flex shrink-0 items-center rounded-full ${playlistSelected ? 'text-white' : 'text-white/50'}`}>
                 {playlistSelected && (
                   <span className="absolute inset-0 -z-10 rounded-full bg-pink-500 shadow-md" />
                 )}
@@ -392,7 +392,7 @@ export default function MusicProfile({
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
 
           {/* Artist Card */}
           <StatCard

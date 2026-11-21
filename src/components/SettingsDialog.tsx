@@ -137,14 +137,14 @@ export function SettingsDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-3 sm:p-6 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
-        className="relative w-full max-w-md rounded-2xl border border-white/10 bg-gray-900 p-6 shadow-2xl"
+        className="relative w-full max-w-md rounded-2xl border border-white/10 bg-gray-900 p-5 sm:p-6 shadow-2xl"
         onClick={event => event.stopPropagation()}
       >
         <button
