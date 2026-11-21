@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { TipLink } from './TipJar';
 
 const SITE = 'https://abeall.com';
 
@@ -22,6 +23,12 @@ export function SiteFooter() {
             Meta Modern Monkey
           </a>
         </p>
+        <TipLink
+          placement="footer"
+          className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/25 bg-amber-300/10 px-3 py-1 text-xs font-medium text-amber-200 hover:border-amber-300/50 hover:bg-amber-300/15"
+        >
+          ☕ Enjoying it? Tip the monkey
+        </TipLink>
         <p>
           © {year}{' '}
           <a href={SITE} target="_blank" rel="noopener noreferrer" className="hover:text-gray-300">

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { TipLink } from '@/components/TipJar';
+import { TIP_URL } from '@/lib/tips';
 
 export const metadata: Metadata = {
   title: 'About',
@@ -42,6 +44,20 @@ export default function AboutPage() {
           three time ranges. There is no global leaderboard.
         </p>
       </section>
+
+      {TIP_URL && (
+        <section id="support" className="scroll-mt-8 space-y-3">
+          <h2 className="text-xl font-semibold text-white">Keeping the lights on</h2>
+          <p>
+            Spotifun has no ads and nothing is locked. It does have a server bill and a developer who runs on coffee
+            and bananas. If it has made you grin, tips go straight into keeping it running and adding new toys.
+          </p>
+          <TipLink
+            placement="about"
+            className="inline-flex items-center gap-2 rounded-full bg-amber-300 px-4 py-2 text-sm font-semibold text-gray-950 hover:bg-amber-200"
+          />
+        </section>
+      )}
 
       <section id="contact" className="scroll-mt-8 space-y-3">
         <h2 className="text-xl font-semibold text-white">Contact</h2>
