@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import DashboardContent from '../dashboard/DashboardContent';
 
 export const metadata: Metadata = {
-  title: "Spotifun - Sam's example profile",
+  title: "Sam's example profile",
+  alternates: { canonical: '/example' },
   description: 'Poke around a Spotifun profile for Sam Pling, a pretend listener with very real taste. No Spotify login needed.',
 };
 

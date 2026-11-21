@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'About — Spotifun',
+  title: 'About',
+  alternates: { canonical: '/about' },
   description: 'What Spotifun is, how to get in touch, and the privacy and terms that cover your Spotify connection.',
 };
 
