@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { Award, BarChart3, BookOpen, ChevronDown, History, LayoutGrid, Library, Medal, Music, Star, TrendingUp, Users, Clock, Headphones, LogOut, Settings, User, Info, Sparkles } from 'lucide-react';
+import { Award, BarChart3, BookOpen, ChevronDown, Coffee, History, LayoutGrid, Library, Medal, Music, Star, TrendingUp, Users, Clock, Headphones, LogOut, Settings, User, Info, Sparkles } from 'lucide-react';
 import { formatDuration, formatNumber, getGenreColorMap, getGenreColorClass } from '@/utils';
 import Image from 'next/image';
 import FunStats from '@/components/features/FunStats';
@@ -26,8 +26,10 @@ import { ShareModal } from '@/components/ShareModal';
 import { topArtistsShare, topGenresShare, topTracksShare } from '@/components/shareLists';
 import type { ShareContent } from '@/components/ShareCardTemplate';
 import { AchievementBoard } from '@/components/features/AchievementBoard';
+import { TipNudge } from '@/components/TipJar';
+import { TIP_URL } from '@/lib/tips';
 import { UnlockBoard, UnlockMeter } from '@/components/features/UnlockBoard';
-import { trackListExpand, trackProfileResult, trackSpotifyOpen, trackUnlock, trackViewChange, type ProfileContext } from '@/lib/analytics';
+import { trackEvent, trackListExpand, trackProfileResult, trackSpotifyOpen, trackUnlock, trackViewChange, type ProfileContext } from '@/lib/analytics';
 import { findBestMatchingVibe } from '@/utils/musicVibesAnalyzer';
 import { getUserPersona } from '@/utils/musicPersonas';
 import { noteApiCall, observeLogin, observeStatsResult, resetObservation, setActiveUser, type JournalNews } from '@/lib/records/observe';
@@ -552,6 +554,20 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                         Sample playlists
                       </DropdownMenu.Item>
                     )}
+                    {TIP_URL && (
+                      <DropdownMenu.Item asChild>
+                        <a
+                          href={TIP_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => trackEvent('tip', { action: 'click', placement: 'menu' })}
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-amber-200 hover:bg-gray-700 hover:text-amber-100 transition-colors cursor-pointer outline-none"
+                        >
+                          <Coffee className="w-4 h-4" />
+                          Tip jar
+                        </a>
+                      </DropdownMenu.Item>
+                    )}
                     <DropdownMenu.Item
                       onSelect={handleLogout}
                       className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer outline-none"
@@ -951,6 +967,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
         {news && <AchievementPopup key="unlock-toast" news={news} onClose={() => setNews(null)} />}
       </AnimatePresence>
       <ShareModal content={listShare} onClose={() => setListShare(null)} />
+      <TipNudge enabled={!demo} />
       {isDev && (
         <SamplePlaylistDialog
           open={sampleDialogOpen}
