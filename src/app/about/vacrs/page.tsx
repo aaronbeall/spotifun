@@ -6,7 +6,8 @@ import { MUSIC_PERSONAS } from '@/utils/musicPersonas';
 import { RarityBadge } from '@/components/RarityBadge';
 
 export const metadata: Metadata = {
-  title: 'VACRS and personas — Spotifun',
+  title: 'VACRS and personas',
+  alternates: { canonical: '/about/vacrs' },
   description: 'How Spotifun scores music on five traits, then snaps two of them plus four listening facts into one of 64 personas.',
 };
 

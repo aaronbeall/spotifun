@@ -4,6 +4,7 @@ import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { AnalyticsClicks } from "@/components/AnalyticsClicks";
 import { SiteFooter } from "@/components/SiteFooter";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -21,9 +22,42 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const DESCRIPTION =
+  "Get nerdy about your Spotify listening. Spotifun turns what you play into vibes, genre maps, stream charts, a listener persona and a few silly badges you can send to friends.";
+
 export const metadata: Metadata = {
-  title: "Spotifun - Your Spotify Analytics Dashboard",
-  description: "Discover insights, stats, and fun feedback about your Spotify listening habits. Get your personalized music profile and achievements.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Spotifun - get nerdy about your listening",
+    template: "%s · Spotifun",
+  },
+  description: DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: ["Spotify stats", "music taste", "listening persona", "top artists", "genre map", "music vibes"],
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    url: "/",
+    title: "Spotifun - get nerdy about your listening",
+    description: DESCRIPTION,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Spotifun - get nerdy about your listening",
+    description: DESCRIPTION,
+  },
+};
+
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: SITE_NAME,
+  url: SITE_URL,
+  description: DESCRIPTION,
+  applicationCategory: "MusicApplication",
+  operatingSystem: "Any",
+  browserRequirements: "Requires a Spotify account",
 };
 
 export default function RootLayout({
@@ -45,6 +79,10 @@ export default function RootLayout({
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());`}
         </Script>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD).replace(/</g, "\\u003c") }}
+        />
         <AnalyticsClicks />
         <Tooltip.Provider>
           <div className="flex-1">{children}</div>
