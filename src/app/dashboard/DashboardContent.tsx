@@ -27,7 +27,9 @@ import { topArtistsShare, topGenresShare, topTracksShare } from '@/components/sh
 import type { ShareContent } from '@/components/ShareCardTemplate';
 import { AchievementBoard } from '@/components/features/AchievementBoard';
 import { UnlockBoard, UnlockMeter } from '@/components/features/UnlockBoard';
-import { trackUnlock } from '@/lib/analytics';
+import { trackListExpand, trackProfileResult, trackSpotifyOpen, trackUnlock, trackViewChange, type ProfileContext } from '@/lib/analytics';
+import { findBestMatchingVibe } from '@/utils/musicVibesAnalyzer';
+import { getUserPersona } from '@/utils/musicPersonas';
 import { noteApiCall, observeLogin, observeStatsResult, resetObservation, setActiveUser, type JournalNews } from '@/lib/records/observe';
 
 import { UserProfile, Stats, TimeRange, DataMode, PlaylistSelection, LIKED_SONGS_ID } from '@/types';
@@ -97,8 +99,33 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
   const sampleRequest = useRef(0);
   const profileBeforeSample = useRef<{ mode: DataMode } | null>(null);
 
+  const profileContext = useCallback((overrides: Partial<ProfileContext> = {}): ProfileContext => ({
+    source: dataMode === 'playlist' && selectedPlaylist.id === LIKED_SONGS_ID ? 'liked' : dataMode,
+    time_range: timeRange,
+    play_limit: playLimit,
+    is_example: demo,
+    ...overrides,
+  }), [dataMode, selectedPlaylist.id, timeRange, playLimit, demo]);
+
   const acceptStats = useCallback((statsData: Stats, options?: { replaceLists?: boolean; record?: boolean }) => {
     setStats(statsData);
+    if (options?.record !== false && statsData.tracks.length > 0) {
+      try {
+        const persona = getUserPersona(statsData);
+        const vibe = findBestMatchingVibe(statsData.genres).vibe;
+        const source = statsData.mode === 'playlist' && statsData.playlist?.id === LIKED_SONGS_ID ? 'liked' : statsData.mode;
+        trackProfileResult({
+          persona_id: persona.id,
+          persona_name: persona.name,
+          vibe_id: vibe.id,
+          vibe_name: vibe.name,
+          track_count: statsData.tracks.length,
+          genre_count: statsData.genres.length,
+        }, { source, time_range: statsData.timeRange, is_example: demo });
+      } catch (error) {
+        console.error('Could not describe this profile for analytics', error);
+      }
+    }
     setRankedLists(current => options?.replaceLists || current == null ? {
       topArtists: statsData.topArtists,
       topTracks: statsData.topTracks,
@@ -210,6 +237,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
 
   const handleTimeRangeChange = async (newTimeRange: TimeRange) => {
     if (timeRange === newTimeRange && !sampleIdRef.current) return;
+    trackViewChange('time_range', newTimeRange, profileContext({ time_range: newTimeRange }));
 
     const leavingSample = sampleIdRef.current !== null;
     const mode = leavingSample ? modeBeforeSample() : dataMode;
@@ -234,6 +262,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
 
   const handleListTimeRangeChange = async (newTimeRange: TimeRange) => {
     if (sampleIdRef.current || listTimeRange === newTimeRange) return;
+    trackViewChange('list_time_range', newTimeRange, profileContext());
 
     setListTimeRange(newTimeRange);
     setIsLoadingLists(true);
@@ -264,6 +293,8 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
       return;
     }
     if (!leavingSample && dataMode === 'playlist' && selectedPlaylist.id === playlist.id) return;
+    const playlistSource = playlist.id === LIKED_SONGS_ID ? 'liked' : 'playlist';
+    trackViewChange('source', playlistSource, profileContext({ source: playlistSource }));
 
     const previousMode = dataMode;
     const previousPlaylist = selectedPlaylist;
@@ -299,6 +330,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
 
   const handleDataModeChange = async (newMode: DataMode) => {
     if (newMode === 'playlist' || (dataMode === newMode && !sampleIdRef.current)) return;
+    trackViewChange('source', newMode, profileContext({ source: newMode }));
 
     const leavingSample = clearSample();
     setDataMode(newMode);
@@ -595,6 +627,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
             likedSongsNeedsReconnect={likedSongsNeedsReconnect}
             onLikedSongsNeedsReconnect={setLikedSongsNeedsReconnect}
             onPlayLimitChange={async (newLimit) => {
+              trackViewChange('play_limit', String(newLimit), profileContext({ play_limit: newLimit }));
               const leavingSample = sampleIdRef.current !== null;
               const mode = leavingSample ? modeBeforeSample() : dataMode;
               clearSample();
@@ -648,6 +681,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Open ${artist.name} on Spotify`}
+                  onClick={() => trackSpotifyOpen('artist')}
                   className="group relative block h-36 sm:h-48 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                 >
                   {imageUrl ? (
@@ -681,7 +715,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
           </div>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <button
-              onClick={() => setShowAllArtists(!showAllArtists)}
+              onClick={() => { trackListExpand('artists', !showAllArtists); setShowAllArtists(!showAllArtists); }}
               className="text-sm text-gray-300 hover:text-white px-4 py-2 rounded-full border border-gray-600 hover:border-gray-400 transition-colors bg-gray-800/50 hover:bg-gray-700/50"
             >
               {showAllArtists ? 'Show Less' : `Show All ${lists.topArtists.length} Artists`}
@@ -722,6 +756,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Open ${track.name} on Spotify`}
+                  onClick={() => trackSpotifyOpen('track')}
                   className="group relative block h-24 sm:h-32 rounded-xl overflow-hidden bg-gray-700/50 hover:bg-gray-700 transition-all duration-300"
                 >
                   <div className="absolute inset-0 flex items-center p-3 gap-3 sm:p-4 sm:gap-4">
@@ -767,7 +802,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
           </div>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <button
-              onClick={() => setShowAllTracks(!showAllTracks)}
+              onClick={() => { trackListExpand('tracks', !showAllTracks); setShowAllTracks(!showAllTracks); }}
               className="text-sm text-gray-300 hover:text-white px-4 py-2 rounded-full border border-gray-600 hover:border-gray-400 transition-colors bg-gray-800/50 hover:bg-gray-700/50"
             >
               {showAllTracks ? 'Show Less' : `Show All ${lists.topTracks.length} Tracks`}
@@ -809,6 +844,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Open ${genre} on Spotify`}
+                  onClick={() => trackSpotifyOpen('genre')}
                   className="relative bg-gray-800/40 hover:bg-gray-800/80 border border-gray-700/50 rounded-lg p-3 sm:p-4 transition-colors group block"
                 >
                   {index < 3 && (
@@ -854,7 +890,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
           {lists.topGenres.length > GENRES_TO_SHOW && (
             <div className="mt-6 flex justify-center">
               <button
-                onClick={() => setShowAllGenres(!showAllGenres)}
+                onClick={() => { trackListExpand('genres', !showAllGenres); setShowAllGenres(!showAllGenres); }}
                 className="text-sm text-gray-300 hover:text-white px-4 py-2 rounded-full border border-gray-600 hover:border-gray-400 transition-colors bg-gray-800/50 hover:bg-gray-700/50"
               >
                 {showAllGenres ? 'Show Less' : `Show All ${lists.topGenres.length} Genres`}

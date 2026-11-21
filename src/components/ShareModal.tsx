@@ -1,6 +1,7 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import { trackShare } from '@/lib/analytics';
 import { X } from 'lucide-react';
 import { ShareCardTemplate, ShareContent } from './ShareCardTemplate';
 import { ShareCardButton } from './ShareCardButton';
@@ -12,6 +13,12 @@ interface ShareModalProps {
 
 export function ShareModal({ content, onClose }: ShareModalProps) {
   const cardRef = useRef<HTMLDivElement>(null);
+  // The eyebrow names the kind of card ("Top Artists", "Vibe"), never what's on it.
+  const card = content?.eyebrow;
+
+  useEffect(() => {
+    if (card) trackShare('open', card);
+  }, [card]);
 
   if (!content) return null;
 
@@ -42,6 +49,7 @@ export function ShareModal({ content, onClose }: ShareModalProps) {
             title={`My ${content.eyebrow} — Spotifun`}
             text={`Check out my ${content.title} on Spotifun!`}
             className="!bg-white/10 !border-white/20"
+            onResult={result => trackShare(result, content.eyebrow)}
           />
         </div>
       </div>

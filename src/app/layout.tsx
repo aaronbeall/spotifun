@@ -4,6 +4,8 @@ import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { AnalyticsClicks } from "@/components/AnalyticsClicks";
 import { SiteFooter } from "@/components/SiteFooter";
+import { ConsentNotice } from "@/components/ConsentNotice";
+import { CONSENT_DEFAULTS_SCRIPT } from "@/lib/consent";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -70,15 +72,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${display.variable} flex min-h-screen flex-col bg-gray-950 antialiased`}
       >
+        {/* Consent defaults have to be in the dataLayer before the Google tag reads it. */}
+        <Script id="gtag-consent" strategy="beforeInteractive">
+          {CONSENT_DEFAULTS_SCRIPT}
+        </Script>
         <Script
           src="https://www.googletagmanager.com/gtm.js?id=GTM-5ZH965VP"
           strategy="beforeInteractive"
         />
-        <Script id="gtag-init" strategy="beforeInteractive">
-          {`window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());`}
-        </Script>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD).replace(/</g, "\\u003c") }}
@@ -87,6 +88,7 @@ gtag('js', new Date());`}
         <Tooltip.Provider>
           <div className="flex-1">{children}</div>
           <SiteFooter />
+          <ConsentNotice />
         </Tooltip.Provider>
       </body>
     </html>

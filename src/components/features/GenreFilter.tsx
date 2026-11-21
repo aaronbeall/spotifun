@@ -20,7 +20,8 @@ export function GenreFilter({
   if (!genreStats?.length) return null;
 
   return (
-    <motion.div 
+    <motion.div
+      data-analytics-redact="Genre filter"
       className={cn("flex flex-wrap gap-2 mb-4", className)}
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}

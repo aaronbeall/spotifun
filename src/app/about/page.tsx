@@ -60,7 +60,7 @@ export default function AboutPage() {
 
       <section id="privacy" className="scroll-mt-8 space-y-3">
         <h2 className="text-xl font-semibold text-white">Privacy</h2>
-        <p className="text-sm text-gray-500">Last updated November 12, 2026.</p>
+        <p className="text-sm text-gray-500">Last updated November 21, 2026.</p>
         <p>
           Spotifun does not keep a user database on a server. Connecting Spotify grants the app permission to read
           your profile and email, top artists and tracks, recently played tracks, current playback, private
@@ -79,9 +79,16 @@ export default function AboutPage() {
           cookie lasts 30 days. Spotifun does not sell this data and does not use it for advertising.
         </p>
         <p>
-          The site loads Google Tag Manager (GTM-5ZH965VP) to measure how the site is used: which pages are
-          opened, which buttons are clicked, and which personas, vibes, and badges are unlocked. That usage
-          data is sent to Google. The listening journal stored in this browser is not uploaded.
+          The site loads Google Tag Manager (GTM-5ZH965VP) and Google Analytics to measure how the site is used:
+          which pages are opened, which buttons are clicked, which views, time ranges and cards are picked, which
+          share cards are made, and which persona and vibe a profile lands on, including the personas, vibes, and
+          badges you unlock. Song, artist, album, playlist, and genre names are not sent. That usage data goes to
+          Google and uses Google Analytics cookies. It is not used for advertising. The listening journal stored
+          in this browser is not uploaded.
+        </p>
+        <p>
+          You can turn usage analytics off, or back on, under Settings on the dashboard. Visitors whose clock is
+          set to a European time zone are asked first, and analytics stays off until they say yes.
         </p>
         <p>
           When Spotify returns few genres for an artist, the server may look that artist up on Last.fm and

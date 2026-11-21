@@ -243,6 +243,7 @@ export default function MusicProfile({
                 <button
                   onClick={() => onPlaylistSelect(selectedPlaylist)}
                   disabled={isLoadingTimeRange}
+                  data-analytics-label="Selected playlist"
                   className="flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-l-full text-xs font-medium transition-colors focus:outline-none disabled:opacity-50 hover:text-white"
                 >
                   <PlaylistMark playlist={selectedPlaylist} className="w-3.5 h-3.5 shrink-0" />
@@ -267,6 +268,7 @@ export default function MusicProfile({
                     <DropdownMenu.Content
                       align="start"
                       sideOffset={8}
+                      data-analytics-redact="Playlist menu item"
                       className="z-50 w-72 max-h-80 overflow-y-auto bg-gray-800 border border-gray-700 rounded-lg shadow-xl py-1"
                     >
                       <PlaylistMenuItem
