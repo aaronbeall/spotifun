@@ -1,3 +1,4 @@
+import { PoweredBy } from '../PoweredBy';
 import { Headphones, Users, Music, Clock, Sparkles, Palette, Disc, Disc3, Disc2, TrendingUp, Star } from 'lucide-react';
 import { Stats } from '@/types';
 import { formatNumber, formatDuration, getGenreColorClass } from "@/utils";
@@ -224,10 +225,7 @@ export default function RecentlyPlayed({ stats, isLoadingTimeRange, playLimit, o
               <Disc className="w-4 h-4 text-pink-400" />
               <span>Last updated: {new Date().toLocaleDateString()}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>Powered by Spotify</span>
-            </div>
+            <PoweredBy />
           </div>
         </div>
       </div>

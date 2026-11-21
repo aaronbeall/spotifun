@@ -60,9 +60,7 @@ export function SettingsDialog({
   displayName,
   userId,
   journalTick,
-  lastFmEnabled,
   debugPanelEnabled,
-  onLastFmChange,
   onDebugChange,
   onJournalCleared,
   onClose,
@@ -73,9 +71,7 @@ export function SettingsDialog({
   displayName: string;
   userId: string;
   journalTick: number;
-  lastFmEnabled: boolean;
   debugPanelEnabled: boolean;
-  onLastFmChange: (enabled: boolean) => void;
   onDebugChange: (enabled: boolean) => void;
   onJournalCleared: () => void;
   onClose: () => void;
@@ -163,13 +159,7 @@ export function SettingsDialog({
           </p>
         ) : (
           <div className="mt-5 space-y-6">
-            <SettingSwitch
-              checked={lastFmEnabled}
-              label="Enrich genres with Last.fm"
-              detail="When Spotify returns few genres for an artist, look that artist up by name. Last.fm is not told who you are."
-              onChange={onLastFmChange}
-            />
-            <div className="border-t border-white/10 pt-5">
+            <div>
               <p className="text-sm font-medium text-white">Listening journal</p>
               <p className="mt-1 text-sm leading-relaxed text-gray-400">
                 Unlocks and badges for {displayName} stay in this browser. They are not uploaded.

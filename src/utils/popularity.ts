@@ -1,3 +1,5 @@
+import type { Track } from '@/types/music';
+
 export interface PopularityAnalysis {
   label: string;
   description: string;
@@ -5,7 +7,11 @@ export interface PopularityAnalysis {
   range: [number, number]
 }
 
-export function analyzePopularity(tracks: SpotifyApi.TrackObjectFull[]): PopularityAnalysis {
+/** Tracks Deezer could match carry a popularity; the rest are left out of popularity stats. */
+export const ratedTracks = (tracks: Track[]) => tracks.filter(track => typeof track.popularity === 'number');
+
+export function analyzePopularity(allTracks: Track[]): PopularityAnalysis {
+  const tracks = ratedTracks(allTracks);
   if (!tracks.length) {
     return {
       label: 'No Data',
@@ -85,7 +91,9 @@ export function analyzePopularity(tracks: SpotifyApi.TrackObjectFull[]): Popular
   };
 }
 
-export function getPopularityExtremes(tracks: SpotifyApi.TrackObjectFull[]) {
+export function getPopularityExtremes(allTracks: Track[]) {
+  const rated = ratedTracks(allTracks);
+  const tracks = rated.length > 0 ? rated : allTracks;
   const mostPopularTrack = tracks.reduce((max, t) => (t.popularity || 0) > (max.popularity || -1) ? t : max, tracks[0]);
   const leastPopularTrack = tracks.reduce((min, t) => (t.popularity || 0) < (min.popularity || 101) ? t : min, tracks[0]);
   const maxPopularity = Math.max(...tracks.map(t => t.popularity || 0));

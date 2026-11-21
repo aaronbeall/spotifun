@@ -1,15 +1,17 @@
 /**
  * Example listening data for the example profile (/example).
  *
- * The listener is made up, but the artists, albums and songs are real. Artwork and Spotify
- * links are looked up at runtime (./artwork.ts) and fall back to generated art when that
- * lookup isn't available. The objects use the same Spotify Web API shapes the live endpoints
- * return, so the real stats pipeline and dashboard components run on them unchanged.
+ * The listener is made up, but the artists, albums and songs are real. Artwork is looked up
+ * on Deezer at runtime (./artwork.ts) and falls back to generated art when that lookup isn't
+ * available. The objects use the same shapes the live Last.fm endpoints return, so the real
+ * stats pipeline and dashboard components run on them unchanged.
  * Generation is seeded, so the dataset is the same on every request apart from play
  * timestamps, which are anchored to "now".
  */
 import type { ListeningDataSource } from '@/lib/statsPipeline';
 import type { NowPlaying, TimeRange, UserProfile } from '@/types';
+import type { Album, Artist, ArtistRef, MusicImage, Play, Track } from '@/types/music';
+import { lastFmArtistUrl, lastFmTrackUrl } from '@/utils/links';
 import type { Artwork } from './artwork';
 
 // ---------- Seeded randomness ----------
@@ -74,7 +76,7 @@ function coverArt(seed: string, hue: number): string {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
-const images = (url: string): SpotifyApi.ImageObject[] => [{ url, width: 300, height: 300 }];
+const images = (url: string): MusicImage[] => [{ url, width: 300, height: 300 }];
 
 // ---------- Catalog ----------
 
@@ -87,9 +89,9 @@ interface AlbumSeed {
 interface ArtistSeed {
   name: string;
   genres: string[];
-  /** Rough Spotify popularity (0-100). An estimate, not live data. */
+  /** Rough popularity (0-100). An estimate, not live data. */
   popularity: number;
-  /** How much the example listener likes them: [short_term, medium_term, long_term] */
+  /** How much the example listener likes them: [recent weeks, recent months, years] */
   affinity: [number, number, number];
   /** Hue for the fallback art used when real artwork can't be looked up */
   hue: number;
@@ -100,7 +102,7 @@ interface ArtistSeed {
 
 // The example listener: real artists and real songs. A dream-pop and indie kid with a synthwave
 // habit, a lo-fi study playlist, a jazz-nerd streak and a few chaotic detours (yes, the metal is load-bearing).
-// Artwork and Spotify links are looked up at runtime (see ./artwork.ts); everything else lives here.
+// Artwork is looked up at runtime (see ./artwork.ts); everything else lives here.
 const ARTIST_SEEDS: ArtistSeed[] = [
   { name: 'Beach House', genres: ['dream pop', 'indie pop', 'shoegaze'], popularity: 72, affinity: [9, 10, 9], hue: 265, length: [4, 6],
     albums: [{ name: 'Depression Cherry', year: 2015, tracks: ['Space Song', 'Levitation', 'PPP'] }, { name: 'Bloom', year: 2012, tracks: ['Myth', 'Wild'] }] },
@@ -162,38 +164,34 @@ const ARTIST_SEEDS: ArtistSeed[] = [
 
 const slug = (value: string) => value.toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '');
 
-const RANGE_INDEX: Record<TimeRange, number> = { short_term: 0, medium_term: 1, long_term: 2 };
+const RANGE_INDEX: Record<TimeRange, number> = { '7day': 0, '1month': 0, '3month': 1, '6month': 1, '12month': 2, overall: 2 };
+
+/** Roughly how many plays a favorite racks up over each period, to make believable play counts */
+const RANGE_PLAYS: Record<TimeRange, number> = { '7day': 1.5, '1month': 5, '3month': 12, '6month': 22, '12month': 40, overall: 110 };
 
 interface DemoTrack {
-  track: SpotifyApi.TrackObjectFull;
+  track: Track;
   artistIndex: number;
   /** How catchy this track is relative to the rest of the artist's catalog */
   appeal: number;
 }
 
 interface DemoCatalog {
-  artists: SpotifyApi.ArtistObjectFull[];
+  artists: Artist[];
   tracks: DemoTrack[];
 }
-
-/** Search link used until (or unless) the real Spotify link is looked up */
-const searchUrl = (query: string) => `https://open.spotify.com/search/${encodeURIComponent(query)}`;
 
 function buildCatalog(): DemoCatalog {
   const rng = createRng(20251102);
 
-  const artists = ARTIST_SEEDS.map((seed): SpotifyApi.ArtistObjectFull => {
+  const artists = ARTIST_SEEDS.map((seed): Artist => {
     const id = `demo-artist-${slug(seed.name)}`;
     return {
       id,
       name: seed.name,
-      type: 'artist',
-      uri: `spotify:artist:${id}`,
-      href: `https://api.spotify.com/v1/artists/${id}`,
-      external_urls: { spotify: searchUrl(seed.name) },
+      url: lastFmArtistUrl(seed.name),
       genres: seed.genres,
       popularity: seed.popularity,
-      followers: { href: null, total: Math.round(seed.popularity ** 3 * (2 + rng() * 6)) },
       images: images(coverArt(id, seed.hue)),
     };
   });
@@ -201,24 +199,14 @@ function buildCatalog(): DemoCatalog {
   const tracks: DemoTrack[] = [];
   ARTIST_SEEDS.forEach((seed, artistIndex) => {
     const artist = artists[artistIndex];
-    const artistRef: SpotifyApi.ArtistObjectSimplified = {
-      id: artist.id, name: artist.name, type: 'artist', uri: artist.uri, href: artist.href, external_urls: artist.external_urls,
-    };
+    const artistRef: ArtistRef = { id: artist.id, name: artist.name, url: artist.url };
     seed.albums.forEach((albumSeed, a) => {
       const albumId = `demo-album-${slug(seed.name)}-${slug(albumSeed.name)}`;
-      const album: SpotifyApi.AlbumObjectSimplified = {
+      const album: Album = {
         id: albumId,
         name: albumSeed.name,
-        type: 'album',
-        album_type: albumSeed.tracks.length <= 1 ? 'single' : 'album',
-        total_tracks: Math.max(albumSeed.tracks.length, 8 + Math.floor(rng() * 6)),
-        artists: [artistRef],
         images: images(coverArt(albumId, (seed.hue + a * 35) % 360)),
         release_date: `${albumSeed.year}`,
-        release_date_precision: 'year',
-        uri: `spotify:album:${albumId}`,
-        href: `https://api.spotify.com/v1/albums/${albumId}`,
-        external_urls: { spotify: searchUrl(`${albumSeed.name} ${seed.name}`) },
       };
       const [minLength, maxLength] = seed.length ?? [2.6, 4.6];
       albumSeed.tracks.forEach((name, t) => {
@@ -230,20 +218,11 @@ function buildCatalog(): DemoCatalog {
           track: {
             id,
             name,
-            type: 'track',
-            uri: `spotify:track:${id}`,
-            href: `https://api.spotify.com/v1/tracks/${id}`,
-            external_urls: { spotify: searchUrl(`${name} ${seed.name}`) },
-            external_ids: {},
+            url: lastFmTrackUrl(seed.name, name),
             album,
             artists: [artistRef],
-            disc_number: 1,
-            track_number: t + 1,
             duration_ms: Math.round(between(rng, minLength, maxLength) * 60000),
-            explicit: false,
             popularity: Math.max(1, Math.min(100, Math.round(seed.popularity + between(rng, -14, 8) - t * 3))),
-            preview_url: null,
-            is_local: false,
           },
         });
       });
@@ -264,28 +243,24 @@ export function getArtworkQueries(): { artists: string[]; albums: { artist: stri
   };
 }
 
-/** Swaps in real artwork and Spotify links wherever the lookup found them */
+/** Swaps in real artwork wherever the lookup found it */
 function applyArtwork(base: DemoCatalog, artwork: Artwork): DemoCatalog {
-  const artistById = new Map(base.artists.map(artist => {
+  const artists = base.artists.map(artist => {
     const found = artwork.artists[artist.name];
-    return [artist.id, found ? { ...artist, images: found.images, external_urls: { spotify: found.url } } : artist];
-  }));
-  const ref = (artist: SpotifyApi.ArtistObjectSimplified): SpotifyApi.ArtistObjectSimplified => {
-    const full = artistById.get(artist.id);
-    return full ? { ...artist, external_urls: full.external_urls } : artist;
-  };
-  const albums = new Map<string, SpotifyApi.AlbumObjectSimplified>();
+    return found ? { ...artist, images: found.images } : artist;
+  });
+  const albums = new Map<string, Album>();
   const tracks = base.tracks.map(item => {
     const { album } = item.track;
     let resolved = albums.get(album.id);
     if (!resolved) {
-      const found = artwork.albums[albumKey(album.artists[0].name, album.name)];
-      resolved = { ...album, artists: album.artists.map(ref), ...(found && { images: found.images, external_urls: { spotify: found.url } }) };
+      const found = artwork.albums[albumKey(item.track.artists[0].name, album.name)];
+      resolved = found ? { ...album, images: found.images } : album;
       albums.set(album.id, resolved);
     }
-    return { ...item, track: { ...item.track, album: resolved, artists: item.track.artists.map(ref) } };
+    return { ...item, track: { ...item.track, album: resolved } };
   });
-  return { artists: base.artists.map(artist => artistById.get(artist.id)!), tracks };
+  return { artists, tracks };
 }
 
 let baseCatalog: DemoCatalog | null = null;
@@ -310,33 +285,33 @@ function artistScores(range: TimeRange): number[] {
   return ARTIST_SEEDS.map(seed => seed.affinity[index] * (0.85 + rng() * 0.3));
 }
 
-function rankedTopArtists(range: TimeRange, artwork?: Artwork | null): SpotifyApi.ArtistObjectFull[] {
+function rankedTopArtists(range: TimeRange, artwork?: Artwork | null): Artist[] {
   const { artists } = getCatalog(artwork);
   const scores = artistScores(range);
   return artists
     .map((artist, i) => ({ artist, score: scores[i] }))
     .sort((a, b) => b.score - a.score)
-    .map(({ artist }) => artist);
+    .map(({ artist, score }) => ({ ...artist, playcount: Math.max(1, Math.round(score * RANGE_PLAYS[range] * 2.5)) }));
 }
 
-function rankedTopTracks(range: TimeRange, artwork?: Artwork | null): SpotifyApi.TrackObjectFull[] {
+function rankedTopTracks(range: TimeRange, artwork?: Artwork | null): Track[] {
   const { tracks } = getCatalog(artwork);
   const scores = artistScores(range);
   const rng = createRng(hashString(`tracks-${range}`));
   return tracks
     .map(item => ({ item, score: scores[item.artistIndex] * item.appeal * (0.8 + rng() * 0.4) }))
     .sort((a, b) => b.score - a.score)
-    .map(({ item }) => item.track);
+    .map(({ item, score }) => ({ ...item.track, playcount: Math.max(1, Math.round(score * RANGE_PLAYS[range])) }));
 }
 
 /**
  * A believable recently-played history: a few listening sessions over the last couple of days,
  * newest first, with favorite tracks on repeat.
  */
-function recentlyPlayed(limit: number, now: number, artwork?: Artwork | null): SpotifyApi.PlayHistoryObject[] {
+function recentlyPlayed(limit: number, now: number, artwork?: Artwork | null): Play[] {
   const { tracks } = getCatalog(artwork);
   const rng = createRng(hashString('recently-played'));
-  const scores = artistScores('short_term');
+  const scores = artistScores('1month');
   const weights = tracks.map(item => (scores[item.artistIndex] * item.appeal) ** 2.2);
   const totalWeight = weights.reduce((sum, w) => sum + w, 0);
   const pickTrack = () => {
@@ -350,20 +325,14 @@ function recentlyPlayed(limit: number, now: number, artwork?: Artwork | null): S
 
   // Anchor to the current minute so repeated requests within a minute match exactly
   let cursor = Math.floor(now / 60000) * 60000 - 4 * 60000;
-  const plays: SpotifyApi.PlayHistoryObject[] = [];
-  let previous: SpotifyApi.TrackObjectFull | null = null;
-  while (plays.length < 50) {
+  const plays: Play[] = [];
+  let previous: Track | null = null;
+  while (plays.length < Math.max(limit, 50)) {
     let track = pickTrack();
     if (track.id === previous?.id && rng() < 0.7) track = pickTrack();
     plays.push({
       track,
       played_at: new Date(cursor).toISOString(),
-      context: {
-        type: 'album',
-        href: track.album.href,
-        uri: track.album.uri,
-        external_urls: track.album.external_urls,
-      },
     });
     previous = track;
     cursor -= track.duration_ms + Math.round(rng() * 20000);
@@ -374,7 +343,7 @@ function recentlyPlayed(limit: number, now: number, artwork?: Artwork | null): S
 }
 
 /**
- * Data source with the same contract as the live Spotify one, backed by the example catalog.
+ * Data source with the same contract as the live Last.fm one, backed by the example catalog.
  * Pass the result of `getArtwork()` to use real artwork; without it, generated art is used.
  */
 export function createDemoDataSource(now: number = Date.now(), artwork?: Artwork | null): ListeningDataSource {
@@ -382,8 +351,8 @@ export function createDemoDataSource(now: number = Date.now(), artwork?: Artwork
     getRecentlyPlayed: async limit => recentlyPlayed(limit, now, artwork),
     getTopTracks: async (range, limit) => rankedTopTracks(range, artwork).slice(0, limit),
     getTopArtists: async (range, limit) => rankedTopArtists(range, artwork).slice(0, limit),
-    fetchArtistsByIds: async ids => {
-      const wanted = new Set(ids);
+    fetchArtists: async refs => {
+      const wanted = new Set(refs.map(ref => ref.id));
       return Object.fromEntries(getCatalog(artwork).artists.filter(a => wanted.has(a.id)).map(a => [a.id, a]));
     },
     // Example artists already have rich genres, so there is nothing to enrich
@@ -395,12 +364,12 @@ export const DEMO_USER: UserProfile = {
   id: 'demo-listener',
   display_name: 'Sam Pling',
   images: images(coverArt('demo-listener', 150)),
-  product: 'premium',
-  followers: { total: 42 },
+  playcount: 48213,
+  registeredAt: '2014-03-09T00:00:00.000Z',
 };
 
 export function getDemoNowPlaying(artwork?: Artwork | null): NowPlaying {
-  const track = rankedTopTracks('short_term', artwork)[0];
+  const track = rankedTopTracks('1month', artwork)[0];
   return {
     isPlaying: true,
     track: {
@@ -408,7 +377,7 @@ export function getDemoNowPlaying(artwork?: Artwork | null): NowPlaying {
       name: track.name,
       artist: track.artists.map(a => a.name).join(', '),
       image: track.album.images[0]?.url,
-      url: track.external_urls.spotify,
+      url: track.url,
     },
   };
 }

@@ -1,35 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { spotifyApi } from '@/lib/spotify';
-import { setAuthCookies, UnauthenticatedError, withSpotifyAccessToken } from '@/lib/auth';
+import { getUsername } from '@/lib/session';
+import { getUserInfo } from '@/lib/lastfmApi';
+import { errorResponse } from '@/lib/apiErrors';
 import { UserProfile } from '@/types';
 
 export async function GET(request: NextRequest): Promise<NextResponse<UserProfile | { error: string }>> {
   try {
-    const { result: body, refreshedTokens } = await withSpotifyAccessToken(request, async () => {
-      const { body } = await spotifyApi.getMe();
-      return body;
+    const profile = await getUserInfo(getUsername(request));
+    return NextResponse.json({
+      id: profile.name.toLowerCase(),
+      display_name: profile.realname || profile.name,
+      images: [],
+      url: profile.url,
+      playcount: profile.playcount,
+      ...(profile.registeredAt ? { registeredAt: profile.registeredAt } : {}),
     });
-
-    const userResponse: UserProfile = {
-      id: body.id,
-      display_name: body.display_name || '',
-      images: body.images || [],
-      email: body.email,
-      product: body.product,
-      followers: body.followers ? { total: body.followers.total } : undefined
-    };
-
-    const response = NextResponse.json(userResponse);
-    if (refreshedTokens) setAuthCookies(response, refreshedTokens);
-    return response;
   } catch (error) {
-    if (error instanceof UnauthenticatedError) {
-      return NextResponse.json({ error: 'No access token' }, { status: 401 });
-    }
-    console.error('Error fetching user data:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch user data' },
-      { status: 500 }
-    );
+    return errorResponse(error, 'user data');
   }
 }

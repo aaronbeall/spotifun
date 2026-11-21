@@ -16,7 +16,7 @@ let activeUserId: string | null = null;
 let lastFingerprint = '';
 let lastFingerprintAt = 0;
 
-/** Points later journal writes at this Spotify account. Pass null on logout. */
+/** Points later journal writes at this Last.fm user. Pass null on logout. */
 export function setActiveUser(userId: string | null): void {
   activeUserId = userId || null;
 }
@@ -39,7 +39,7 @@ export async function observeLogin(user: { id?: string; display_name?: string })
   sessionStorage.setItem(notedKey, '1');
   await getRecordStore(user.id).recordActivity({
     kind: 'login',
-    name: 'spotify',
+    name: 'lastfm',
     ok: true,
     detail: {
       userId: user.id,

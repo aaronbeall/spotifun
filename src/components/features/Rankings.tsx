@@ -10,16 +10,13 @@ import {
   type ViewSnapshot,
 } from '@/utils/listeningFacts';
 import { noteApiCall } from '@/lib/records/observe';
+import { PERIOD_COLOR } from '@/utils/periods';
 
 interface RankingsProps {
   stats: Stats;
 }
 
-const ERA_COLOR: Record<EraSnapshot['timeRange'], string> = {
-  short_term: '#67e8f9',
-  medium_term: '#c4b5fd',
-  long_term: '#fbbf24',
-};
+const ERA_COLOR: Record<EraSnapshot['timeRange'], string> = PERIOD_COLOR;
 
 const CURRENT_COLOR = '#fb7185';
 
@@ -104,12 +101,12 @@ export default function Rankings({ stats }: RankingsProps) {
         </h2>
         <p className="mt-1 max-w-2xl text-sm text-gray-400">
           The diamond is the source selected above. The dots are your top tracks and top artists in each
-          Spotify period, without Last.fm.
+          Last.fm period.
         </p>
       </div>
 
       {failed && (
-        <p className="text-sm text-gray-400">Spotify didn&apos;t return the other time ranges.</p>
+        <p className="text-sm text-gray-400">Last.fm didn&apos;t return the other periods. Try again in a minute.</p>
       )}
 
       {!failed && !eras && (
@@ -121,7 +118,7 @@ export default function Rankings({ stats }: RankingsProps) {
       )}
 
       {eras && !shift && (
-        <p className="text-sm text-gray-400">Spotify has no top artists or tracks for these periods yet.</p>
+        <p className="text-sm text-gray-400">Last.fm has no top artists or tracks for these periods yet. Keep scrobbling!</p>
       )}
 
       {shift && eras && (

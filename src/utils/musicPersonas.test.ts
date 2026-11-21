@@ -37,7 +37,7 @@ describe('computePersonaInput', () => {
       artists: [],
       topArtists: [],
       topGenres: [],
-      timeRange: 'medium_term',
+      timeRange: '6month',
       mode: 'recent',
     };
     
@@ -75,7 +75,7 @@ describe('computePersonaInput', () => {
       artists: [],
       topArtists: [],
       topGenres: [],
-      timeRange: 'medium_term',
+      timeRange: '6month',
       mode: 'recent',
     };
     
@@ -113,7 +113,7 @@ describe('computePersonaInput', () => {
       artists: [],
       topArtists: [],
       topGenres: [],
-      timeRange: 'medium_term',
+      timeRange: '6month',
       mode: 'recent',
     };
     
@@ -151,7 +151,7 @@ describe('computePersonaInput', () => {
       artists: [],
       topArtists: [],
       topGenres: [],
-      timeRange: 'medium_term',
+      timeRange: '6month',
       mode: 'recent',
     };
     
@@ -195,7 +195,7 @@ describe('computePersonaInput', () => {
       })) as unknown as Stats['artists'],
       topArtists: [],
       topGenres: [],
-      timeRange: 'medium_term',
+      timeRange: '6month',
       mode: 'recent',
     };
     
@@ -239,7 +239,7 @@ describe('computePersonaInput', () => {
       })) as unknown as Stats['artists'],
       topArtists: [],
       topGenres: [],
-      timeRange: 'medium_term',
+      timeRange: '6month',
       mode: 'recent',
     };
     
@@ -278,7 +278,7 @@ describe('computePersonaInput', () => {
       artists: [],
       topArtists: [],
       topGenres: [],
-      timeRange: 'medium_term',
+      timeRange: '6month',
       mode: 'recent',
     };
     
@@ -317,7 +317,7 @@ describe('computePersonaInput', () => {
       artists: [],
       topArtists: [],
       topGenres: [],
-      timeRange: 'medium_term',
+      timeRange: '6month',
       mode: 'recent',
     };
     
@@ -355,7 +355,7 @@ describe('computePersonaInput', () => {
       artists: [],
       topArtists: [],
       topGenres: [],
-      timeRange: 'medium_term',
+      timeRange: '6month',
       mode: 'recent',
     };
     
@@ -395,7 +395,7 @@ describe('computePersonaInput', () => {
       artists: [],
       topArtists: [],
       topGenres: [],
-      timeRange: 'medium_term',
+      timeRange: '6month',
       mode: 'recent',
     };
     
@@ -433,7 +433,7 @@ describe('computePersonaInput', () => {
       artists: [],
       topArtists: [],
       topGenres: [],
-      timeRange: 'medium_term',
+      timeRange: '6month',
       mode: 'recent',
     };
     
@@ -471,7 +471,7 @@ describe('computePersonaInput', () => {
       artists: [],
       topArtists: [],
       topGenres: [],
-      timeRange: 'medium_term',
+      timeRange: '6month',
       mode: 'recent',
     };
     
@@ -509,7 +509,7 @@ describe('computePersonaInput', () => {
       artists: [],
       topArtists: [],
       topGenres: [],
-      timeRange: 'medium_term',
+      timeRange: '6month',
       mode: 'recent',
     };
     

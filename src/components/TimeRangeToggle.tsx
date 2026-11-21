@@ -1,5 +1,6 @@
 import React from 'react';
-import { TimeRange } from '@/types';
+import { TimeRange, TIME_RANGES } from '@/types';
+import { PERIOD_LABEL, PERIOD_SHORT_LABEL } from '@/utils/periods';
 
 interface TimeRangeToggleProps {
   value: TimeRange;
@@ -9,11 +10,7 @@ interface TimeRangeToggleProps {
   className?: string;
 }
 
-const options: { value: TimeRange; label: string }[] = [
-  { value: 'short_term', label: '4 weeks' },
-  { value: 'medium_term', label: '6 months' },
-  { value: 'long_term', label: 'All time' },
-];
+const options = TIME_RANGES.map(value => ({ value, label: PERIOD_LABEL[value], short: PERIOD_SHORT_LABEL[value] }));
 
 export default function TimeRangeToggle({ value, onChange, disabled, isLoading, className = '' }: TimeRangeToggleProps) {
   return (
@@ -31,14 +28,16 @@ export default function TimeRangeToggle({ value, onChange, disabled, isLoading, 
             type="button"
             onClick={() => onChange(opt.value)}
             disabled={disabled || isLoading}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-green-400
+            title={opt.label}
+            aria-label={opt.label}
+            className={`px-2.5 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-green-400
               ${value === opt.value
                 ? 'bg-green-600 text-white shadow'
                 : 'bg-transparent text-gray-200 hover:bg-gray-600'}
               ${disabled || isLoading ? 'opacity-60 cursor-not-allowed' : ''}
             `}
           >
-            {opt.label}
+            {opt.short}
           </button>
         ))}
       </div>

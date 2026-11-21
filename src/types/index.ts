@@ -1,8 +1,11 @@
-// App-specific Types (using Spotify API types from @types/spotify-api)
+// App-specific Types. Music shapes live in ./music.
+import type { Artist, MusicImage, Play, Track } from './music';
+
+export type { Album, Artist, ArtistRef, MusicImage, Play, Track } from './music';
 
 export interface TrackStats {
-  track: SpotifyApi.TrackObjectFull;
-  artists: SpotifyApi.ArtistObjectFull[];
+  track: Track;
+  artists: Artist[];
   playCount: number;
   firstPlayed: string;
   lastPlayed: string;
@@ -10,7 +13,7 @@ export interface TrackStats {
 }
 
 export interface ArtistStats {
-  artist: SpotifyApi.ArtistObjectFull;
+  artist: Artist;
   playCount: number;
   uniqueTracks: number;
   totalDuration: number;
@@ -66,16 +69,17 @@ export interface UserRanking {
 
 // API Response Types
 export interface UserProfile {
+  /** Last.fm username, lowercased: the key for this browser's saved badges and unlocks */
   id: string;
   display_name: string;
-  images: SpotifyApi.ImageObject[];
-  email?: string;
-  product?: string;
-  followers?: {
-    total: number;
-  };
-  name?: string;          // For compatibility with components that might expect a name
-  image?: string;         // For compatibility with components that might expect an image URL
+  /** Last.fm doesn't license its avatars to apps, so this is usually empty */
+  images: MusicImage[];
+  /** Last.fm profile page */
+  url?: string;
+  /** Lifetime scrobbles */
+  playcount?: number;
+  /** When the listener started scrobbling (ISO) */
+  registeredAt?: string;
 }
 
 export interface StatsOverview {
@@ -91,14 +95,19 @@ export interface StatsOverview {
   genreCoverage?: number; // 0-1 scale: proportion of genre weight successfully classified
 }
 
-export type TimeRange = 'short_term' | 'medium_term' | 'long_term';
+/** Last.fm's top-list periods */
+export type TimeRange = '7day' | '1month' | '3month' | '6month' | '12month' | 'overall';
+
+export const TIME_RANGES: TimeRange[] = ['7day', '1month', '3month', '6month', '12month', 'overall'];
+
+export const DEFAULT_TIME_RANGE: TimeRange = '6month';
 export type DataMode = 'recent' | 'topArtists' | 'topTracks' | 'playlist';
 
-/** One Spotify time range, summarized so a view can be set next to the others. */
+/** One Last.fm period, summarized so a view can be set next to the others. */
 export interface EraSnapshot {
   timeRange: TimeRange;
   label: string;
-  /** Average popularity, 0–100. Top tracks when Spotify returns them, otherwise top artists. */
+  /** Average popularity, 0–100. Top tracks when they could be matched, otherwise top artists. */
   popularity: number;
   /** Share of artists outside the biggest genre family, same ratio as the profile overview. */
   genreDiversity: number;
@@ -112,8 +121,10 @@ export interface ErasResponse {
   eras: EraSnapshot[];
 }
 
-/** Saved-tracks library, which Spotify does not return from the playlists endpoint. */
+/** The listener's Last.fm Loved Tracks, the one collection playlist mode can analyze. */
 export const LIKED_SONGS_ID = 'liked';
+
+export const LIKED_SONGS_NAME = 'Loved Tracks';
 
 /** How many songs from a playlist are included in profile stats. */
 export const PLAYLIST_ANALYSIS_CAP = 500;
@@ -140,13 +151,13 @@ export interface PlaylistAnalysis extends PlaylistSelection {
   analyzed: number;
 }
 
-/** A Spotify top artist plus how many times they appear in the recent-plays window. */
-export interface TopArtistItem extends SpotifyApi.ArtistObjectFull {
+/** A top artist plus how many times they appear in the recent-plays window. */
+export interface TopArtistItem extends Artist {
   recentPlays: number;
 }
 
-/** A Spotify top track plus how many times it appears in the recent-plays window. */
-export interface TopTrackItem extends SpotifyApi.TrackObjectFull {
+/** A top track plus how many times it appears in the recent-plays window. */
+export interface TopTrackItem extends Track {
   recentPlays: number;
   /** Latest play in that window. Absent when the track was not played recently. */
   lastPlayed?: string;
@@ -165,7 +176,7 @@ export interface NowPlaying {
 
 export interface Stats {
   overview: StatsOverview;
-  recentlyPlayed: SpotifyApi.PlayHistoryObject[];
+  recentlyPlayed: Play[];
   tracks: TrackStats[];
   artists: ArtistStats[];
   genres: GenreStats[];
@@ -197,7 +208,7 @@ export type GenreMatchKind = 'exact' | 'alias' | 'partial' | 'keyword' | 'descri
 
 export interface GenreTagDebugInfo {
   tag: string;
-  source: 'spotify' | 'lastfm';
+  source: 'seed' | 'lastfm';
   kind: GenreMatchKind;
   /** Taxonomy node the tag resolved to */
   node: string | null;
@@ -219,7 +230,7 @@ interface TopGenre {
 
 export interface ArtistGenreDebugInfo {
   artistName: string;
-  /** Last.fm returned tags for this artist (it is only queried for artists with 0-2 Spotify genres) */
+  /** Last.fm returned tags for this artist (it is only queried for artists with 0-2 seeded genres) */
   hasLastFmData: boolean;
   tags: GenreTagDebugInfo[];
   vacrsScores: VACRSScore | null;

@@ -28,7 +28,7 @@ const AXES = [
 
 const FACTS = [
   { name: 'Genre spread', low: 'Focused', high: 'Eclectic', line: 'Above 0.5 is eclectic. Exactly 0.5 stays focused.' },
-  { name: 'Popularity', low: 'Niche', high: 'Mainstream', line: 'Average Spotify popularity. 50, and anything under it, stays niche.' },
+  { name: 'Popularity', low: 'Niche', high: 'Mainstream', line: 'Average popularity from Deezer track ranks. 50, and anything under it, stays niche.' },
   { name: 'Artist loyalty', low: 'Wanderer', high: 'Loyal', line: 'Returning to the same artists is loyal. A diversity of 0.5 counts as wandering.' },
   { name: 'Era', low: 'Classic', high: 'Current', line: 'Average release year. Five years ago, or newer, counts as current.' },
 ];
@@ -352,7 +352,7 @@ export default function VacrsPage() {
           <h2 className="text-xl font-semibold text-white">1–2. Genres become five scores</h2>
           <p className="mt-2 text-sm leading-relaxed">
             A genre tag is matched to a known trait profile. Tags that do not match are left out, which is
-            the coverage number on the profile. Thin Spotify genres can pick up Last.fm tags first.
+            the coverage number on the profile. Genres come from Last.fm tags.
             Plays weight a recent-play view. Songs weight a playlist. The spectrum card is this average,
             still on a continuous scale. The mark in the middle of each bar is 0.5, neutral.
           </p>

@@ -22,15 +22,15 @@ describe('demo data', () => {
 
   it('ranks top artists differently per time range', async () => {
     const source = createDemoDataSource(NOW);
-    const short = (await source.getTopArtists('short_term', 10)).map(a => a.id);
-    const long = (await source.getTopArtists('long_term', 10)).map(a => a.id);
+    const short = (await source.getTopArtists('1month', 10)).map(a => a.id);
+    const long = (await source.getTopArtists('overall', 10)).map(a => a.id);
     expect(short).not.toEqual(long);
   });
 
   it.each<[TimeRange, DataMode]>([
-    ['short_term', 'recent'],
-    ['medium_term', 'topTracks'],
-    ['long_term', 'topArtists'],
+    ['1month', 'recent'],
+    ['6month', 'topTracks'],
+    ['overall', 'topArtists'],
   ])('produces a full dashboard dataset (%s, %s)', async (timeRange, mode) => {
     const stats = await computeStats(createDemoDataSource(NOW), { timeRange, limit: 50, mode });
     expect(stats.mode).toBe(mode);
@@ -52,23 +52,23 @@ describe('demo data', () => {
 
 describe('example artwork', () => {
   it('swaps in real artwork and links where the lookup found them, and keeps generated art elsewhere', async () => {
-    const realImage = [{ url: 'https://i.scdn.co/image/beach-house', width: 640, height: 640 }];
-    const albumImage = [{ url: 'https://i.scdn.co/image/depression-cherry', width: 640, height: 640 }];
+    const realImage = [{ url: 'https://cdn-images.dzcdn.net/images/artist/beach-house/500x500.jpg', width: 500, height: 500 }];
+    const albumImage = [{ url: 'https://cdn-images.dzcdn.net/images/cover/depression-cherry/500x500.jpg', width: 500, height: 500 }];
     const artwork = {
-      artists: { 'Beach House': { images: realImage, url: 'https://open.spotify.com/artist/beach-house' } },
-      albums: { [albumKey('Beach House', 'Depression Cherry')]: { images: albumImage, url: 'https://open.spotify.com/album/depression-cherry' } },
+      artists: { 'Beach House': { images: realImage } },
+      albums: { [albumKey('Beach House', 'Depression Cherry')]: { images: albumImage } },
     };
     const source = createDemoDataSource(NOW, artwork);
-    const artists = await source.getTopArtists('long_term', 50);
+    const artists = await source.getTopArtists('overall', 50);
     const beachHouse = artists.find(a => a.name === 'Beach House')!;
     expect(beachHouse.images).toEqual(realImage);
-    expect(beachHouse.external_urls.spotify).toBe('https://open.spotify.com/artist/beach-house');
+    expect(beachHouse.url).toBe('https://www.last.fm/music/Beach+House');
     expect(artists.find(a => a.name === 'Mitski')!.images[0].url).toMatch(/^data:image\/svg/);
 
-    const tracks = await source.getTopTracks('long_term', 50);
+    const tracks = await source.getTopTracks('overall', 50);
     const spaceSong = tracks.find(t => t.name === 'Space Song')!;
     expect(spaceSong.album.images).toEqual(albumImage);
-    expect(spaceSong.artists[0].external_urls.spotify).toBe('https://open.spotify.com/artist/beach-house');
+    expect(spaceSong.url).toBe('https://www.last.fm/music/Beach+House/_/Space+Song');
   });
 
   it('lists every artist and album for the lookup', () => {

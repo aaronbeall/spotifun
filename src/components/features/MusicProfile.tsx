@@ -1,7 +1,7 @@
 import { Headphones, Users, Music, Clock, Sparkles, Palette, Disc, Disc3, Disc2, TrendingUp, Star, RefreshCw, CloudAlert, Heart, ChevronDown, ListMusic, Check, Loader2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { Stats, TimeRange, DataMode, PlaylistSelection, PlaylistSummary, PlaylistsResponse, LIKED_SONGS_ID } from '@/types';
+import { Stats, TimeRange, DataMode, PlaylistSelection, PlaylistSummary, PlaylistsResponse, LIKED_SONGS_ID, LIKED_SONGS_NAME, TIME_RANGES } from '@/types';
 import { formatNumber, formatDuration, formatRelativeTime, getGenreColorClass, cn } from "@/utils";
 import { analyzePopularity } from "@/utils/popularity";
 import { WrappedMusicProfile } from "./WrappedMusicProfile";
@@ -9,6 +9,9 @@ import { StatCard } from './StatCard';
 import { MetricInfo } from '../MetricInfo';
 import { getMetricDescription } from '@/utils/metricDescriptions';
 import { noteApiCall } from '@/lib/records/observe';
+import { PERIOD_LABEL } from '@/utils/periods';
+import { lastFmTagUrl } from '@/utils/links';
+import { PoweredBy } from '../PoweredBy';
 
 const DATA_MODES = [
   { id: 'recent' as const, label: 'Recently Played', icon: Clock },
@@ -16,14 +19,10 @@ const DATA_MODES = [
   { id: 'topTracks' as const, label: 'Top Tracks', icon: Music },
 ] as const;
 
-const PLAY_LIMITS = [50, 25, 10, 5] as const;
+const PLAY_LIMITS = [200, 100, 50, 25, 10] as const;
 
 // Time ranges for Top modes
-const TOP_RANGES: { value: TimeRange; label: string }[] = [
-  { value: 'short_term', label: '4 Weeks' },
-  { value: 'medium_term', label: '6 Months' },
-  { value: 'long_term', label: 'All Time' },
-];
+const TOP_RANGES: { value: TimeRange; label: string }[] = TIME_RANGES.map(value => ({ value, label: PERIOD_LABEL[value] }));
 
 interface MusicProfileProps {
   stats: Stats;
@@ -72,10 +71,7 @@ function PlaylistMenuItem({
   return (
     <DropdownMenu.Item
       onSelect={() => {
-        if (needsReconnect) {
-          window.location.href = '/api/auth/spotify';
-          return;
-        }
+        if (needsReconnect) return;
         onSelect(playlist);
       }}
       className="flex items-center gap-2 px-3 py-2 text-sm text-gray-200 hover:bg-gray-700 hover:text-white outline-none cursor-pointer"
@@ -116,8 +112,8 @@ export default function MusicProfile({
   const playlistSelected = dataMode === 'playlist';
   const isPlaylistMode = displayedMode === 'playlist';
   const isTopMode = displayedMode === 'topArtists' || displayedMode === 'topTracks';
-  const countLabel = isPlaylistMode ? 'songs' : 'recent plays';
-  const countListLabel = isPlaylistMode ? 'In Playlist' : isTopMode ? 'Top' : 'Recent plays';
+  const countLabel = isPlaylistMode ? 'songs' : isTopMode ? 'plays' : 'recent plays';
+  const countListLabel = isPlaylistMode ? 'In Loved Tracks' : isTopMode ? 'Top' : 'Recent plays';
   const sourceChanged = dataMode !== displayedMode
     || (dataMode === 'playlist' && selectedPlaylist.id !== stats.playlist?.id);
   const loadingLabel = !sourceChanged
@@ -185,7 +181,7 @@ export default function MusicProfile({
     }
     return {
       avgMetric: null,
-      avgMetricLabel: 'ranked by Spotify',
+      avgMetricLabel: 'ranked by Last.fm',
       uniquenessDescription: `${stats.overview.uniqueTracks} tracks`,
       totalListeningLabel: 'total duration'
     };
@@ -270,18 +266,17 @@ export default function MusicProfile({
                       className="z-50 w-72 max-h-80 overflow-y-auto bg-gray-800 border border-gray-700 rounded-lg shadow-xl py-1"
                     >
                       <PlaylistMenuItem
-                        playlist={playlistMenu.likedSongs ?? { id: LIKED_SONGS_ID, name: 'Liked Songs', trackCount: 0 }}
+                        playlist={playlistMenu.likedSongs ?? { id: LIKED_SONGS_ID, name: LIKED_SONGS_NAME, trackCount: 0 }}
                         selected={selectedPlaylist.id === LIKED_SONGS_ID}
                         needsReconnect={likedSongsNeedsReconnect}
                         hideCount={playlistMenu.likedSongs == null && !likedSongsNeedsReconnect}
                         onSelect={onPlaylistSelect}
                       />
-                      <DropdownMenu.Separator className="h-px bg-gray-700 my-1" />
                       {playlistMenu.status === 'loading' && (
-                        <div className="px-3 py-2 text-xs text-white/40">Loading playlists…</div>
+                        <div className="px-3 py-2 text-xs text-white/40">Counting your loved tracks…</div>
                       )}
                       {playlistMenu.status === 'error' && (
-                        <div className="px-3 py-2 text-xs text-white/40">Could not load playlists</div>
+                        <div className="px-3 py-2 text-xs text-white/40">Could not load your loved tracks</div>
                       )}
                       {playlistMenu.playlists.map(playlist => (
                         <PlaylistMenuItem
@@ -291,24 +286,14 @@ export default function MusicProfile({
                           onSelect={onPlaylistSelect}
                         />
                       ))}
-                      {playlistMenu.status === 'ready' && playlistMenu.playlists.length === 0 && (
-                        <div className="px-3 py-2 text-xs text-white/40">No playlists yet</div>
-                      )}
+                      <div className="px-3 py-2 text-[11px] leading-snug text-white/35">
+                        Love a song in Last.fm (or your scrobbler) and it lands here.
+                      </div>
                     </DropdownMenu.Content>
                   </DropdownMenu.Portal>
                 </DropdownMenu.Root>
               </div>
             </div>
-
-            {likedSongsNeedsReconnect && (
-              <button
-                type="button"
-                onClick={() => { window.location.href = '/api/auth/spotify'; }}
-                className="text-xs text-amber-300/80 hover:text-amber-200 transition-colors"
-              >
-                Reconnect Spotify to read Liked Songs
-              </button>
-            )}
 
             {isTopMode ? (
               <div className="inline-flex items-center gap-0.5 bg-white/[0.03] rounded-full p-0.5">
@@ -355,7 +340,7 @@ export default function MusicProfile({
               {stats.lastFmUnavailableCount ? (
                 <span
                   className="flex items-center gap-1.5 text-xs text-amber-400/60 cursor-help"
-                  title={`Last.fm couldn't be reached for ${stats.lastFmUnavailableCount} artist${stats.lastFmUnavailableCount === 1 ? '' : 's'} (likely rate limited), so their genres are Spotify-only. Refresh in a minute to fill them in.`}
+                  title={`Last.fm couldn't be reached for ${stats.lastFmUnavailableCount} artist${stats.lastFmUnavailableCount === 1 ? '' : 's'} (likely rate limited), so their genres are missing for now. Refresh in a minute to fill them in.`}
                 >
                   <CloudAlert className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Genres partially enriched</span>
@@ -413,7 +398,7 @@ export default function MusicProfile({
             scoreLabel="Diversity"
             scoreMetricKey="artist-diversity"
             listLabel={countListLabel}
-            showCounts={!isTopMode}
+            showCounts={!isPlaylistMode}
             countLabel={countLabel}
             mostPlayed={stats.artists
               .sort((a, b) => b.playCount - a.playCount)
@@ -421,7 +406,7 @@ export default function MusicProfile({
                 name: artist.artist.name,
                 count: artist.playCount,
                 image: artist.artist.images?.[0]?.url,
-                url: artist.artist.external_urls?.spotify
+                url: artist.artist.url
               }))}
           />
 
@@ -444,7 +429,7 @@ export default function MusicProfile({
             scoreLabel="Uniqueness"
             scoreMetricKey="track-uniqueness"
             listLabel={countListLabel}
-            showCounts={!isTopMode}
+            showCounts={!isPlaylistMode}
             countLabel={countLabel}
             mostPlayed={stats.tracks
               .sort((a, b) => b.playCount - a.playCount)
@@ -452,7 +437,7 @@ export default function MusicProfile({
                 name: track.track.name,
                 count: track.playCount,
                 image: track.track.album?.images?.[0]?.url,
-                url: track.track.external_urls?.spotify
+                url: track.track.url
               }))}
           />
 
@@ -489,14 +474,14 @@ export default function MusicProfile({
             scoreLabel="Diversity"
             scoreMetricKey="genre-diversity"
             listLabel={countListLabel}
-            showCounts={!isTopMode}
+            showCounts={!isPlaylistMode}
             countLabel={countLabel}
             mostPlayed={stats.genres
               .map(genre => ({
                 name: genre.genre,
                 count: genre.playCount,
                 image: genreImages.get(genre.genre),
-                url: `https://open.spotify.com/search/${encodeURIComponent(genre.genre)}`
+                url: lastFmTagUrl(genre.genre)
               }))}
           />
 
@@ -524,7 +509,7 @@ export default function MusicProfile({
                 name: track.name,
                 count: track.popularity || 0,
                 image: track.album?.images?.[0]?.url,
-                url: track.external_urls?.spotify
+                url: track.url
               }))}
           />
             </div>
@@ -548,10 +533,7 @@ export default function MusicProfile({
               <Disc className="w-4 h-4 text-pink-400" />
               <span>Last updated: {new Date().toLocaleDateString()}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>Powered by Spotify</span>
-            </div>
+            <PoweredBy />
           </div>
         </div>
       </div>

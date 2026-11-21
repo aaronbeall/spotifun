@@ -11,7 +11,9 @@ import FunStats from '@/components/features/FunStats';
 import TimeRangeToggle from '@/components/TimeRangeToggle';
 import Rankings from '@/components/features/Rankings';
 import MusicProfile from '@/components/features/MusicProfile';
-import { SpotifyPlayOverlay } from '@/components/SpotifyPlayOverlay';
+import { OpenOverlay } from '@/components/OpenOverlay';
+import { PoweredBy } from '@/components/PoweredBy';
+import { lastFmTagUrl } from '@/utils/links';
 import { NowPlayingWidget } from '@/components/NowPlayingWidget';
 import { GenreDebugPanel } from '@/components/GenreDebugPanel';
 import { usePersistedToggle } from '@/hooks/usePersistedToggle';
@@ -30,12 +32,31 @@ import { UnlockBoard, UnlockMeter } from '@/components/features/UnlockBoard';
 import { trackUnlock } from '@/lib/analytics';
 import { noteApiCall, observeLogin, observeStatsResult, resetObservation, setActiveUser, type JournalNews } from '@/lib/records/observe';
 
-import { UserProfile, Stats, TimeRange, DataMode, PlaylistSelection, LIKED_SONGS_ID } from '@/types';
+import { UserProfile, Stats, TimeRange, DataMode, PlaylistSelection, LIKED_SONGS_ID, LIKED_SONGS_NAME, DEFAULT_TIME_RANGE } from '@/types';
 
 interface DashboardContentProps {
-  /** Render a made-up listener from the /api/demo endpoints instead of the signed-in Spotify account */
+  /** Render a made-up listener from the /api/demo endpoints instead of the remembered Last.fm user */
   demo?: boolean;
 }
+
+const LOAD_ERROR_COPY: Record<string, { title: string; body: string }> = {
+  private: {
+    title: 'Your listening is hidden',
+    body: 'This Last.fm profile hides its recent listening. Turn off "Hide recent listening information" in your Last.fm privacy settings, then refresh.',
+  },
+  user_not_found: {
+    title: 'No Last.fm user by that name',
+    body: 'Head back home and check the spelling of the username.',
+  },
+  lastfm_unavailable: {
+    title: 'Last.fm is taking a breather',
+    body: 'Last.fm didn\'t answer just now. Give it a minute and refresh.',
+  },
+  failed: {
+    title: 'Unable to load your data',
+    body: 'We couldn\'t load your Last.fm listening. Try refreshing the page, or head home and enter your username again.',
+  },
+};
 
 const DASHBOARD_SECTIONS: SectionLink[] = [
   { id: 'profile', label: 'Profile', icon: Award, iconClass: 'text-pink-400' },
@@ -56,16 +77,17 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
   const [isLoadingTimeRange, setIsLoadingTimeRange] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastFetched, setLastFetched] = useState<Date | null>(null);
-  const [timeRange, setTimeRange] = useState<TimeRange>('medium_term');
-  const [listTimeRange, setListTimeRange] = useState<TimeRange>('medium_term');
+  const [timeRange, setTimeRange] = useState<TimeRange>(DEFAULT_TIME_RANGE);
+  const [listTimeRange, setListTimeRange] = useState<TimeRange>(DEFAULT_TIME_RANGE);
   const [rankedLists, setRankedLists] = useState<Pick<Stats, 'topArtists' | 'topTracks' | 'topGenres'> | null>(null);
   const [isLoadingLists, setIsLoadingLists] = useState(false);
   const [playLimit, setPlayLimit] = useState<number>(50);
   const [dataMode, setDataMode] = useState<DataMode>('recent');
   const [selectedPlaylist, setSelectedPlaylist] = useState<PlaylistSelection>({
     id: LIKED_SONGS_ID,
-    name: 'Liked Songs',
+    name: LIKED_SONGS_NAME,
   });
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [likedSongsNeedsReconnect, setLikedSongsNeedsReconnect] = useState(false);
   const [showAllArtists, setShowAllArtists] = useState(false);
   const [showAllTracks, setShowAllTracks] = useState(false);
@@ -79,7 +101,6 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
 
   const isDev = process.env.NODE_ENV === 'development';
   const [debugPanelEnabled, setDebugPanelEnabled] = usePersistedToggle('spotifun.debugPanel', false);
-  const [lastFmEnabled, setLastFmEnabled] = usePersistedToggle('spotifun.lastFmEnrichment', true);
   const [debugPanelOpen, setDebugPanelOpen] = useState(false);
   const [news, setNews] = useState<JournalNews | null>(null);
   const [listShare, setListShare] = useState<ShareContent | null>(null);
@@ -120,20 +141,23 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     range: TimeRange,
     limit: number,
     mode: DataMode,
-    lastFm: boolean = lastFmEnabled,
     playlistId: string = selectedPlaylist.id
   ) => {
     const params = new URLSearchParams({ timeRange: range, limit: String(limit), mode });
     if (mode === 'playlist') params.set('playlist', playlistId);
-    if (!lastFm) params.set('lastfm', '0');
     return `${apiBase}/stats?${params}`;
-  }, [apiBase, lastFmEnabled, selectedPlaylist.id]);
+  }, [apiBase, selectedPlaylist.id]);
 
   const fetchAll = useCallback(async (range: TimeRange, limit: number, mode: DataMode, replaceLists = false) => {
     const [userResponse, statsResponse] = await Promise.all([
       fetch(`${apiBase}/user`),
       fetch(buildStatsUrl(range, limit, mode))
     ]);
+
+    if (userResponse.status === 401) {
+      router.push('/');
+      return;
+    }
 
     if (userResponse.ok) {
       const userData = await userResponse.json();
@@ -147,12 +171,15 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     }
 
     if (statsResponse.ok) {
+      setLoadError(null);
       acceptStats(await statsResponse.json(), replaceLists ? { replaceLists: true } : undefined);
-    } else if (!demo) {
-      noteApiCall('stats', false);
+    } else {
+      const body = await statsResponse.json().catch(() => ({})) as { error?: string };
+      setLoadError(body.error ?? 'failed');
+      if (!demo) noteApiCall('stats', false);
       setLastFetched(new Date());
     }
-  }, [apiBase, acceptStats, buildStatsUrl, demo]);
+  }, [apiBase, acceptStats, buildStatsUrl, demo, router]);
 
   const clearSample = useCallback(() => {
     const wasActive = sampleIdRef.current !== null;
@@ -160,7 +187,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     sampleIdRef.current = null;
     setSampleId(null);
     setSampleName(null);
-    if (wasActive) setSelectedPlaylist({ id: LIKED_SONGS_ID, name: 'Liked Songs' });
+    if (wasActive) setSelectedPlaylist({ id: LIKED_SONGS_ID, name: LIKED_SONGS_NAME });
     return wasActive;
   }, []);
 
@@ -259,10 +286,6 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
 
   const handlePlaylistSelect = async (playlist: PlaylistSelection) => {
     const leavingSample = sampleIdRef.current !== null;
-    if (playlist.id === LIKED_SONGS_ID && likedSongsNeedsReconnect) {
-      window.location.href = '/api/auth/spotify';
-      return;
-    }
     if (!leavingSample && dataMode === 'playlist' && selectedPlaylist.id === playlist.id) return;
 
     const previousMode = dataMode;
@@ -273,13 +296,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     setIsLoadingTimeRange(true);
 
     try {
-      const response = await fetch(buildStatsUrl(timeRange, playLimit, 'playlist', lastFmEnabled, playlist.id));
-      if (response.status === 403 && playlist.id === LIKED_SONGS_ID) {
-        setLikedSongsNeedsReconnect(true);
-        setSelectedPlaylist(previousPlaylist);
-        setDataMode(previousMode);
-        return;
-      }
+      const response = await fetch(buildStatsUrl(timeRange, playLimit, 'playlist', playlist.id));
       if (!response.ok) {
         console.error('Error fetching playlist stats:', response.status);
         if (!demo) noteApiCall('stats', false);
@@ -308,24 +325,6 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
       const response = await fetch(buildStatsUrl(timeRange, playLimit, newMode));
       if (response.ok) {
         acceptStats(await response.json(), leavingSample ? { replaceLists: true } : undefined);
-      } else if (!demo) {
-        noteApiCall('stats', false);
-      }
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-    } finally {
-      setIsLoadingTimeRange(false);
-    }
-  };
-
-  const handleLastFmToggle = async (enabled: boolean) => {
-    setLastFmEnabled(enabled);
-    if (sampleIdRef.current) return;
-    setIsLoadingTimeRange(true);
-    try {
-      const response = await fetch(buildStatsUrl(timeRange, playLimit, dataMode, enabled));
-      if (response.ok) {
-        acceptStats(await response.json());
       } else if (!demo) {
         noteApiCall('stats', false);
       }
@@ -391,8 +390,11 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
 
   const handleLogout = () => {
     setActiveUser(null);
-    localStorage.removeItem('token');
-    router.push('/');
+    if (demo) {
+      router.push('/');
+      return;
+    }
+    void fetch('/api/session', { method: 'DELETE' }).finally(() => router.push('/'));
   };
 
   const handleJournalCleared = () => {
@@ -405,9 +407,9 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center p-6">
         <div className="text-center max-w-md">
-          <h2 className="text-2xl font-bold text-white mb-4">Unable to load your data</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">{LOAD_ERROR_COPY[loadError ?? 'failed']?.title ?? LOAD_ERROR_COPY.failed.title}</h2>
           <p className="text-gray-300 mb-6">
-            We couldn&apos;t load your Spotify data. Please try refreshing the page or return to the home page to sign in again.
+            {LOAD_ERROR_COPY[loadError ?? 'failed']?.body ?? LOAD_ERROR_COPY.failed.body}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
@@ -495,6 +497,19 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                     <div className="px-3 py-2 text-sm text-gray-300 border-b border-gray-700">
                       Welcome, {user.display_name}
                     </div>
+                    {user.url && (
+                      <DropdownMenu.Item asChild>
+                        <a
+                          href={user.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer outline-none"
+                        >
+                          <User className="w-4 h-4" />
+                          Your Last.fm profile
+                        </a>
+                      </DropdownMenu.Item>
+                    )}
                     <DropdownMenu.Item asChild>
                       <Link
                         href="/about"
@@ -565,12 +580,12 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               <Sparkles className="w-4 h-4 shrink-0" />
               You&apos;re peeking at {user.display_name}&apos;s profile. Sam is pretend, but the music is real.
             </span>
-            <a
-              href="/api/auth/spotify"
+            <Link
+              href="/#start"
               className="shrink-0 rounded-full bg-white/95 text-gray-900 font-semibold px-3 py-1 hover:bg-white transition-colors"
             >
               See your own stats
-            </a>
+            </Link>
           </div>
         </div>
       )}
@@ -644,10 +659,10 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               return (
                 <a
                   key={artist.id}
-                  href={artist.external_urls?.spotify}
+                  href={artist.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`Open ${artist.name} on Spotify`}
+                  aria-label={`Open ${artist.name} on Last.fm`}
                   className="group relative block h-48 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                 >
                   {imageUrl ? (
@@ -661,7 +676,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                       <Music className="w-12 h-12 text-white opacity-70" />
                     </div>
                   )}
-                  <SpotifyPlayOverlay />
+                  <OpenOverlay />
                   {index < 3 && (
                     <div className="absolute top-3 left-3 z-10">
                       <RankMark rank={(index + 1) as 1 | 2 | 3} />
@@ -718,10 +733,10 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               return (
                 <a
                   key={track.id}
-                  href={track.external_urls?.spotify}
+                  href={track.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`Open ${track.name} on Spotify`}
+                  aria-label={`Open ${track.name} on Last.fm`}
                   className="group relative block h-32 rounded-xl overflow-hidden bg-gray-700/50 hover:bg-gray-700 transition-all duration-300"
                 >
                   <div className="absolute inset-0 flex items-center p-4 gap-4">
@@ -735,7 +750,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                       ) : (
                         <Music className="w-6 h-6 text-gray-400" />
                       )}
-                      <SpotifyPlayOverlay size="sm" />
+                      <OpenOverlay size="sm" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-white truncate">{track.name}</h3>
@@ -805,10 +820,10 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
               return (
                 <a
                   key={genre}
-                  href={`https://open.spotify.com/search/${encodeURIComponent(genre)}`}
+                  href={lastFmTagUrl(genre)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`Open ${genre} on Spotify`}
+                  aria-label={`Open the ${genre} tag on Last.fm`}
                   className="relative bg-gray-800/40 hover:bg-gray-800/80 border border-gray-700/50 rounded-lg p-4 transition-colors group block"
                 >
                   {index < 3 && (
@@ -827,7 +842,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                       ) : (
                         <Music className="w-4 h-4 text-gray-400" />
                       )}
-                      <SpotifyPlayOverlay size="sm" />
+                      <OpenOverlay size="sm" />
                     </div>
                     <div className={`min-w-0 flex-1 ${index < 3 ? 'pr-6' : ''}`}>
                       <h3 className="font-medium text-white capitalize truncate">
@@ -887,7 +902,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
                     Badges
                   </h2>
                   <p className="mt-1 text-sm text-gray-400">
-                    For this Spotify account, on this browser. Another account signed in here keeps its own.
+                    For this Last.fm username, on this browser. Another username looked up here keeps its own.
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
@@ -907,6 +922,10 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
         {/* Rankings */}
         <div id="time" className="mb-8 scroll-mt-24">
           <Rankings stats={stats} />
+        </div>
+
+        <div className="pb-4 text-center">
+          <PoweredBy />
         </div>
 
       </div>
@@ -931,9 +950,7 @@ export default function DashboardContent({ demo = false }: DashboardContentProps
           displayName={user.display_name || 'this account'}
           userId={user.id}
           journalTick={journalTick}
-          lastFmEnabled={lastFmEnabled}
           debugPanelEnabled={debugPanelEnabled}
-          onLastFmChange={handleLastFmToggle}
           onDebugChange={setDebugPanelEnabled}
           onJournalCleared={handleJournalCleared}
           onClose={() => setSettingsOpen(false)}

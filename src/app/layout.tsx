@@ -22,8 +22,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Spotifun - Your Spotify Analytics Dashboard",
-  description: "Discover insights, stats, and fun feedback about your Spotify listening habits. Get your personalized music profile and achievements.",
+  title: "Spotifun - Have fun with your Last.fm listening",
+  description: "Turn your Last.fm scrobbles into vibes, genre maps, a listener persona and a few silly badges.",
 };
 
 export default function RootLayout({

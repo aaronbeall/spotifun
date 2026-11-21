@@ -1,6 +1,8 @@
+import type { Track } from '@/types/music';
 import { EraSnapshot, Stats, TimeRange } from '@/types';
 import { calculateWeightedVACRSScore } from './musicClassification';
 import { getUserPersona, personaPortraitSrc } from './musicPersonas';
+import { PERIOD_PHRASE } from './periods';
 
 export type StoryKind =
   | 'persona'
@@ -85,7 +87,7 @@ const REPLAY_FINDING = 3;
 const STREAK_FINDING = 5;
 const COVERAGE_LINE = 0.8;
 
-function releaseYear(track: SpotifyApi.TrackObjectFull): number | null {
+function releaseYear(track: Track): number | null {
   const raw = track.album?.release_date;
   if (!raw || raw.length < 4) return null;
   const year = parseInt(raw.slice(0, 4), 10);
@@ -207,6 +209,7 @@ function playTimestamps(stats: Stats): number[] {
 
 function addedTimestamps(stats: Stats): { at: number; popularity: number; image?: string }[] {
   return stats.tracks
+    .filter(item => typeof item.track.popularity === 'number')
     .map(item => ({
       at: Date.parse(item.firstPlayed),
       popularity: item.track.popularity ?? 0,
@@ -484,12 +487,8 @@ export function viewScope(stats: Stats): string {
     const n = stats.recentlyPlayed.length;
     return `In these ${n} recent ${n === 1 ? 'play' : 'plays'}`;
   }
-  const range = stats.timeRange === 'short_term'
-    ? 'last 4 weeks'
-    : stats.timeRange === 'long_term'
-      ? 'several-year list'
-      : 'last 6 months';
-  return stats.mode === 'topArtists' ? `In your ${range} artists` : `In your ${range} tracks`;
+  const range = PERIOD_PHRASE[stats.timeRange];
+  return stats.mode === 'topArtists' ? `In your top artists from ${range}` : `In your top tracks from ${range}`;
 }
 
 export function buildFindings(stats: Stats): Finding[] {
@@ -535,8 +534,9 @@ export function buildFindings(stats: Stats): Finding[] {
     });
   }
 
-  if (stats.tracks.length > 0) {
-    const lowest = [...stats.tracks].sort((a, b) => (a.track.popularity ?? 0) - (b.track.popularity ?? 0))[0];
+  const rated = stats.tracks.filter(item => typeof item.track.popularity === 'number');
+  if (rated.length > 0) {
+    const lowest = [...rated].sort((a, b) => (a.track.popularity ?? 0) - (b.track.popularity ?? 0))[0];
     const popularity = lowest.track.popularity ?? 0;
     const hit = popularity < DEEP_CUT;
     findings.push({
@@ -546,7 +546,7 @@ export function buildFindings(stats: Stats): Finding[] {
       title: 'Deep cut',
       fact: `“${lowest.track.name}” at popularity ${popularity}`,
       detail: hit
-        ? `Under ${DEEP_CUT} on Spotify’s 0–100 scale.`
+        ? `Under ${DEEP_CUT} on the 0–100 popularity scale.`
         : `The lowest song here is ${popularity}. A deep cut is under ${DEEP_CUT}.`,
       count: popularity,
       name: lowest.track.name,
@@ -616,9 +616,7 @@ export function currentViewSnapshot(stats: Stats): ViewSnapshot {
 }
 
 function baselineNoun(range: TimeRange): string {
-  if (range === 'short_term') return 'your top artists from about the last 4 weeks';
-  if (range === 'medium_term') return 'your top artists from about the last 6 months';
-  return 'your top artists across several years';
+  return range === 'overall' ? 'your all-time top artists' : `your top artists from ${PERIOD_PHRASE[range]}`;
 }
 
 function leanPhrase(metric: ShiftMetric, delta: number): string {
@@ -638,7 +636,7 @@ export function readShift(current: ViewSnapshot, eras: EraSnapshot[], stats: Sta
   if (populated.length === 0) return null;
 
   const sameRange = stats.mode === 'topArtists' || stats.mode === 'topTracks' ? stats.timeRange : null;
-  const preferred = sameRange === 'long_term' ? 'short_term' : 'long_term';
+  const preferred: TimeRange = sameRange === 'overall' ? '1month' : 'overall';
   const baseline = populated.find(era => era.timeRange === preferred)
     ?? populated.find(era => era.timeRange !== sameRange)
     ?? populated[0];

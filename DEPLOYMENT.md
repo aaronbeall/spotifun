@@ -5,7 +5,7 @@ This guide covers deploying Spotifun to Vercel, the recommended hosting platform
 ## 📋 Prerequisites
 
 - GitHub repository with Spotifun code
-- Spotify Developer Account
+- Last.fm API key ([create one](https://www.last.fm/api/account/create))
 - Vercel account (free)
 
 ## 🎯 Why Vercel?
@@ -61,11 +61,7 @@ Before deploying, add these environment variables in Vercel dashboard:
 #### Required Variables:
 
 ```
-SPOTIFY_CLIENT_ID = your_spotify_client_id_here
-SPOTIFY_CLIENT_SECRET = your_spotify_client_secret_here
-SPOTIFY_REDIRECT_URI = https://your-app-name.vercel.app/api/auth/callback/spotify
-NEXTAUTH_URL = https://your-app-name.vercel.app
-NEXTAUTH_SECRET = your_production_secret_here
+LASTFM_API_KEY = your_lastfm_api_key_here
 ```
 
 #### How to Add Environment Variables:
@@ -81,55 +77,20 @@ NEXTAUTH_SECRET = your_production_secret_here
 2. **Wait for build** (usually 1-2 minutes)
 3. **Get your live URL** (e.g., `https://spotifun-abc123.vercel.app`)
 
-### Step 7: Update Spotify App Settings
-
-Once you have your Vercel URL:
-
-1. **Go to**: https://developer.spotify.com/dashboard
-2. **Select your app**
-3. **Click "Edit Settings"**
-4. **Update Redirect URIs** to:
-   ```
-   https://your-actual-vercel-url.vercel.app/api/auth/callback/spotify
-   ```
-5. **Save changes**
-
-### Step 8: Update Environment Variables
-
-Go back to Vercel and update the redirect URI:
-
-1. **Project Settings** → **Environment Variables**
-2. **Edit** `SPOTIFY_REDIRECT_URI` and `NEXTAUTH_URL`
-3. **Update** with your actual Vercel URL
-4. **Save** and **redeploy**
-
 ## 🔧 Configuration Details
 
 ### Environment Variables Explained
 
-| Variable | Purpose | Example |
-|----------|---------|---------|
-| `SPOTIFY_CLIENT_ID` | Your Spotify app's client ID | `8c0981c557244dc3ba20b9c2b03ddab0` |
-| `SPOTIFY_CLIENT_SECRET` | Your Spotify app's secret | `41383b2c187c40cb93a5d257c41d7739` |
-| `SPOTIFY_REDIRECT_URI` | OAuth callback URL | `https://spotifun.vercel.app/api/auth/callback/spotify` |
-| `NEXTAUTH_URL` | Your app's base URL | `https://spotifun.vercel.app` |
-| `NEXTAUTH_SECRET` | Random secret for sessions | `your_production_secret_here` |
+| Variable | Purpose |
+|----------|---------|
+| `LASTFM_API_KEY` | Reads public Last.fm listening data and artist tags |
 
-### Spotify App Requirements
+Deezer (artwork, lengths, release dates, popularity) needs no key.
 
-Your Spotify app must have:
+### API terms to keep in mind
 
-- **App Name**: Any name you choose
-- **Redirect URIs**: Must match your Vercel URL exactly
-- **Scopes**: 
-  - `user-read-private`
-  - `user-read-email`
-  - `user-top-read`
-  - `user-read-recently-played`
-  - `user-read-playback-state`
-  - `user-read-currently-playing`
-  - `playlist-read-private`
-  - `playlist-read-collaborative`
+- **Last.fm:** free API use is non-commercial. Ask partners@last.fm before taking payments. Credit "powered by AudioScrobbler" with a link back (the site footer and dashboard do this), and link to Last.fm pages for artists, tracks and users.
+- **Deezer:** images may be linked but not stored. Commercial use needs a partnership.
 
 ## 🎉 Post-Deployment
 
@@ -147,8 +108,7 @@ Once deployed, Vercel provides:
 ### Testing Your Deployment
 
 1. **Visit your Vercel URL**
-2. **Click "Connect with Spotify"**
-3. **Complete OAuth flow**
+2. **Type a Last.fm username** that has scrobbles
 4. **Verify all features work**:
    - Dashboard loads
    - Stats display correctly
@@ -170,10 +130,9 @@ Once deployed, Vercel provides:
 - **Verify values** are correct
 - **Ensure variables** are set for Production environment
 
-#### Spotify Authentication Errors
-- **Check redirect URI** matches exactly
-- **Verify Spotify app** is not in Development Mode (unless you're the only user)
-- **Confirm scopes** are properly configured
+#### Last.fm Errors
+- **"Last.fm is taking a breather"**: the key is missing or rate limited. Check `LASTFM_API_KEY` and the function logs.
+- **"Your listening is hidden"**: that Last.fm profile hides recent listening in its privacy settings.
 
 #### Runtime Errors
 - **Check browser console** for client-side errors
@@ -184,7 +143,7 @@ Once deployed, Vercel provides:
 
 1. **Check Vercel deployment logs**
 2. **Verify environment variables** are set
-3. **Test Spotify OAuth** with a simple curl request
+3. **Test the Last.fm key**: `curl "https://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=rj&api_key=$LASTFM_API_KEY&format=json"`
 4. **Check browser network tab** for failed requests
 5. **Review serverless function logs**
 
@@ -230,7 +189,8 @@ After successful deployment:
 
 - [Vercel Documentation](https://vercel.com/docs)
 - [Next.js Deployment](https://nextjs.org/docs/deployment)
-- [Spotify Web API](https://developer.spotify.com/documentation/web-api/)
+- [Last.fm API](https://www.last.fm/api)
+- [Deezer API](https://developers.deezer.com/api)
 - [Vercel Environment Variables](https://vercel.com/docs/concepts/projects/environment-variables)
 
 ---

@@ -2,12 +2,9 @@
 
 ## 🚀 Quick Start
 
-### 1. Set up Spotify App
-1. Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
-2. Create a new app
-3. Note your Client ID and Client Secret
-4. **Important:** Add redirect URI: `http://127.0.0.1:3000/api/auth/callback/spotify`
-   - Spotify no longer allows `localhost` - you must use `127.0.0.1`
+### 1. Get a Last.fm API key
+1. Create an API account at [last.fm/api/account/create](https://www.last.fm/api/account/create)
+2. Note the API key (the shared secret isn't needed: Spotifun only reads public data)
 
 ### 2. Configure Environment
 Copy `.env.example` to `.env.local`:
@@ -15,29 +12,15 @@ Copy `.env.example` to `.env.local`:
 cp .env.example .env.local
 ```
 
-Then edit `.env.local` with your credentials.
-
-**Required variables:**
+Then set your key in `.env.local`:
 ```env
-SPOTIFY_CLIENT_ID=your_spotify_client_id_here
-SPOTIFY_CLIENT_SECRET=your_spotify_client_secret_here
-# Must use 127.0.0.1 (not localhost) - Spotify requirement
-SPOTIFY_REDIRECT_URI=http://127.0.0.1:3000/api/auth/callback/spotify
-NEXTAUTH_URL=http://127.0.0.1:3000
-# Generate with: openssl rand -base64 32
-NEXTAUTH_SECRET=your_nextauth_secret_here
-```
-
-**Optional variables:**
-```env
-# Last.fm API for enhanced genre classification (recommended)
-# Get your API key at: https://www.last.fm/api/account/create
 LASTFM_API_KEY=your_lastfm_api_key_here
 ```
 
 **Notes:**
-- **127.0.0.1 vs localhost:** Spotify no longer accepts `localhost` in redirect URIs. Always use `127.0.0.1`.
-- **Last.fm integration:** Optional but recommended. Improves genre classification coverage for artists with sparse Spotify genres. Without it, classification works but may return lower coverage scores.
+- **No OAuth:** listeners just type their Last.fm username. Their public scrobbles are read with the app's API key.
+- **Artwork:** comes from Deezer's public API, which needs no key.
+- **Caching:** Last.fm and Deezer responses go through `src/lib/apiCache.ts` (Next's fetch cache, a cache-first probe, a per-service throttle, and a cooldown after rate limits). Artist tags and artwork are cached for 30 days, top lists for 15 minutes to a day, recent plays for a minute.
 - **Deployment:** When deploying to Vercel, set `LASTFM_API_KEY` in your Vercel project's environment variables (Settings → Environment Variables).
 
 ### 3. Run the Application
@@ -45,7 +28,7 @@ LASTFM_API_KEY=your_lastfm_api_key_here
 npm run dev
 ```
 
-Visit `http://127.0.0.1:3000` and connect with Spotify!
+Visit `http://127.0.0.1:3000` and type a Last.fm username!
 
 ## 🏗️ Project Structure
 
@@ -53,7 +36,7 @@ Visit `http://127.0.0.1:3000` and connect with Spotify!
 src/
 ├── app/                    # Next.js app directory
 │   ├── api/               # API routes
-│   │   ├── auth/          # Authentication endpoints
+│   │   ├── session/       # Remembers the Last.fm username
 │   │   ├── stats/         # Statistics endpoints
 │   │   └── user/          # User data endpoints
 │   ├── dashboard/         # Main dashboard page
@@ -62,12 +45,15 @@ src/
 │   └── page.tsx           # Landing page
 ├── components/            # React components
 │   └── features/          # Feature-specific components
-│       ├── FunStats.tsx   # Spotify Wrapped-style cards
+│       ├── FunStats.tsx   # Story-style cards
 │       ├── MusicProfile.tsx # Music personality profile
 │       ├── Achievements.tsx # Achievement system
 │       └── Rankings.tsx   # Global rankings
 ├── lib/                   # Utility libraries
-│   └── spotify.ts         # Spotify API integration
+│   ├── lastfmApi.ts       # Last.fm user data
+│   ├── deezer.ts          # Artwork and track details
+│   ├── apiCache.ts        # Caching and rate limiting for both
+│   └── listening.ts       # Stats calculations
 ├── types/                 # TypeScript definitions
 └── utils/                 # Helper functions
 ```
@@ -75,7 +61,7 @@ src/
 ## 🎯 Key Features Explained
 
 ### Analytics Engine
-- Processes Spotify play history data
+- Processes Last.fm scrobble history
 - Calculates comprehensive statistics
 - Supports multiple time ranges
 - Generates insights and patterns
@@ -127,11 +113,11 @@ The test suite covers core calculation logic:
 - **Popularity Analysis** (`src/utils/popularity.test.ts`) - Track popularity metrics, diversity scoring, and extremes
 - **VACRS Traits** (`src/utils/vacrs.test.ts`) - Music trait classification (Valence, Arousal, Complexity, Rawness, Social Presence)
 - **Genre Classification** (`src/utils/musicClassification.test.ts`) - Genre-to-VACRS mapping, weighted scoring, and distance calculations
-- **Stats Calculations** (`src/lib/spotify.test.ts`) - Track/artist/genre aggregation from play history
+- **Stats Calculations** (`src/lib/listening.test.ts`) - Track/artist/genre aggregation from play history
 - **Persona Detection** (`src/utils/musicPersonas.test.ts`) - Music listening personality classification
 - **Diversity Metrics** (`src/utils/statsHelpers.test.ts`) - Genre/artist diversity and session statistics
 
-All tests use small hand-built fixtures and do not require network access or Spotify credentials.
+All tests use small hand-built fixtures and do not require network access or API keys.
 
 ## 🔧 Technical Stack
 
@@ -139,7 +125,7 @@ All tests use small hand-built fixtures and do not require network access or Spo
 - **Styling**: Tailwind CSS with custom animations
 - **Charts**: Recharts for data visualization
 - **Icons**: Lucide React
-- **Authentication**: Spotify Web API OAuth
+- **Data**: Last.fm API (listening, tags) and Deezer API (artwork)
 - **Backend**: Next.js API Routes
 - **State Management**: React hooks and local state
 - **Testing**: Vitest for unit testing

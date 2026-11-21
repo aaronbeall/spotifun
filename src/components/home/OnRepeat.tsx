@@ -20,7 +20,7 @@ export function OnRepeat({ stats }: { stats: Stats }) {
           {[...artists, ...artists].map((artist, i) => (
             <a
               key={`${artist.id}-${i}`}
-              href={artist.external_urls?.spotify}
+              href={artist.url}
               target="_blank"
               rel="noopener noreferrer"
               aria-hidden={i >= artists.length}

@@ -9,7 +9,7 @@
  */
 import fs from 'fs';
 import path from 'path';
-import { calculateGenreStats } from '../src/lib/spotify';
+import { calculateGenreStats } from '../src/lib/listening';
 import { findBestMatchingVibe } from '../src/utils/musicVibesAnalyzer';
 import { MUSIC_VIBES } from '../src/utils/musicVibes';
 import { calculateVACRSScoreDistance, calculateWeightedVACRSScoreWithCoverage } from '../src/utils/musicClassification';

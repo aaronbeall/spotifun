@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
+import type { Artist, Play, Track } from '@/types/music';
 import {
   calculateTrackStats,
   calculateArtistStats,
   calculateGenreStats,
   calculateTopGenres,
-} from './spotify';
+} from './listening';
 
 describe('calculateTrackStats', () => {
   it('returns empty array for empty play history', () => {
@@ -14,7 +15,7 @@ describe('calculateTrackStats', () => {
   });
 
   it('calculates basic stats for single track', () => {
-    const playHistory: SpotifyApi.PlayHistoryObject[] = [
+    const playHistory: Play[] = [
       {
         played_at: '2024-01-01T10:00:00Z',
         track: {
@@ -22,8 +23,8 @@ describe('calculateTrackStats', () => {
           name: 'Test Song',
           duration_ms: 200000,
           artists: [{ id: 'artist1', name: 'Test Artist' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
     ];
     
     const result = calculateTrackStats(playHistory);
@@ -37,7 +38,7 @@ describe('calculateTrackStats', () => {
   });
 
   it('aggregates multiple plays of same track', () => {
-    const playHistory: SpotifyApi.PlayHistoryObject[] = [
+    const playHistory: Play[] = [
       {
         played_at: '2024-01-01T10:00:00Z',
         track: {
@@ -45,8 +46,8 @@ describe('calculateTrackStats', () => {
           name: 'Test Song',
           duration_ms: 200000,
           artists: [{ id: 'artist1', name: 'Test Artist' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
       {
         played_at: '2024-01-02T15:00:00Z',
         track: {
@@ -54,8 +55,8 @@ describe('calculateTrackStats', () => {
           name: 'Test Song',
           duration_ms: 200000,
           artists: [{ id: 'artist1', name: 'Test Artist' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
       {
         played_at: '2024-01-01T12:00:00Z',
         track: {
@@ -63,8 +64,8 @@ describe('calculateTrackStats', () => {
           name: 'Test Song',
           duration_ms: 200000,
           artists: [{ id: 'artist1', name: 'Test Artist' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
     ];
     
     const result = calculateTrackStats(playHistory);
@@ -77,7 +78,7 @@ describe('calculateTrackStats', () => {
   });
 
   it('tracks multiple different tracks', () => {
-    const playHistory: SpotifyApi.PlayHistoryObject[] = [
+    const playHistory: Play[] = [
       {
         played_at: '2024-01-01T10:00:00Z',
         track: {
@@ -85,8 +86,8 @@ describe('calculateTrackStats', () => {
           name: 'Song 1',
           duration_ms: 200000,
           artists: [{ id: 'artist1', name: 'Artist 1' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
       {
         played_at: '2024-01-01T11:00:00Z',
         track: {
@@ -94,8 +95,8 @@ describe('calculateTrackStats', () => {
           name: 'Song 2',
           duration_ms: 180000,
           artists: [{ id: 'artist2', name: 'Artist 2' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
     ];
     
     const result = calculateTrackStats(playHistory);
@@ -106,7 +107,7 @@ describe('calculateTrackStats', () => {
   });
 
   it('sorts tracks by play count (descending)', () => {
-    const playHistory: SpotifyApi.PlayHistoryObject[] = [
+    const playHistory: Play[] = [
       {
         played_at: '2024-01-01T10:00:00Z',
         track: {
@@ -114,8 +115,8 @@ describe('calculateTrackStats', () => {
           name: 'Less Popular',
           duration_ms: 200000,
           artists: [{ id: 'artist1', name: 'Artist 1' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
       {
         played_at: '2024-01-01T11:00:00Z',
         track: {
@@ -123,8 +124,8 @@ describe('calculateTrackStats', () => {
           name: 'Most Popular',
           duration_ms: 180000,
           artists: [{ id: 'artist2', name: 'Artist 2' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
       {
         played_at: '2024-01-01T12:00:00Z',
         track: {
@@ -132,8 +133,8 @@ describe('calculateTrackStats', () => {
           name: 'Most Popular',
           duration_ms: 180000,
           artists: [{ id: 'artist2', name: 'Artist 2' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
       {
         played_at: '2024-01-01T13:00:00Z',
         track: {
@@ -141,8 +142,8 @@ describe('calculateTrackStats', () => {
           name: 'Most Popular',
           duration_ms: 180000,
           artists: [{ id: 'artist2', name: 'Artist 2' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
     ];
     
     const result = calculateTrackStats(playHistory);
@@ -154,7 +155,7 @@ describe('calculateTrackStats', () => {
   });
 
   it('includes artist details when provided', () => {
-    const playHistory: SpotifyApi.PlayHistoryObject[] = [
+    const playHistory: Play[] = [
       {
         played_at: '2024-01-01T10:00:00Z',
         track: {
@@ -162,8 +163,8 @@ describe('calculateTrackStats', () => {
           name: 'Test Song',
           duration_ms: 200000,
           artists: [{ id: 'artist1', name: 'Test Artist' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
     ];
     
     const artistDetails = {
@@ -172,7 +173,7 @@ describe('calculateTrackStats', () => {
         name: 'Test Artist',
         genres: ['rock', 'indie'],
         popularity: 75,
-      } as SpotifyApi.ArtistObjectFull,
+      } as Artist,
     };
     
     const result = calculateTrackStats(playHistory, artistDetails);
@@ -190,7 +191,7 @@ describe('calculateArtistStats', () => {
   });
 
   it('calculates stats for single artist', () => {
-    const playHistory: SpotifyApi.PlayHistoryObject[] = [
+    const playHistory: Play[] = [
       {
         played_at: '2024-01-01T10:00:00Z',
         track: {
@@ -198,8 +199,8 @@ describe('calculateArtistStats', () => {
           name: 'Song 1',
           duration_ms: 200000,
           artists: [{ id: 'artist1', name: 'Artist 1' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
     ];
     
     const result = calculateArtistStats(playHistory);
@@ -212,7 +213,7 @@ describe('calculateArtistStats', () => {
   });
 
   it('aggregates multiple plays of same artist', () => {
-    const playHistory: SpotifyApi.PlayHistoryObject[] = [
+    const playHistory: Play[] = [
       {
         played_at: '2024-01-01T10:00:00Z',
         track: {
@@ -220,8 +221,8 @@ describe('calculateArtistStats', () => {
           name: 'Song 1',
           duration_ms: 200000,
           artists: [{ id: 'artist1', name: 'Artist 1' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
       {
         played_at: '2024-01-01T11:00:00Z',
         track: {
@@ -229,8 +230,8 @@ describe('calculateArtistStats', () => {
           name: 'Song 2',
           duration_ms: 180000,
           artists: [{ id: 'artist1', name: 'Artist 1' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
       {
         played_at: '2024-01-01T12:00:00Z',
         track: {
@@ -238,8 +239,8 @@ describe('calculateArtistStats', () => {
           name: 'Song 1',
           duration_ms: 200000,
           artists: [{ id: 'artist1', name: 'Artist 1' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
     ];
     
     const result = calculateArtistStats(playHistory);
@@ -251,7 +252,7 @@ describe('calculateArtistStats', () => {
   });
 
   it('handles tracks with multiple artists', () => {
-    const playHistory: SpotifyApi.PlayHistoryObject[] = [
+    const playHistory: Play[] = [
       {
         played_at: '2024-01-01T10:00:00Z',
         track: {
@@ -262,8 +263,8 @@ describe('calculateArtistStats', () => {
             { id: 'artist1', name: 'Artist 1' },
             { id: 'artist2', name: 'Artist 2' },
           ],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
     ];
     
     const result = calculateArtistStats(playHistory);
@@ -274,7 +275,7 @@ describe('calculateArtistStats', () => {
   });
 
   it('sorts artists by play count (descending)', () => {
-    const playHistory: SpotifyApi.PlayHistoryObject[] = [
+    const playHistory: Play[] = [
       {
         played_at: '2024-01-01T10:00:00Z',
         track: {
@@ -282,8 +283,8 @@ describe('calculateArtistStats', () => {
           name: 'Song 1',
           duration_ms: 200000,
           artists: [{ id: 'artist1', name: 'Less Popular' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
       {
         played_at: '2024-01-01T11:00:00Z',
         track: {
@@ -291,8 +292,8 @@ describe('calculateArtistStats', () => {
           name: 'Song 2',
           duration_ms: 180000,
           artists: [{ id: 'artist2', name: 'Most Popular' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
       {
         played_at: '2024-01-01T12:00:00Z',
         track: {
@@ -300,8 +301,8 @@ describe('calculateArtistStats', () => {
           name: 'Song 3',
           duration_ms: 190000,
           artists: [{ id: 'artist2', name: 'Most Popular' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
     ];
     
     const result = calculateArtistStats(playHistory);
@@ -313,7 +314,7 @@ describe('calculateArtistStats', () => {
   });
 
   it('includes genres from artist details', () => {
-    const playHistory: SpotifyApi.PlayHistoryObject[] = [
+    const playHistory: Play[] = [
       {
         played_at: '2024-01-01T10:00:00Z',
         track: {
@@ -321,8 +322,8 @@ describe('calculateArtistStats', () => {
           name: 'Song 1',
           duration_ms: 200000,
           artists: [{ id: 'artist1', name: 'Artist 1' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
     ];
     
     const artistDetails = {
@@ -330,7 +331,7 @@ describe('calculateArtistStats', () => {
         id: 'artist1',
         name: 'Artist 1',
         genres: ['rock', 'alternative', 'indie'],
-      } as SpotifyApi.ArtistObjectFull,
+      } as Artist,
     };
     
     const result = calculateArtistStats(playHistory, artistDetails);
@@ -347,7 +348,7 @@ describe('calculateGenreStats', () => {
   });
 
   it('returns empty array when artists have no genres', () => {
-    const playHistory: SpotifyApi.PlayHistoryObject[] = [
+    const playHistory: Play[] = [
       {
         played_at: '2024-01-01T10:00:00Z',
         track: {
@@ -355,8 +356,8 @@ describe('calculateGenreStats', () => {
           name: 'Song 1',
           duration_ms: 200000,
           artists: [{ id: 'artist1', name: 'Artist 1' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
     ];
     
     const result = calculateGenreStats(playHistory);
@@ -365,7 +366,7 @@ describe('calculateGenreStats', () => {
   });
 
   it('calculates stats for single genre', () => {
-    const playHistory: SpotifyApi.PlayHistoryObject[] = [
+    const playHistory: Play[] = [
       {
         played_at: '2024-01-01T10:00:00Z',
         track: {
@@ -373,8 +374,8 @@ describe('calculateGenreStats', () => {
           name: 'Song 1',
           duration_ms: 200000,
           artists: [{ id: 'artist1', name: 'Artist 1' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
     ];
     
     const artistDetails = {
@@ -382,7 +383,7 @@ describe('calculateGenreStats', () => {
         id: 'artist1',
         name: 'Artist 1',
         genres: ['rock'],
-      } as SpotifyApi.ArtistObjectFull,
+      } as Artist,
     };
     
     const result = calculateGenreStats(playHistory, artistDetails);
@@ -396,7 +397,7 @@ describe('calculateGenreStats', () => {
   });
 
   it('aggregates multiple plays of same genre', () => {
-    const playHistory: SpotifyApi.PlayHistoryObject[] = [
+    const playHistory: Play[] = [
       {
         played_at: '2024-01-01T10:00:00Z',
         track: {
@@ -404,8 +405,8 @@ describe('calculateGenreStats', () => {
           name: 'Song 1',
           duration_ms: 200000,
           artists: [{ id: 'artist1', name: 'Artist 1' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
       {
         played_at: '2024-01-01T11:00:00Z',
         track: {
@@ -413,8 +414,8 @@ describe('calculateGenreStats', () => {
           name: 'Song 2',
           duration_ms: 180000,
           artists: [{ id: 'artist2', name: 'Artist 2' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
     ];
     
     const artistDetails = {
@@ -422,12 +423,12 @@ describe('calculateGenreStats', () => {
         id: 'artist1',
         name: 'Artist 1',
         genres: ['rock', 'indie'],
-      } as SpotifyApi.ArtistObjectFull,
+      } as Artist,
       artist2: {
         id: 'artist2',
         name: 'Artist 2',
         genres: ['rock'],
-      } as SpotifyApi.ArtistObjectFull,
+      } as Artist,
     };
     
     const result = calculateGenreStats(playHistory, artistDetails);
@@ -440,7 +441,7 @@ describe('calculateGenreStats', () => {
   });
 
   it('tracks multiple different genres', () => {
-    const playHistory: SpotifyApi.PlayHistoryObject[] = [
+    const playHistory: Play[] = [
       {
         played_at: '2024-01-01T10:00:00Z',
         track: {
@@ -448,8 +449,8 @@ describe('calculateGenreStats', () => {
           name: 'Song 1',
           duration_ms: 200000,
           artists: [{ id: 'artist1', name: 'Artist 1' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
     ];
     
     const artistDetails = {
@@ -457,7 +458,7 @@ describe('calculateGenreStats', () => {
         id: 'artist1',
         name: 'Artist 1',
         genres: ['rock', 'pop', 'indie'],
-      } as SpotifyApi.ArtistObjectFull,
+      } as Artist,
     };
     
     const result = calculateGenreStats(playHistory, artistDetails);
@@ -469,7 +470,7 @@ describe('calculateGenreStats', () => {
   });
 
   it('sorts genres by play count (descending)', () => {
-    const playHistory: SpotifyApi.PlayHistoryObject[] = [
+    const playHistory: Play[] = [
       {
         played_at: '2024-01-01T10:00:00Z',
         track: {
@@ -477,8 +478,8 @@ describe('calculateGenreStats', () => {
           name: 'Song 1',
           duration_ms: 200000,
           artists: [{ id: 'artist1', name: 'Artist 1' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
       {
         played_at: '2024-01-01T11:00:00Z',
         track: {
@@ -486,8 +487,8 @@ describe('calculateGenreStats', () => {
           name: 'Song 2',
           duration_ms: 180000,
           artists: [{ id: 'artist2', name: 'Artist 2' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
       {
         played_at: '2024-01-01T12:00:00Z',
         track: {
@@ -495,8 +496,8 @@ describe('calculateGenreStats', () => {
           name: 'Song 3',
           duration_ms: 190000,
           artists: [{ id: 'artist2', name: 'Artist 2' }],
-        } as SpotifyApi.TrackObjectFull,
-      } as SpotifyApi.PlayHistoryObject,
+        } as Track,
+      } as Play,
     ];
     
     const artistDetails = {
@@ -504,12 +505,12 @@ describe('calculateGenreStats', () => {
         id: 'artist1',
         name: 'Artist 1',
         genres: ['jazz'],
-      } as SpotifyApi.ArtistObjectFull,
+      } as Artist,
       artist2: {
         id: 'artist2',
         name: 'Artist 2',
         genres: ['pop'],
-      } as SpotifyApi.ArtistObjectFull,
+      } as Artist,
     };
     
     const result = calculateGenreStats(playHistory, artistDetails);
@@ -531,7 +532,7 @@ describe('calculateTopGenres', () => {
   it('returns empty array when artists have no genres', () => {
     const artists = [
       { id: 'artist1', name: 'Artist 1', genres: [] },
-    ] as unknown as SpotifyApi.ArtistObjectFull[];
+    ] as unknown as Artist[];
     
     const result = calculateTopGenres(artists);
     
@@ -543,7 +544,7 @@ describe('calculateTopGenres', () => {
       { id: 'artist1', name: 'Artist 1', genres: ['rock', 'indie'] },
       { id: 'artist2', name: 'Artist 2', genres: ['rock', 'alternative'] },
       { id: 'artist3', name: 'Artist 3', genres: ['pop'] },
-    ] as unknown as SpotifyApi.ArtistObjectFull[];
+    ] as unknown as Artist[];
     
     const result = calculateTopGenres(artists);
     
@@ -558,7 +559,7 @@ describe('calculateTopGenres', () => {
       { id: 'artist2', name: 'Artist 2', genres: ['rock'] },
       { id: 'artist3', name: 'Artist 3', genres: ['rock', 'pop'] },
       { id: 'artist4', name: 'Artist 4', genres: ['jazz'] },
-    ] as unknown as SpotifyApi.ArtistObjectFull[];
+    ] as unknown as Artist[];
     
     const result = calculateTopGenres(artists);
     
@@ -574,11 +575,53 @@ describe('calculateTopGenres', () => {
     const artists = [
       { id: 'artist1', name: 'Artist 1', genres: ['rock'] },
       { id: 'artist2', name: 'Artist 2', genres: undefined },
-    ] as unknown as SpotifyApi.ArtistObjectFull[];
+    ] as unknown as Artist[];
     
     const result = calculateTopGenres(artists);
     
     expect(result).toHaveLength(1);
     expect(result[0].genre).toBe('rock');
+  });
+});
+
+describe('play-count weighting (Last.fm top lists)', () => {
+  const artist = (name: string, extra: Partial<Artist> = {}): Artist => ({ id: name, name, images: [], genres: ['indie rock'], ...extra });
+  const track = (id: string, artistName: string, extra: Partial<Track> = {}): Track => ({
+    id,
+    name: id,
+    artists: [{ id: artistName, name: artistName }],
+    album: { id: `${id}-album`, name: 'Album', images: [] },
+    duration_ms: 200_000,
+    ...extra,
+  });
+
+  it('weights top tracks by the listener’s play count', async () => {
+    const { calculateTopTracksStats } = await import('./listening');
+    const result = calculateTopTracksStats(
+      [track('a', 'Mitski', { playcount: 30 }), track('b', 'Nujabes', { playcount: 10 })],
+      { Mitski: artist('Mitski'), Nujabes: artist('Nujabes', { genres: ['jazz rap'] }) }
+    );
+    expect(result.totalWeight).toBe(40);
+    expect(result.totalDuration).toBe(40 * 200_000);
+    expect(result.artistStats.map(a => [a.artist.name, a.playCount])).toEqual([['Mitski', 30], ['Nujabes', 10]]);
+    expect(result.genreStats.find(g => g.genre === 'indie rock')?.playCount).toBe(30);
+  });
+
+  it('counts each track once when there are no play counts (Loved Tracks)', async () => {
+    const { calculateTopTracksStats } = await import('./listening');
+    const result = calculateTopTracksStats([track('a', 'Mitski'), track('b', 'Mitski')], { Mitski: artist('Mitski') });
+    expect(result.totalWeight).toBe(2);
+  });
+
+  it('weights top artists by their play count and estimates listening time', async () => {
+    const { calculateTopArtistsStats } = await import('./listening');
+    const result = calculateTopArtistsStats(
+      [artist('Mitski', { playcount: 50 }), artist('Nujabes', { playcount: 5 })],
+      [track('a', 'Mitski', { duration_ms: 180_000 })]
+    );
+    expect(result.totalWeight).toBe(55);
+    expect(result.artistStats[0]).toMatchObject({ playCount: 50, totalDuration: 50 * 180_000 });
+    // No known track length for Nujabes, so a typical 3.5 minutes stands in
+    expect(result.artistStats[1].totalDuration).toBe(5 * 210_000);
   });
 });
