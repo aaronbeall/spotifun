@@ -74,7 +74,7 @@ export const StatCard = ({
   const finalScoreTooltip = scoreTooltip || (scoreMetricKey ? getMetricDescription(scoreMetricKey) : undefined);
 
   return (
-    <div className="relative h-full overflow-hidden rounded-2xl p-6 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:shadow-black/10">
+    <div className="relative h-full overflow-hidden rounded-2xl p-4 sm:p-6 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:shadow-black/10">
       {/* Background gradient with noise texture */}
       <div
         className="absolute inset-0 -z-10 opacity-30"

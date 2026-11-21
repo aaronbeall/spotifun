@@ -59,7 +59,7 @@ export const SpectrumCard: React.FC<SpectrumCardProps> = ({ genreStats, onShare,
   if (!genreStats?.length) return null;
 
   return (
-    <ThemedCardBackground color={CARD_THEMES.spectrum} className="backdrop-blur-sm rounded-3xl p-6 border border-white/5 shadow-2xl">
+    <ThemedCardBackground color={CARD_THEMES.spectrum} className="backdrop-blur-sm rounded-3xl p-4 sm:p-6 border border-white/5 shadow-2xl">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
         <div className="mb-4 md:mb-0">
           <div className="flex items-center gap-3">

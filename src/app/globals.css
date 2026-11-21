@@ -75,3 +75,11 @@ button, a {
     animation: none;
   }
 }
+
+/* Horizontal pill rows scroll on narrow screens without a visible bar. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
