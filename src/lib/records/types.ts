@@ -1,5 +1,5 @@
 /**
- * Local journal of what one signed-in Spotify account has done in Spotifun on this browser.
+ * Local journal of what one Last.fm user has done in Spotifun on this browser.
  * Another account on the same browser has its own journal. The shapes are plain records so a
  * later shared backend can accept the same writes.
  */
@@ -26,7 +26,7 @@ export interface ActivityRecord {
   userId: string;
   at: string;
   kind: ActivityKind;
-  /** Endpoint or action name, such as `stats` or `spotify`. */
+  /** Endpoint or action name, such as `stats` or `lastfm`. */
   name: string;
   ok: boolean;
   detail: Detail;

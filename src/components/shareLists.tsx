@@ -6,12 +6,9 @@ import { StoryTrail, type StoryNode } from './features/StoryTrail';
 import { RankMark } from './RankMark';
 import { UnlockBadge } from './features/PersonaCard';
 import type { ShareContent } from './ShareCardTemplate';
+import { PERIOD_PHRASE } from '@/utils/periods';
 
-const RANGE_LABEL: Record<Stats['timeRange'], string> = {
-  short_term: 'the last 4 weeks',
-  medium_term: 'the last 6 months',
-  long_term: 'all time',
-};
+const RANGE_LABEL: Record<Stats['timeRange'], string> = PERIOD_PHRASE;
 
 function unlockLabel(iso: string): string {
   return `Unlocked ${new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;

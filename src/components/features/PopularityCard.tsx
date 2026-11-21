@@ -1,3 +1,4 @@
+import type { Track } from '@/types/music';
 import React, { useMemo } from "react";
 import { motion } from 'framer-motion';
 import { Star, Gem, Share2 } from 'lucide-react';
@@ -11,7 +12,7 @@ import { CARD_THEMES } from '@/utils/cardThemes';
 import { generatePopularityCaption } from '@/utils/visualizationCaptions';
 
 interface PopularityCardProps {
-  tracks: SpotifyApi.TrackObjectFull[];
+  tracks: Track[];
   onShare?: () => void;
   stats: Stats;
 }

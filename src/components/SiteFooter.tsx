@@ -30,17 +30,25 @@ export function SiteFooter() {
           . All rights reserved.
         </p>
         <p className="max-w-2xl text-xs leading-relaxed">
-          Spotifun is an independent project and is not affiliated with, endorsed, or sponsored by Spotify AB.
-          Spotify is a trademark of Spotify AB. Genre data may be enhanced with{' '}
+          Spotifun is an independent project. Listening data is powered by{' '}
           <a
             href="https://www.last.fm"
             target="_blank"
             rel="noopener noreferrer"
             className="text-gray-400 underline decoration-white/20 underline-offset-2 hover:text-gray-300"
           >
-            Last.fm
+            AudioScrobbler (Last.fm)
           </a>
-          .
+          {' '}and artwork comes from{' '}
+          <a
+            href="https://www.deezer.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-400 underline decoration-white/20 underline-offset-2 hover:text-gray-300"
+          >
+            Deezer
+          </a>
+          . Spotifun is not affiliated with, endorsed, or sponsored by Last.fm, Deezer, or Spotify AB.
         </p>
         <nav className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs">
           {LINKS.map(link => (

@@ -71,7 +71,7 @@ const ACHIEVEMENTS: AchievementSpec[] = [
   {
     id: 'signed-in',
     title: 'Signed in',
-    detail: 'Connect Spotify on this browser.',
+    detail: 'Look up your Last.fm username on this browser.',
     group: 'visit',
     goal: 1,
     progress: journal => Math.min(1, logins(journal).length),

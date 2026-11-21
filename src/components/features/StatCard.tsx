@@ -1,7 +1,7 @@
 import { Star, Music } from 'lucide-react';
 import { useState, useMemo, HTMLProps } from "react";
 import { motion } from "framer-motion";
-import { SpotifyPlayOverlay } from "@/components/SpotifyPlayOverlay";
+import { OpenOverlay } from "@/components/OpenOverlay";
 import { MetricInfo } from '../MetricInfo';
 import { getMetricDescription } from '@/utils/metricDescriptions';
 
@@ -274,7 +274,7 @@ export const StatCard = ({
                       ) : (
                         <Music className="w-3 h-3 m-auto text-white/50" />
                       )}
-                      {item.url && <SpotifyPlayOverlay size="xs" />}
+                      {item.url && <OpenOverlay size="xs" />}
                     </div>
                     <span className="truncate max-w-[100px] font-medium">{item.name}</span>
                     {showCounts && (

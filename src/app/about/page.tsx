@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'About — Spotifun',
-  description: 'What Spotifun is, how to get in touch, and the privacy and terms that cover your Spotify connection.',
+  description: 'What Spotifun is, why it runs on Last.fm, how to get in touch, and the privacy and terms that cover it.',
 };
 
 export default function AboutPage() {
@@ -13,32 +13,56 @@ export default function AboutPage() {
         <p className="text-xs font-semibold uppercase tracking-widest text-violet-300">About</p>
         <h1 className="mt-2 text-4xl font-bold tracking-tight text-white">A mirror for your listening</h1>
         <p className="mt-4 text-lg leading-relaxed text-gray-300">
-          Spotifun reads a Spotify account and turns it into a profile: who you play, which genres show up,
+          Spotifun reads your Last.fm scrobbles and turns them into a profile: who you play, which genres show up,
           how mainstream or niche the songs are, and a named listener persona. It is a personal project,
-          built to make taste legible.
-        </p>
-        <p className="mt-4 text-lg leading-relaxed text-gray-300">
-          The first aim was a whole play history. Spotify does not hand that over without clunky, costly
-          workarounds. Building another ingestion engine and charging for it was the other path. This one
-          stays free. It keeps nothing of you on a server, and it only knows the listening you open in the
-          app. If a paid version that ingested a full history is something you would want, write to{' '}
-          <a href="mailto:support@metamodernmonkey.com" className="text-violet-300 underline decoration-violet-300/40 underline-offset-2 hover:text-violet-200">
-            support@metamodernmonkey.com
-          </a>.
+          built to make taste legible and a little bit silly.
         </p>
       </header>
+
+      <section id="history" className="scroll-mt-8 space-y-3">
+        <h2 className="text-xl font-semibold text-white">Why Last.fm and not Spotify</h2>
+        <p>
+          Spotifun started life on the Spotify Web API. Then, in 2025, Spotify stopped opening its API up to
+          small developers: wider access now goes only to registered businesses with at least 250,000 monthly
+          users, and every other app stays in development mode, where it works for five hand-picked people. A
+          hobby project can&apos;t clear that bar, so Spotifun could never have opened its doors to everyone.
+        </p>
+        <p>
+          So it moved to{' '}
+          <a href="https://www.last.fm" target="_blank" rel="noopener noreferrer" className="text-violet-300 underline decoration-violet-300/40 underline-offset-2 hover:text-violet-200">
+            Last.fm
+          </a>
+          , which has been keeping track of what people play for about twenty years. Last.fm can scrobble from
+          Spotify, Apple Music, YouTube Music and most other players, so it works whatever you listen with. It
+          also turned out to be a better fit: real play counts instead of a ranked list, a much longer history,
+          six time periods instead of three, and a sign-in that takes one click.
+        </p>
+        <p>
+          The trade-off is that you need a Last.fm account that has been scrobbling for a while. If you are new to
+          it,{' '}
+          <a href="https://www.last.fm/about/trackmymusic" target="_blank" rel="noopener noreferrer" className="text-violet-300 underline decoration-violet-300/40 underline-offset-2 hover:text-violet-200">
+            connect your music app
+          </a>
+          , listen for a few days, and come back.
+        </p>
+      </section>
 
       <section className="space-y-3">
         <h2 className="text-xl font-semibold text-white">What you can look at</h2>
         <p>
-          After you connect Spotify, the dashboard can describe recently played tracks, your top artists,
-          your top tracks, Liked Songs, or any playlist you own or follow. The same cards follow that choice:
-          artists, tracks, genres, popularity, a trait spectrum, a vibe, and a persona.
+          Sign in with Last.fm (or type any Last.fm username) and the dashboard can describe your recent scrobbles (up to the last 200),
+          your top artists, your top tracks, or your Loved Tracks. Top lists come in six periods, from the last
+          seven days to all time. The same cards follow that choice: artists, tracks, genres, popularity, a trait
+          spectrum, a vibe, and a persona.
+        </p>
+        <p>
+          Genres come from Last.fm&apos;s community tags. Artwork, song lengths, release years and popularity come
+          from Deezer, matched by artist and song name, so a rare track can turn up without a cover.
         </p>
         <p>
           Music Story maps the view you have open: the persona, replays, streaks, deep cuts, and how many
-          years the songs span. A separate comparison sets that view next to your own top artists across Spotify&apos;s
-          three time ranges. There is no global leaderboard.
+          years the songs span. A separate comparison sets that view next to your own top artists across Last.fm
+          periods. There is no global leaderboard.
         </p>
       </section>
 
@@ -59,32 +83,33 @@ export default function AboutPage() {
 
       <section id="privacy" className="scroll-mt-8 space-y-3">
         <h2 className="text-xl font-semibold text-white">Privacy</h2>
-        <p className="text-sm text-gray-500">Last updated November 12, 2026.</p>
+        <p className="text-sm text-gray-500">Last updated November 21, 2026.</p>
         <p>
-          Spotifun does not keep a user database on a server. Connecting Spotify grants the app permission to read
-          your profile and email, top artists and tracks, recently played tracks, current playback, private
-          and collaborative playlists, and Liked Songs. You can revoke that access from your Spotify account
-          at any time.
+          Spotifun does not keep a user database and never sees your password. When you sign in with Last.fm,
+          you do that on Last.fm&apos;s own page, and Spotifun only learns your username. It then reads public
+          Last.fm data for that username (or for one you type in): the profile, recent scrobbles, top artists and tracks, and Loved Tracks.
+          If your Last.fm profile hides its recent listening, Spotifun can&apos;t see it either.
         </p>
         <p>
-          This browser keeps a separate journal for each Spotify account you sign in with: sign-ins, the
-          profile requests you make, the persona and vibe each result lands on, and genre names that do not
-          match the trait list. The badges on your dashboard read that account&apos;s journal. It is not uploaded.
-          Settings on the dashboard can forget it.
+          Spotifun doesn&apos;t keep the Last.fm session that sign-in creates, so it can&apos;t scrobble, love
+          tracks or change anything on your account. The username is kept in an httpOnly cookie for a year so the dashboard opens straight to your profile.
+          Logging out deletes it.
         </p>
         <p>
-          Spotify access and refresh tokens are stored in httpOnly cookies so the server can request your
-          library on your behalf. The access cookie lasts as long as Spotify says the token does. The refresh
-          cookie lasts 30 days. Spotifun does not sell this data and does not use it for advertising.
+          To stay within Last.fm&apos;s and Deezer&apos;s limits, the server caches their answers: listening data for a
+          minute to a day, artist tags and artwork for up to a month. Deezer is asked about artists and songs by
+          name; it is not told who you are.
+        </p>
+        <p>
+          This browser keeps a separate journal for each username you look up: visits, the profile requests you
+          make, the persona and vibe each result lands on, and genre names that do not match the trait list. The
+          badges on your dashboard read that journal. It is not uploaded. Settings on the dashboard can forget it.
         </p>
         <p>
           The site loads Google Tag Manager (GTM-5ZH965VP) to measure how the site is used: which pages are
           opened, which buttons are clicked, and which personas, vibes, and badges are unlocked. That usage
-          data is sent to Google. The listening journal stored in this browser is not uploaded.
-        </p>
-        <p>
-          When Spotify returns few genres for an artist, the server may look that artist up on Last.fm and
-          cache the tags. That lookup is by artist name. Last.fm is not told who you are.
+          data is sent to Google. The listening journal stored in this browser is not uploaded, and neither
+          are song or artist names.
         </p>
       </section>
 
@@ -92,12 +117,12 @@ export default function AboutPage() {
         <h2 className="text-xl font-semibold text-white">Terms</h2>
         <p>
           Spotifun is offered as-is, for personal use. There is no warranty. The profiles are an interpretation
-          of genre tags and your Spotify library. They are not a diagnosis, a credit score, or a statement from Spotify.
+          of genre tags and your scrobbles. They are not a diagnosis, a credit score, or a statement from Last.fm.
         </p>
         <p>
-          You are responsible for the Spotify account you connect. Do not use Spotifun to scrape accounts that
-          are not yours, or in a way that breaks Spotify&apos;s own terms. Visits are measured as described in
-          the privacy section.
+          Look up your own profile, or a friend&apos;s with their blessing. Do not use Spotifun to scrape profiles
+          in bulk or in a way that breaks Last.fm&apos;s own terms. Visits are measured as described in the
+          privacy section.
         </p>
         <p>
           VACRS, the trait model described on the{' '}
@@ -110,10 +135,14 @@ export default function AboutPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold text-white">Spotify and other names</h2>
+        <h2 className="text-xl font-semibold text-white">Credits and other names</h2>
         <p>
-          Spotifun is not affiliated with, endorsed by, or sponsored by Spotify AB. Spotify and the Spotify
-          logo are trademarks of Spotify AB. Last.fm is a trademark of its owner. Genre enrichment uses the Last.fm API.
+          Listening data is powered by AudioScrobbler, from{' '}
+          <a href="https://www.last.fm" target="_blank" rel="noopener noreferrer" className="text-violet-300 underline decoration-violet-300/40 underline-offset-2 hover:text-violet-200">Last.fm</a>.
+          Artwork and track details come from{' '}
+          <a href="https://www.deezer.com" target="_blank" rel="noopener noreferrer" className="text-violet-300 underline decoration-violet-300/40 underline-offset-2 hover:text-violet-200">Deezer</a>.
+          Spotifun is not affiliated with, endorsed by, or sponsored by Last.fm, Deezer, or Spotify AB. Their names
+          are trademarks of their owners.
         </p>
       </section>
 

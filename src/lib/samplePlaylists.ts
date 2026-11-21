@@ -1,11 +1,13 @@
 import fs from 'fs';
 import path from 'path';
-import { calculateTopGenres } from '@/lib/spotify';
+import { calculateTopGenres } from '@/lib/listening';
 import { computeStats, type ListeningDataSource } from '@/lib/statsPipeline';
 import type { Stats } from '@/types';
+import type { Artist, Track } from '@/types/music';
+import { lastFmArtistUrl, lastFmTrackUrl } from '@/utils/links';
 
 /**
- * The frozen Spotify sample used by `npm run coverage`.
+ * The frozen playlist sample (collected from Spotify before the move to Last.fm) used by `npm run coverage`.
  * Dev-only: the dashboard can load one of these playlists through the real stats pipeline.
  */
 
@@ -127,66 +129,29 @@ export function listSamplePlaylists(): { fetchedAt: string; playlists: SamplePla
   return { fetchedAt: data.fetchedAt, playlists };
 }
 
-function releasePrecision(release: string): SpotifyApi.AlbumObjectSimplified['release_date_precision'] {
-  if (release.length >= 10) return 'day';
-  if (release.length >= 7) return 'month';
-  return 'year';
-}
-
-function artistObject(id: string, artist: CorpusArtist): SpotifyApi.ArtistObjectFull {
+function artistObject(id: string, artist: CorpusArtist): Artist {
   return {
     id,
     name: artist.name,
-    type: 'artist',
-    uri: `spotify:artist:${id}`,
-    href: `https://api.spotify.com/v1/artists/${id}`,
-    external_urls: { spotify: `https://open.spotify.com/artist/${id}` },
+    url: lastFmArtistUrl(artist.name),
     genres: artist.genres ?? [],
-    popularity: 0,
-    followers: { href: null, total: 0 },
     images: [],
   };
 }
 
-function trackObject(track: CorpusTrack, artists: SpotifyApi.ArtistObjectFull[]): SpotifyApi.TrackObjectFull {
-  const refs: SpotifyApi.ArtistObjectSimplified[] = artists.map(artist => ({
-    id: artist.id,
-    name: artist.name,
-    type: 'artist',
-    uri: artist.uri,
-    href: artist.href,
-    external_urls: artist.external_urls,
-  }));
-  const albumId = `sample-album-${track.id}`;
+function trackObject(track: CorpusTrack, artists: Artist[]): Track {
   return {
     id: track.id,
     name: track.name,
-    type: 'track',
-    uri: `spotify:track:${track.id}`,
-    href: `https://api.spotify.com/v1/tracks/${track.id}`,
-    external_urls: { spotify: `https://open.spotify.com/track/${track.id}` },
-    external_ids: {},
-    explicit: false,
-    is_local: false,
-    preview_url: null,
-    disc_number: 1,
-    track_number: 1,
+    url: lastFmTrackUrl(artists[0].name, track.name),
     duration_ms: track.durationMs,
     popularity: track.popularity,
-    artists: refs,
+    artists: artists.map(({ id, name, url }) => ({ id, name, url })),
     album: {
-      id: albumId,
+      id: `sample-album-${track.id}`,
       name: track.name,
-      type: 'album',
-      album_type: 'album',
-      total_tracks: 1,
-      artists: refs,
       images: [],
       release_date: track.release,
-      release_date_precision: releasePrecision(track.release),
-      uri: `spotify:album:${albumId}`,
-      href: `https://api.spotify.com/v1/albums/${albumId}`,
-      external_urls: { spotify: `https://open.spotify.com/album/${albumId}` },
     },
   };
 }
@@ -197,7 +162,7 @@ export async function statsForSamplePlaylist(id: string): Promise<Stats | null> 
   const playlist = data.playlists.find(item => item.id === id);
   if (!playlist) return null;
 
-  const artistsById: Record<string, SpotifyApi.ArtistObjectFull> = {};
+  const artistsById: Record<string, Artist> = {};
   for (const track of playlist.tracks) {
     for (const artistId of track.artistIds) {
       if (artistsById[artistId] || !data.artists[artistId]) continue;
@@ -215,10 +180,10 @@ export async function statsForSamplePlaylist(id: string): Promise<Stats | null> 
     getRecentlyPlayed: async () => [],
     getTopTracks: async () => [],
     getTopArtists: async () => [],
-    fetchArtistsByIds: async (artistIds) => {
-      const found: Record<string, SpotifyApi.ArtistObjectFull> = {};
-      for (const artistId of artistIds) {
-        if (artistsById[artistId]) found[artistId] = artistsById[artistId];
+    fetchArtists: async (refs) => {
+      const found: Record<string, Artist> = {};
+      for (const { id } of refs) {
+        if (artistsById[id]) found[id] = artistsById[id];
       }
       return found;
     },
@@ -226,7 +191,7 @@ export async function statsForSamplePlaylist(id: string): Promise<Stats | null> 
   };
 
   const stats = await computeStats(source, {
-    timeRange: 'medium_term',
+    timeRange: '6month',
     limit: 50,
     mode: 'playlist',
     playlist: {

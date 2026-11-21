@@ -1,4 +1,6 @@
+import type { Track } from '@/types/music';
 import { useMemo } from "react";
+import { ratedTracks } from '@/utils/popularity';
 import { motion } from 'framer-motion';
 import { useTooltip } from '@/hooks/useTooltip';
 import { SIGNATURE_EASE } from '@/utils/easing';
@@ -6,10 +8,10 @@ import { SIGNATURE_EASE } from '@/utils/easing';
 const BAR_STAGGER = 0.04;
 const BAR_DURATION = 0.5;
 
-export function getHistogramData(tracks: SpotifyApi.TrackObjectFull[]) {
+export function getHistogramData(tracks: Track[]) {
   // Bin track popularity into 10 buckets (0-10, 11-20, ..., 91-100)
   const bins = Array(10).fill(0);
-  tracks.forEach(track => {
+  ratedTracks(tracks).forEach(track => {
     const pop = track.popularity || 0;
     const idx = Math.min(9, Math.floor(pop / 10));
     bins[idx]++;
@@ -17,15 +19,15 @@ export function getHistogramData(tracks: SpotifyApi.TrackObjectFull[]) {
   return bins;
 }
 
-export function getTracksInBin(tracks: SpotifyApi.TrackObjectFull[], binIdx: number) {
-  return tracks.filter(track => {
+export function getTracksInBin(tracks: Track[], binIdx: number) {
+  return ratedTracks(tracks).filter(track => {
     const pop = track.popularity || 0;
     return Math.min(9, Math.floor(pop / 10)) === binIdx;
   });
 }
 
 interface PopularityHistogramProps {
-  tracks: SpotifyApi.TrackObjectFull[];
+  tracks: Track[];
   large?: boolean;
   interactive?: boolean;
 }

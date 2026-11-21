@@ -16,7 +16,7 @@ describe('evaluateAchievements', () => {
 
   it('earns visit, look, persona, and vibe badges from the journal', async () => {
     const store = createMemoryRecordStore('ada', () => at(4, 23));
-    await store.recordActivity({ kind: 'login', name: 'spotify', ok: true, detail: {} });
+    await store.recordActivity({ kind: 'login', name: 'lastfm', ok: true, detail: {} });
     await store.recordActivity({
       kind: 'result',
       name: 'stats',
@@ -41,8 +41,8 @@ describe('evaluateAchievements', () => {
         { id: 'ada:persona:b', userId: 'ada', kind: 'persona', key: 'b', name: 'B', color: '#fff', at: at(2), valence: 'negative', arousal: 'energetic' },
       ],
       activity: [
-        { id: '1', userId: 'ada', at: at(1), kind: 'login', name: 'spotify', ok: true, detail: {} },
-        { id: '2', userId: 'ada', at: at(2), kind: 'login', name: 'spotify', ok: true, detail: {} },
+        { id: '1', userId: 'ada', at: at(1), kind: 'login', name: 'lastfm', ok: true, detail: {} },
+        { id: '2', userId: 'ada', at: at(2), kind: 'login', name: 'lastfm', ok: true, detail: {} },
         { id: '3', userId: 'ada', at: at(1), kind: 'result', name: 'stats', ok: true, detail: { mode: 'recent', timeRange: 'short_term' } },
         { id: '4', userId: 'ada', at: at(1), kind: 'result', name: 'stats', ok: true, detail: { mode: 'topArtists', timeRange: 'medium_term' } },
         { id: '5', userId: 'ada', at: at(1), kind: 'result', name: 'stats', ok: true, detail: { mode: 'topTracks', timeRange: 'long_term' } },
@@ -73,7 +73,7 @@ describe('evaluateAchievements', () => {
     const ada = createMemoryRecordStore('ada', () => at(1));
     const bea = createMemoryRecordStore('bea', () => at(1));
     await ada.recordUnlocks([{ kind: 'vibe', key: 'wonder', name: 'Wonder', color: '#fff' }]);
-    await bea.recordActivity({ kind: 'login', name: 'spotify', ok: true });
+    await bea.recordActivity({ kind: 'login', name: 'lastfm', ok: true });
     expect((await ada.readJournal()).unlocks.map(unlock => unlock.userId)).toEqual(['ada']);
     expect((await bea.readJournal()).unlocks).toHaveLength(0);
     expect((await bea.readJournal()).activity.map(event => event.userId)).toEqual(['bea']);
@@ -82,10 +82,10 @@ describe('evaluateAchievements', () => {
   it('forgets one account without touching another', async () => {
     const ada = createMemoryRecordStore('ada', () => at(2));
     const bea = createMemoryRecordStore('bea', () => at(2));
-    await ada.recordActivity({ kind: 'login', name: 'spotify', ok: true });
+    await ada.recordActivity({ kind: 'login', name: 'lastfm', ok: true });
     await ada.recordUnlocks([{ kind: 'vibe', key: 'euphoria', name: 'Pure Euphoria', color: '#fff' }]);
     await ada.recordGenreMisses(['vaporwave']);
-    await bea.recordActivity({ kind: 'login', name: 'spotify', ok: true });
+    await bea.recordActivity({ kind: 'login', name: 'lastfm', ok: true });
 
     await ada.clearJournal();
 

@@ -1,54 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTopArtists, getTopTracks } from '@/lib/spotify';
-import { setAuthCookies, UnauthenticatedError, withSpotifyAccessToken } from '@/lib/auth';
+import { getUsername } from '@/lib/session';
+import { createLastFmDataSource } from '@/lib/lastfmSource';
+import { errorResponse } from '@/lib/apiErrors';
+import { averageKnownPopularity } from '@/lib/statsPipeline';
 import { calculateWeightedVACRSScore } from '@/utils/musicClassification';
 import { genreFamilySpread } from '@/utils/improvedClassification';
 import { EraSnapshot, ErasResponse, GenreStats, TimeRange } from '@/types';
+import type { Artist, Track } from '@/types/music';
 
-const RANGES: { timeRange: TimeRange; label: string }[] = [
-  { timeRange: 'short_term', label: 'About 4 weeks' },
-  { timeRange: 'medium_term', label: 'About 6 months' },
-  { timeRange: 'long_term', label: 'Several years' },
+const ERAS: { timeRange: TimeRange; label: string }[] = [
+  { timeRange: '1month', label: 'Last month' },
+  { timeRange: '6month', label: 'Last 6 months' },
+  { timeRange: '12month', label: 'Last year' },
+  { timeRange: 'overall', label: 'All time' },
 ];
 
-function snapshot(
-  timeRange: TimeRange,
-  label: string,
-  artists: SpotifyApi.ArtistObjectFull[],
-  tracks: SpotifyApi.TrackObjectFull[],
-): EraSnapshot {
+/** Fewer than the main profile's 50, so a cold cache fills in a few seconds */
+const ERA_LIST_SIZE = 30;
+
+function snapshot(timeRange: TimeRange, label: string, artists: Artist[], tracks: Track[]): EraSnapshot {
   const genreMap = new Map<string, GenreStats>();
   for (const artist of artists) {
+    const weight = artist.playcount ?? 1;
     for (const genre of artist.genres ?? []) {
       const existing = genreMap.get(genre);
       if (existing) {
-        existing.playCount += 1;
+        existing.playCount += weight;
         existing.uniqueArtists += 1;
       } else {
-        genreMap.set(genre, {
-          genre,
-          playCount: 1,
-          uniqueTracks: 0,
-          uniqueArtists: 1,
-          totalDuration: 0,
-        });
+        genreMap.set(genre, { genre, playCount: weight, uniqueTracks: 0, uniqueArtists: 1, totalDuration: 0 });
       }
     }
   }
 
-  const genreStats = [...genreMap.values()];
-  const vacrs = calculateWeightedVACRSScore(genreStats);
-  const popularitySource = tracks.length > 0 ? tracks : null;
-  const popularity = popularitySource
-    ? Math.round(popularitySource.reduce((sum, track) => sum + (track.popularity || 0), 0) / popularitySource.length)
-    : artists.length > 0
-      ? Math.round(artists.reduce((sum, artist) => sum + (artist.popularity || 0), 0) / artists.length)
-      : 0;
-
+  const vacrs = calculateWeightedVACRSScore([...genreMap.values()]);
   return {
     timeRange,
     label,
-    popularity,
+    popularity: averageKnownPopularity(tracks.map(track => track.popularity))
+      || averageKnownPopularity(artists.map(artist => artist.popularity)),
     genreDiversity: genreFamilySpread(artists.map(artist => artist.genres ?? [])),
     valence: vacrs.valence,
     arousal: vacrs.arousal,
@@ -59,24 +49,16 @@ function snapshot(
 
 export async function GET(request: NextRequest): Promise<NextResponse<ErasResponse | { error: string }>> {
   try {
-    const { result, refreshedTokens } = await withSpotifyAccessToken(request, async () => {
+    const source = createLastFmDataSource(getUsername(request));
+    const eras = await Promise.all(ERAS.map(async ({ timeRange, label }) => {
       const [artists, tracks] = await Promise.all([
-        Promise.all(RANGES.map(range => getTopArtists(range.timeRange, 50))),
-        Promise.all(RANGES.map(range => getTopTracks(range.timeRange, 50))),
+        source.getTopArtists(timeRange, ERA_LIST_SIZE).then(list => source.enhanceArtists(list)).then(result => result.artists),
+        source.getTopTracks(timeRange, ERA_LIST_SIZE).then(list => source.enrichTracks ? source.enrichTracks(list) : list),
       ]);
-      return {
-        eras: RANGES.map((range, index) => snapshot(range.timeRange, range.label, artists[index], tracks[index])),
-      };
-    });
-
-    const response = NextResponse.json(result);
-    if (refreshedTokens) setAuthCookies(response, refreshedTokens);
-    return response;
+      return snapshot(timeRange, label, artists, tracks);
+    }));
+    return NextResponse.json({ eras });
   } catch (error) {
-    if (error instanceof UnauthenticatedError) {
-      return NextResponse.json({ error: 'No access token' }, { status: 401 });
-    }
-    console.error('Error fetching time ranges:', error);
-    return NextResponse.json({ error: 'Failed to fetch time ranges' }, { status: 500 });
+    return errorResponse(error, 'eras');
   }
 }

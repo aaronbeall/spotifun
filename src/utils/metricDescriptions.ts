@@ -15,14 +15,14 @@ export const METRIC_DESCRIPTIONS: Record<string, string> = {
   'social-presence': 'How communal or solitary the music feels. High means party, dance, or group-oriented music; low means introspective, solitary listening.',
   
   // Overview Metrics
-  'total-plays': 'Total number of tracks played in this view. Top modes have no play counts; they list Spotify\'s ranked artists and tracks.',
+  'total-plays': 'Total number of plays in this view. Top modes use your Last.fm play counts for the chosen period.',
   'unique-artists': 'Number of different artists in this view. Higher means more diverse artist exploration.',
   'unique-tracks': 'Number of different songs in this view. Higher means varied listening rather than repeating the same tracks.',
   'unique-genres': 'Number of different genres represented. Higher means eclectic taste across musical styles.',
   'total-duration': 'Combined length of the tracks in this view. This is the songs added together, not time spent listening.',
   'genre-diversity': 'Share of your artists who sit outside the genre family most of them belong to. Higher means the listening is split across families.',
   'artist-diversity': 'Ratio of unique artists to total plays. Higher means you sample widely rather than focusing on a few favorites.',
-  'average-popularity': 'Average Spotify popularity rating (0-100) of your tracks. Higher means mainstream hits; lower means niche, underground music.',
+  'average-popularity': 'Average popularity (0-100) of your tracks, from Deezer\'s track rank. Higher means mainstream hits; lower means niche, underground music. Tracks Deezer can\'t find are left out.',
   'genre-coverage': 'Percentage of your listened genres successfully mapped to personality traits. Unmapped genres are excluded from trait calculations; higher coverage means more complete personality profiling.',
   
   // Popularity Metrics
@@ -49,7 +49,7 @@ export const METRIC_DESCRIPTIONS: Record<string, string> = {
   'track-count-only': 'Total number of unique tracks without repetition context.',
   
   // You, over time
-  'ranking-score': 'How this view compares with your own top artists across Spotify\'s three time ranges. There is no score against other people.',
+  'ranking-score': 'How this view compares with your own top artists across Last.fm periods. There is no score against other people.',
   'ranking-position': 'Where this view sits on popularity, genre spread, mood, and energy next to your other time ranges.',
   
   // Vibe Metrics

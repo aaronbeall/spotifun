@@ -5,9 +5,11 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Eye, Headphones, MessageCircle, Repeat, Sparkles, Trophy } from 'lucide-react';
+import { Eye, MessageCircle, Repeat, Sparkles, Trophy } from 'lucide-react';
 import { HeroWaves } from '@/components/home/HeroWaves';
 import { VibeGlobe } from '@/components/home/VibeGlobe';
+import { StartPanel } from '@/components/home/SignInButton';
+import { PoweredBy } from '@/components/PoweredBy';
 import type { Stats } from '@/types';
 import { cn } from '@/utils';
 
@@ -18,7 +20,7 @@ const FunStats = dynamic(() => import('@/components/features/FunStats'), { ssr: 
 const OnRepeat = dynamic(() => import('@/components/home/OnRepeat').then(m => m.OnRepeat), { ssr: false });
 const GroupChat = dynamic(() => import('@/components/home/GroupChat').then(m => m.GroupChat), { ssr: false });
 
-const EXAMPLE_STATS_URL = '/api/demo/stats?timeRange=medium_term&limit=50&mode=recent';
+const EXAMPLE_STATS_URL = '/api/demo/stats?timeRange=6month&limit=50&mode=recent';
 
 /** Sam's listening, from the same pipeline as the real dashboard */
 function useExampleStats() {
@@ -42,33 +44,6 @@ const reveal = {
   transition: { duration: 0.6, ease: 'easeOut' as const },
 };
 
-function ConnectButton({ isConnecting, onClick, className }: { isConnecting: boolean; onClick: () => void; className?: string }) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={isConnecting}
-      className={cn(
-        'group inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-6 py-3 font-semibold text-white',
-        'shadow-lg shadow-fuchsia-500/25 hover:from-violet-400 hover:to-fuchsia-400 hover:shadow-fuchsia-500/40 disabled:cursor-wait disabled:opacity-80',
-        className,
-      )}
-    >
-      {isConnecting ? (
-        <>
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-          Connecting...
-        </>
-      ) : (
-        <>
-          <Headphones className="h-4 w-4" />
-          Connect Spotify
-          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-        </>
-      )}
-    </button>
-  );
-}
-
 function SectionTitle({ icon: Icon, iconClass, title, children }: { icon: typeof Sparkles; iconClass: string; title: string; children?: React.ReactNode }) {
   return (
     <motion.div {...reveal} className="mx-auto mb-8 max-w-2xl text-center sm:mb-10">
@@ -86,14 +61,8 @@ function Placeholder({ className }: { className?: string }) {
 }
 
 export default function Home() {
-  const [isConnecting, setIsConnecting] = useState(false);
   const globeRef = useRef<HTMLDivElement>(null);
   const { stats, failed } = useExampleStats();
-
-  const handleConnect = () => {
-    setIsConnecting(true);
-    window.location.href = '/api/auth/spotify';
-  };
 
   return (
     <div className="min-h-screen overflow-x-clip bg-gray-950 text-white">
@@ -120,20 +89,19 @@ export default function Home() {
               <span className="bg-gradient-to-r from-violet-300 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">your listening.</span>
             </h1>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-gray-300 sm:mt-6 sm:text-lg">
-              Spotifun digs through your Spotify history and turns it into vibes, genre maps, stream charts, a listener persona and a few silly badges.
+              Spotifun digs through your Last.fm scrobbles and turns them into vibes, genre maps, stream charts, a listener persona and a few silly badges.
               Poke around, see what turns up, and send the weird bits to your friends.
             </p>
-            <div className="mt-6 flex flex-wrap items-center gap-3 sm:mt-8">
-              <ConnectButton isConnecting={isConnecting} onClick={handleConnect} />
-              <Link
-                href="/example"
-                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 font-semibold text-gray-100 backdrop-blur hover:border-white/30 hover:bg-white/10"
-              >
-                <Eye className="h-4 w-4 text-fuchsia-300" />
-                Peek at Sam&apos;s profile
-              </Link>
+            <div id="start" className="mt-6 scroll-mt-24 sm:mt-8">
+              <StartPanel />
             </div>
-            <p className="mt-5 text-sm text-gray-500">Sam is pretend. The music is real.</p>
+            <Link
+              href="/example"
+              className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-gray-300 hover:text-white"
+            >
+              <Eye className="h-4 w-4 text-fuchsia-300" />
+              Or peek at Sam&apos;s profile. Sam is pretend; the music is real.
+            </Link>
           </motion.div>
 
           <motion.div
@@ -174,7 +142,7 @@ export default function Home() {
           <section id="repeat" className="scroll-mt-8 py-14 sm:py-20">
             <div className="px-4 sm:px-6">
               <SectionTitle icon={Repeat} iconClass="text-green-400" title="Who's on repeat">
-                Top artists, tracks and genres, for the last four weeks, six months or all time.
+                Top artists, tracks and genres, for the last week, month, year or all time.
               </SectionTitle>
             </div>
             {stats ? <OnRepeat stats={stats} /> : <Placeholder className="mx-auto h-72 max-w-6xl" />}
@@ -217,8 +185,9 @@ export default function Home() {
             <Image src="/logo.png" alt="" width={72} height={72} className="h-16 w-16" />
           </Link>
           <h2 className="mt-6 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">Curious what&apos;s in yours?</h2>
-          <p className="mt-4 text-lg text-gray-400">It only reads your listening history. Your playlists stay exactly as they are.</p>
-          <ConnectButton isConnecting={isConnecting} onClick={handleConnect} className="mt-8" />
+          <p className="mt-4 text-lg text-gray-400">Sign in with Last.fm and see what your scrobbles say. Nothing to install.</p>
+          <StartPanel className="mt-8 text-left" />
+          <PoweredBy className="mt-10" />
         </motion.div>
       </section>
 
