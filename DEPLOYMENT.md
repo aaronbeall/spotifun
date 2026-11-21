@@ -131,6 +131,23 @@ Your Spotify app must have:
   - `playlist-read-private`
   - `playlist-read-collaborative`
 
+## 🌐 Production domain: spotifun.app
+
+The domain is registered at Porkbun and served by Vercel.
+
+1. **Vercel → Project → Settings → Domains**: add `spotifun.app` and `www.spotifun.app`. Set `www` to redirect (308) to `spotifun.app`.
+2. **Porkbun → Domain Management → spotifun.app → DNS**: delete the default parking records, then add the records Vercel shows. Usually:
+   - `A` record, host blank (apex), answer `76.76.21.21`
+   - `CNAME` record, host `www`, answer `cname.vercel-dns.com`
+   Vercel's Domains page shows the exact values for your project; use those if they differ.
+3. Wait for Vercel to show both domains as **Valid Configuration** and issue the certificate.
+4. **Vercel → Settings → Environment Variables (Production)**:
+   - `NEXT_PUBLIC_SITE_URL = https://spotifun.app`
+   - `NEXTAUTH_URL = https://spotifun.app`
+   - `SPOTIFY_REDIRECT_URI = https://spotifun.app/api/auth/callback/spotify`
+5. **Spotify Developer Dashboard → your app → Settings → Redirect URIs**: add `https://spotifun.app/api/auth/callback/spotify` and save. Keep the old URI until the new one works.
+6. Redeploy production. Once `NEXT_PUBLIC_SITE_URL` is set, `next.config.ts` also sends `www.spotifun.app` and `spotifun.vercel.app` to `https://spotifun.app`.
+
 ## 🎉 Post-Deployment
 
 ### Automatic Features
